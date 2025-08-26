@@ -1,0 +1,4 @@
+/* Minimal styles */
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+header { background: #222; color: #fff; padding: 1rem; }
+main { padding: 1rem; }

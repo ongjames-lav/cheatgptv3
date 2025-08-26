@@ -1,0 +1,9 @@
+# Minimal requirements for the scaffold. Add actual versions as needed.
+flask
+python-dotenv
+opencv-python
+numpy
+torch
+torchvision
+ultralytics
+pillow
