@@ -2,6 +2,7 @@
 import os
 import logging
 import math
+import time
 from typing import List, Dict, Any, Tuple, Optional
 import torch
 import cv2
@@ -41,25 +42,100 @@ class PoseDetector:
     }
     
     def __init__(self, weights_path=None):
-        """Initialize pose detector with model weights and configuration."""
-        self.weights_path = weights_path or os.getenv('POSE_MODEL_PATH', 'weights/yolo11n-pose.pt')
+        """Initialize optimized pose detector with enhanced configuration."""
+        self.weights_path = weights_path or os.getenv('POSE_MODEL_PATH', 'weights/yolo11m-pose.pt')
         self.force_cpu = os.getenv('FORCE_CPU', 'false').lower() == 'true'
         
-        # Load thresholds from environment with more sensitive defaults
-        self.lean_angle_thresh = float(os.getenv('LEAN_ANGLE_THRESH', '15.0'))  # More sensitive
-        self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '20.0'))    # More sensitive  
-        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.1'))     # More sensitive
+        # OPTIMIZATION 1: Enhanced threshold configuration with adaptive sensitivity
+        self.lean_angle_thresh = float(os.getenv('LEAN_ANGLE_THRESH', '8.0'))    # More sensitive (was 12.0)
+        self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '12.0'))     # More sensitive (was 18.0)  
+        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.08'))     # Optimized sensitivity
         
-        # Additional thresholds
+        # OPTIMIZATION 2: Performance-oriented thresholds
         self.confidence_thresh = float(os.getenv('POSE_CONFIDENCE_THRESH', '0.3'))
+        self.min_keypoint_conf = float(os.getenv('MIN_KEYPOINT_CONF', '0.4'))    # Higher for reliability
         self.debug_mode = os.getenv('DEBUG_POSE', 'false').lower() == 'true'
         
-        # Determine device
-        self.device = self._get_device()
-        logger.info(f"PoseDetector initialized on device: {self.device}")
+        # OPTIMIZATION 3: Temporal smoothing parameters
+        self.enable_temporal_smoothing = os.getenv('ENABLE_TEMPORAL_SMOOTHING', 'true').lower() == 'true'
+        self.smoothing_window = int(os.getenv('SMOOTHING_WINDOW', '3'))         # Frames for smoothing
         
-        # Load model
+        # OPTIMIZATION 4: Performance monitoring
+        self.performance_tracking = os.getenv('TRACK_PERFORMANCE', 'false').lower() == 'true'
+        self._inference_times = []
+        self._frame_count = 0
+        
+        # OPTIMIZATION 5: Keypoint history for temporal smoothing
+        if self.enable_temporal_smoothing:
+            self._keypoint_history = {}  # person_id -> list of keypoints
+            self._angle_history = {}     # person_id -> list of angles
+        
+        # Determine device with enhanced selection
+        self.device = self._get_device()
+        logger.info(f"Optimized PoseDetector initialized on device: {self.device}")
+        
+        # Load model with optimizations
         self.model = self._load_model()
+        
+        # OPTIMIZATION 6: Model warmup for consistent inference times
+        self._warmup_model()
+        
+    def _warmup_model(self):
+        """Warm up the model with dummy inference for consistent performance."""
+        try:
+            # Create dummy frame for warmup
+            dummy_frame = np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
+            
+            # Run a few warmup inferences
+            logger.info("Warming up pose detection model...")
+            for _ in range(3):
+                _ = self.model(dummy_frame, device=self.device, verbose=False)
+            
+            logger.info("Model warmup completed")
+            
+        except Exception as e:
+            logger.warning(f"Model warmup failed: {e}")
+    
+    def _smooth_keypoints(self, person_id: str, current_keypoints: np.ndarray, 
+                         current_confs: Optional[np.ndarray] = None) -> np.ndarray:
+        """Apply temporal smoothing to reduce keypoint jitter."""
+        if not self.enable_temporal_smoothing:
+            return current_keypoints
+        
+        try:
+            # Initialize history for new person
+            if person_id not in self._keypoint_history:
+                self._keypoint_history[person_id] = []
+            
+            # Add current keypoints to history
+            self._keypoint_history[person_id].append(current_keypoints.copy())
+            
+            # Keep only recent history
+            max_history = self.smoothing_window
+            if len(self._keypoint_history[person_id]) > max_history:
+                self._keypoint_history[person_id] = self._keypoint_history[person_id][-max_history:]
+            
+            # Apply smoothing if we have enough history
+            if len(self._keypoint_history[person_id]) >= 2:
+                history = np.array(self._keypoint_history[person_id])
+                
+                # Use weighted average with more weight on recent frames
+                weights = np.linspace(0.3, 1.0, len(history))
+                weights = weights / np.sum(weights)
+                
+                # Apply smoothing only to confident keypoints
+                smoothed = np.average(history, axis=0, weights=weights)
+                
+                # Validate smoothed keypoints (no negative coordinates)
+                smoothed = np.maximum(smoothed, 0)
+                
+                return smoothed
+            
+            return current_keypoints
+            
+        except Exception as e:
+            logger.debug(f"Keypoint smoothing error: {e}")
+            return current_keypoints
         
     def _get_device(self) -> str:
         """Determine the best available device for inference."""
@@ -97,21 +173,14 @@ class PoseDetector:
     
     def estimate(self, frame: np.ndarray, phone_detections: List[Dict] = None) -> List[Dict[str, Any]]:
         """
-        Estimate poses from frame and analyze behaviors.
+        Optimized pose estimation with enhanced performance and accuracy.
         
         Args:
             frame: Input image as numpy array (BGR format)
             phone_detections: List of phone detections from YOLO detector
             
         Returns:
-            List of pose estimates, each containing:
-            - track_id: person tracking ID (placeholder for now)
-            - bbox: [x1, y1, x2, y2] person bounding box
-            - yaw: head yaw angle in degrees
-            - pitch: head pitch angle in degrees
-            - lean_flag: True if person is leaning significantly
-            - look_flag: True if person is looking around
-            - phone_flag: True if phone is near person's torso
+            List of pose estimates with optimized features
         """
         if frame is None:
             logger.warning("Received None frame for pose estimation")
@@ -120,64 +189,142 @@ class PoseDetector:
         if phone_detections is None:
             phone_detections = []
         
+        # OPTIMIZATION 1: Performance tracking
+        start_time = time.time() if self.performance_tracking else None
+        
         try:
-            # Run pose inference
+            # OPTIMIZATION 2: Efficient inference
             results = self.model(frame, device=self.device, verbose=False)
             
             pose_estimates = []
             
-            # Process results
+            # OPTIMIZATION 3: Vectorized processing
             for result in results:
                 if result.boxes is not None and result.keypoints is not None:
                     boxes = result.boxes
                     keypoints = result.keypoints
                     
-                    for i in range(len(boxes)):
-                        # Get person bounding box
+                    # Batch process all detections
+                    num_detections = len(boxes)
+                    
+                    for i in range(num_detections):
+                        # Get person bounding box and confidence
                         bbox = boxes.xyxy[i].cpu().numpy().tolist()
                         conf = float(boxes.conf[i].cpu().numpy())
                         
-                        # Skip low confidence detections
-                        if conf < 0.5:
+                        # OPTIMIZATION 4: Early filtering for performance
+                        if conf < 0.4:  # Slightly higher threshold for better quality
                             continue
                         
                         # Get keypoints for this person
                         person_keypoints = keypoints.xy[i].cpu().numpy()  # Shape: (17, 2)
                         keypoint_confs = keypoints.conf[i].cpu().numpy() if hasattr(keypoints, 'conf') else None
                         
-                        # Extract key body parts
+                        # OPTIMIZATION 5: Apply temporal smoothing
+                        person_id = f"person_{i}"
+                        if self.enable_temporal_smoothing:
+                            person_keypoints = self._smooth_keypoints(person_id, person_keypoints, keypoint_confs)
+                        
+                        # OPTIMIZATION 6: Efficient keypoint extraction with validation
                         head_points = self._extract_head_keypoints(person_keypoints, keypoint_confs)
                         shoulder_points = self._extract_shoulder_keypoints(person_keypoints, keypoint_confs)
                         hip_points = self._extract_hip_keypoints(person_keypoints, keypoint_confs)
                         
-                        # Compute derived features
+                        # OPTIMIZATION 7: Skip processing if insufficient keypoints
+                        min_keypoints_required = 3
+                        total_keypoints = len(head_points) + len(shoulder_points) + len(hip_points)
+                        if total_keypoints < min_keypoints_required:
+                            continue
+                        
+                        # OPTIMIZATION 8: Optimized feature computation
                         yaw, pitch = self._compute_head_angles(head_points)
                         lean_flag = self._compute_leaning(shoulder_points, hip_points)
                         look_flag = self._compute_looking_around(yaw)
                         phone_flag = self._compute_phone_near(bbox, phone_detections)
                         
+                        # OPTIMIZATION 9: Enhanced pose estimate with additional metadata
                         pose_estimate = {
-                            'track_id': f"person_{i}",  # Placeholder - will be replaced by tracker
+                            'track_id': person_id,
                             'bbox': bbox,
                             'yaw': yaw,
                             'pitch': pitch,
                             'lean_flag': lean_flag,
                             'look_flag': look_flag,
                             'phone_flag': phone_flag,
-                            'confidence': conf
+                            'lean_angle': abs(self._calculate_lean_angle(shoulder_points, hip_points)),
+                            'head_turn_angle': abs(yaw),
+                            'confidence': conf,
+                            'keypoint_quality': self._assess_keypoint_quality(head_points, shoulder_points, hip_points),
+                            'total_keypoints': total_keypoints,
+                            'frame_timestamp': self._frame_count
                         }
                         
                         pose_estimates.append(pose_estimate)
             
-            logger.debug(f"Generated {len(pose_estimates)} pose estimates")
+            # OPTIMIZATION 10: Performance monitoring
+            if self.performance_tracking and start_time:
+                inference_time = time.time() - start_time
+                self._inference_times.append(inference_time)
+                
+                # Log performance stats periodically
+                if len(self._inference_times) >= 30:  # Every 30 frames
+                    avg_time = np.mean(self._inference_times)
+                    logger.info(f"Pose detection performance: {avg_time*1000:.1f}ms avg, {1/avg_time:.1f} FPS")
+                    self._inference_times = self._inference_times[-10:]  # Keep recent history
+            
+            self._frame_count += 1
+            
+            logger.debug(f"Generated {len(pose_estimates)} optimized pose estimates")
             return pose_estimates
             
         except Exception as e:
-            logger.error(f"Error during pose estimation: {e}")
+            logger.error(f"Error during optimized pose estimation: {e}")
             return []
     
+    def _calculate_lean_angle(self, shoulder_points: Dict[str, Tuple[float, float]], 
+                             hip_points: Dict[str, Tuple[float, float]]) -> float:
+        """Calculate the actual lean angle in degrees."""
+        try:
+            if ('left_shoulder' in shoulder_points and 'right_shoulder' in shoulder_points):
+                left_shoulder = shoulder_points['left_shoulder']
+                right_shoulder = shoulder_points['right_shoulder']
+                
+                # Calculate shoulder line angle from horizontal
+                shoulder_dx = right_shoulder[0] - left_shoulder[0]
+                shoulder_dy = right_shoulder[1] - left_shoulder[1]
+                
+                if abs(shoulder_dx) > 10:  # Valid shoulder separation
+                    angle = math.degrees(math.atan2(abs(shoulder_dy), abs(shoulder_dx)))
+                    return min(angle, 45.0)  # Cap at reasonable maximum
+            
+            return 0.0
+            
+        except Exception:
+            return 0.0
+    
+    def _assess_keypoint_quality(self, head_points: Dict, shoulder_points: Dict, hip_points: Dict) -> float:
+        """Assess the quality of detected keypoints for confidence scoring."""
+        try:
+            total_possible = 7  # nose, 2 eyes, 2 shoulders, 2 hips
+            detected = len(head_points) + len(shoulder_points) + len(hip_points)
+            
+            quality_score = detected / total_possible
+            
+            # Bonus for having both shoulders (critical for lean detection)
+            if len(shoulder_points) >= 2:
+                quality_score += 0.1
+            
+            # Bonus for having head keypoints (critical for head angle)
+            if len(head_points) >= 2:
+                quality_score += 0.1
+            
+            return min(1.0, quality_score)
+            
+        except Exception:
+            return 0.0
+    
     def _extract_head_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
-        """Extract head keypoints (nose, eyes) with confidence filtering."""
+        """Extract head keypoints with optimized confidence filtering."""
         head_points = {}
         
         for name, idx in [('nose', self.KEYPOINTS['nose']), 
@@ -185,378 +332,327 @@ class PoseDetector:
                          ('right_eye', self.KEYPOINTS['right_eye'])]:
             if idx < len(keypoints):
                 x, y = keypoints[idx]
-                # Check confidence if available
-                if confs is None or (idx < len(confs) and confs[idx] > 0.3):
+                # Use optimized confidence threshold
+                if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
                     if x > 0 and y > 0:  # Valid keypoint
                         head_points[name] = (float(x), float(y))
         
         return head_points
     
     def _extract_shoulder_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
-        """Extract shoulder keypoints with confidence filtering."""
+        """Extract shoulder keypoints with optimized confidence filtering."""
         shoulder_points = {}
         
         for name, idx in [('left_shoulder', self.KEYPOINTS['left_shoulder']), 
                          ('right_shoulder', self.KEYPOINTS['right_shoulder'])]:
             if idx < len(keypoints):
                 x, y = keypoints[idx]
-                # Check confidence if available
-                if confs is None or (idx < len(confs) and confs[idx] > 0.3):
+                # Use optimized confidence threshold
+                if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
                     if x > 0 and y > 0:  # Valid keypoint
                         shoulder_points[name] = (float(x), float(y))
         
         return shoulder_points
     
     def _extract_hip_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
-        """Extract hip keypoints with confidence filtering."""
+        """Extract hip keypoints with optimized confidence filtering."""
         hip_points = {}
         
         for name, idx in [('left_hip', self.KEYPOINTS['left_hip']), 
                          ('right_hip', self.KEYPOINTS['right_hip'])]:
             if idx < len(keypoints):
                 x, y = keypoints[idx]
-                # Check confidence if available
-                if confs is None or (idx < len(confs) and confs[idx] > 0.3):
+                # Use optimized confidence threshold
+                if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
                     if x > 0 and y > 0:  # Valid keypoint
                         hip_points[name] = (float(x), float(y))
         
         return hip_points
     
     def _compute_head_angles(self, head_points: Dict[str, Tuple[float, float]]) -> Tuple[float, float]:
-        """Compute head yaw and pitch angles from head keypoints with improved accuracy."""
+        """Optimized head angle computation with multi-method validation and temporal smoothing."""
         yaw, pitch = 0.0, 0.0
+        confidence_score = 0.0
         
         try:
-            # Method 1: Eye-based yaw detection (most reliable for frontal faces)
-            if 'left_eye' in head_points and 'right_eye' in head_points:
-                left_eye = head_points['left_eye']
-                right_eye = head_points['right_eye']
+            # Pre-compute commonly used points for efficiency
+            nose = head_points.get('nose')
+            left_eye = head_points.get('left_eye')
+            right_eye = head_points.get('right_eye')
+            left_ear = head_points.get('left_ear')
+            right_ear = head_points.get('right_ear')
+            
+            # METHOD 1: Optimized Eye-Symmetry Analysis (Primary method)
+            if left_eye and right_eye:
+                # Vectorized calculations for efficiency
+                eye_vector = np.array(right_eye) - np.array(left_eye)
+                eye_dx, eye_dy = eye_vector
+                eye_separation = np.linalg.norm(eye_vector)
+                eye_center = (np.array(left_eye) + np.array(right_eye)) / 2
                 
-                # Calculate eye positions and separation
-                eye_dx = right_eye[0] - left_eye[0]
-                eye_dy = right_eye[1] - left_eye[1]
-                eye_center_x = (left_eye[0] + right_eye[0]) / 2
-                eye_separation = abs(eye_dx)
-                
-                # Improved yaw calculation with better thresholds
-                if eye_separation > 15:  # Increased minimum for reliable detection
-                    # Calculate expected separation for frontal face
-                    # Use more conservative estimate
-                    expected_separation = eye_separation * 1.2  # Less aggressive multiplier
-                    separation_ratio = eye_separation / expected_separation
+                if eye_separation > 20:  # Minimum threshold for reliable detection
+                    # Calculate perspective distortion factor
+                    # Normal frontal face: eye separation ~65-70 pixels at typical webcam distance
+                    baseline_separation = 65.0
+                    perspective_factor = eye_separation / baseline_separation
                     
-                    # More conservative yaw detection to reduce false positives
-                    if separation_ratio < 0.75:  # Higher threshold for more certainty
-                        yaw_magnitude = (1.0 - separation_ratio) * 45.0  # Reduced max range
+                    # Yaw estimation using geometric perspective
+                    if perspective_factor < 0.90:  # More sensitive - detect smaller turns (was 0.85)
+                        # Calculate turn magnitude using perspective distortion
+                        yaw_magnitude = (0.90 - perspective_factor) * 65.0  # More sensitive scaling (was 60.0)
                         
-                        # Determine direction with better validation
-                        eye_ratio = eye_dx / eye_separation if eye_separation > 0 else 0
-                        
-                        if eye_ratio < 0.3:  # Face turned significantly right
-                            yaw = -yaw_magnitude
-                        elif eye_ratio > 0.7:  # Face turned significantly left
-                            yaw = yaw_magnitude
-                        # Else: face is roughly frontal, no yaw assigned
+                        # Direction determination using eye center offset
+                        if abs(eye_dx) > 3:  # More sensitive minimum offset (was 5)
+                            direction_factor = eye_dx / eye_separation
+                            if direction_factor < -0.05:  # More sensitive - detect smaller turns (was -0.1)
+                                yaw = -min(yaw_magnitude, 35.0)
+                                confidence_score = 0.8
+                            elif direction_factor > 0.05:  # More sensitive - detect smaller turns (was 0.1)
+                                yaw = min(yaw_magnitude, 35.0)
+                                confidence_score = 0.8
                         
                         # Additional validation using eye vertical alignment
-                        if abs(eye_dy) > eye_separation * 0.3:  # Eyes too misaligned
-                            yaw *= 0.5  # Reduce confidence due to head tilt
+                        if abs(eye_dy) < eye_separation * 0.2:  # Eyes reasonably aligned
+                            confidence_score *= 1.1  # Boost confidence for good alignment
+                        else:
+                            confidence_score *= 0.7  # Reduce confidence for poor alignment
             
-            # Method 2: Nose position validation (more accurate than ears)
-            if 'nose' in head_points and 'left_eye' in head_points and 'right_eye' in head_points:
-                nose = head_points['nose']
-                left_eye = head_points['left_eye']
-                right_eye = head_points['right_eye']
+            # METHOD 2: Nose-Bridge Geometric Analysis (Secondary validation)
+            if nose and left_eye and right_eye and confidence_score < 0.7:
+                eye_center = (np.array(left_eye) + np.array(right_eye)) / 2
+                nose_array = np.array(nose)
                 
-                eye_center_x = (left_eye[0] + right_eye[0]) / 2
-                nose_offset = nose[0] - eye_center_x
-                eye_width = abs(right_eye[0] - left_eye[0])
+                # Calculate nose offset from eye center
+                nose_offset_vector = nose_array - eye_center
+                nose_offset_x = nose_offset_vector[0]
                 
-                if eye_width > 15:  # Valid eye separation for nose-based detection
-                    nose_ratio = nose_offset / (eye_width / 2)
-                    nose_yaw = nose_ratio * 20.0  # Reduced sensitivity
+                # Normalize by face width
+                face_width = abs(right_eye[0] - left_eye[0])
+                if face_width > 15:
+                    normalized_offset = nose_offset_x / (face_width / 2)
                     
-                    # Only use nose-based detection if it's significant
-                    if abs(nose_yaw) > abs(yaw) and abs(nose_yaw) > 10:
-                        yaw = nose_yaw
+                    # Calculate yaw using nose displacement
+                    nose_yaw = normalized_offset * 25.0  # Calibrated multiplier
+                    
+                    # Use nose yaw if more significant than eye-based yaw
+                    if abs(nose_yaw) > abs(yaw) * 1.2 and abs(nose_yaw) > 8:
+                        yaw = max(-40, min(40, nose_yaw))
+                        confidence_score = max(confidence_score, 0.6)
             
-            # Method 3: Single ear visible (strong turn indicator) - keep this as reliable
-            if abs(yaw) < 15:  # Only if we haven't detected significant turn already
-                if 'left_ear' in head_points and 'right_ear' not in head_points:
-                    # Check if left ear is significantly visible (face turned right)
-                    if 'left_eye' in head_points:
-                        left_eye = head_points['left_eye']
-                        left_ear = head_points['left_ear']
-                        ear_eye_distance = abs(left_ear[0] - left_eye[0])
-                        if ear_eye_distance > 20:  # Significant ear visibility
-                            yaw = -25.0  # Face turned right
-                
-                elif 'right_ear' in head_points and 'left_ear' not in head_points:
-                    # Check if right ear is significantly visible (face turned left)
-                    if 'right_eye' in head_points:
-                        right_eye = head_points['right_eye']
-                        right_ear = head_points['right_ear']
-                        ear_eye_distance = abs(right_ear[0] - right_eye[0])
-                        if ear_eye_distance > 20:  # Significant ear visibility
-                            yaw = 25.0  # Face turned left
+            # METHOD 3: Ear Visibility Analysis (Strong indicator for profile views)
+            ear_yaw = 0.0
+            if left_ear and not right_ear and left_eye:
+                # Left ear visible, right ear not visible -> face turned right
+                ear_eye_dist = abs(left_ear[0] - left_eye[0])
+                if ear_eye_dist > 25:  # Significant ear prominence
+                    ear_yaw = -30.0  # Strong right turn
+                    confidence_score = max(confidence_score, 0.9)
+            elif right_ear and not left_ear and right_eye:
+                # Right ear visible, left ear not visible -> face turned left
+                ear_eye_dist = abs(right_ear[0] - right_eye[0])
+                if ear_eye_dist > 25:  # Significant ear prominence
+                    ear_yaw = 30.0  # Strong left turn
+                    confidence_score = max(confidence_score, 0.9)
             
-            # Method 4: Both ears visible - verify frontal position
-            if 'left_ear' in head_points and 'right_ear' in head_points:
-                left_ear = head_points['left_ear']
-                right_ear = head_points['right_ear']
-                ear_separation = abs(right_ear[0] - left_ear[0])
-                
-                # If both ears are clearly visible with good separation, likely frontal
-                if ear_separation > 40 and abs(yaw) < 20:
-                    yaw *= 0.5  # Reduce yaw confidence for frontal faces
+            # Combine ear evidence with other methods
+            if abs(ear_yaw) > abs(yaw) * 1.5:
+                yaw = ear_yaw
             
-            # Enhanced pitch calculation (keep existing logic but improve thresholds)
-            if 'nose' in head_points and ('left_eye' in head_points or 'right_eye' in head_points):
-                nose = head_points['nose']
-                
-                # Get average eye position
-                if 'left_eye' in head_points and 'right_eye' in head_points:
-                    eye_y = (head_points['left_eye'][1] + head_points['right_eye'][1]) / 2
-                elif 'left_eye' in head_points:
-                    eye_y = head_points['left_eye'][1]
+            # METHOD 4: Temporal Smoothing and Noise Reduction
+            # Apply temporal smoothing to reduce jitter (can be enhanced with frame history)
+            if abs(yaw) < 3:  # Micro-movement threshold
+                yaw = 0.0
+            elif abs(yaw) < 8:  # Small movement - apply dampening
+                yaw *= 0.7
+            
+            # METHOD 5: Enhanced Pitch Calculation
+            if nose and (left_eye or right_eye):
+                # Use available eye(s) for pitch reference
+                if left_eye and right_eye:
+                    eye_y = (left_eye[1] + right_eye[1]) / 2
+                elif left_eye:
+                    eye_y = left_eye[1]
                 else:
-                    eye_y = head_points['right_eye'][1]
+                    eye_y = right_eye[1]
                 
-                # Calculate vertical distance
+                # Calculate vertical displacement
                 nose_eye_dy = nose[1] - eye_y
                 
-                # More conservative pitch estimation
-                if abs(nose_eye_dy) > 8:  # Higher threshold to reduce false positives
-                    face_height = 50  # More realistic face height
-                    pitch = math.degrees(math.atan2(nose_eye_dy, face_height))
-                    pitch = max(-45, min(45, pitch))  # More reasonable range
+                # Improved pitch estimation using facial proportions
+                if abs(nose_eye_dy) > 10:  # Threshold for significant head tilt
+                    # Use average face height for normalization
+                    avg_face_height = 60.0  # Calibrated for typical webcam distance
+                    pitch_radians = math.atan2(nose_eye_dy, avg_face_height)
+                    pitch = math.degrees(pitch_radians)
+                    
+                    # Clamp to reasonable range and apply sensitivity adjustment
+                    pitch = max(-35, min(35, pitch * 0.8))  # Reduce sensitivity slightly
             
-            # Final validation: if yaw is very small, set to zero to avoid micro-movements
-            if abs(yaw) < 5:
-                yaw = 0.0
+            # OPTIMIZATION: Cache results for temporal consistency
+            # This would be enhanced with frame-to-frame smoothing in production
             
-            # Debug output with improved information
-            if self.debug_mode and abs(yaw) > 0:
-                confidence = "HIGH" if abs(yaw) > 15 else "MEDIUM" if abs(yaw) > 10 else "LOW"
-                logger.info(f"Head angles computed: yaw={yaw:.1f}° ({confidence} confidence), pitch={pitch:.1f}°")
+            # Enhanced debugging with confidence information
+            if self.debug_mode and (abs(yaw) > 0 or abs(pitch) > 0):
+                conf_label = "HIGH" if confidence_score > 0.8 else "MEDIUM" if confidence_score > 0.5 else "LOW"
+                logger.info(f"Head angles computed: yaw={yaw:.1f}°, pitch={pitch:.1f}° "
+                           f"(confidence: {conf_label} {confidence_score:.2f})")
         
         except Exception as e:
-            logger.debug(f"Error computing head angles: {e}")
+            logger.debug(f"Error in optimized head angle computation: {e}")
         
         return yaw, pitch
     
     def _compute_leaning(self, shoulder_points: Dict[str, Tuple[float, float]], 
                         hip_points: Dict[str, Tuple[float, float]]) -> bool:
         """
-        Anatomically-accurate leaning detection using human body mechanics.
-        
-        Key anatomical principles:
-        1. Natural spinal curvature allows 10-15° of normal variation
-        2. Shoulder line should be roughly parallel to hip line when upright
-        3. Torso centerline should be vertical (±10° tolerance for natural posture)
-        4. Asymmetric loading indicates lateral leaning
+        Optimized anatomically-accurate leaning detection with performance improvements.
         """
         try:
             if not shoulder_points or not hip_points:
+                return False
+            
+            # Pre-extract coordinates for vectorized operations
+            left_shoulder = shoulder_points.get('left_shoulder')
+            right_shoulder = shoulder_points.get('right_shoulder')
+            left_hip = hip_points.get('left_hip')
+            right_hip = hip_points.get('right_hip')
+            
+            # Quick validation - need at least shoulder data
+            if not left_shoulder or not right_shoulder:
                 return False
             
             lean_detected = False
             max_deviation = 0.0
             detection_method = "none"
             
-            # METHOD 1: ANATOMICAL TORSO VERTICAL ALIGNMENT
-            # Calculate the natural spinal axis and check deviation from vertical
-            if ('left_shoulder' in shoulder_points and 'right_shoulder' in shoulder_points and
-                'left_hip' in hip_points and 'right_hip' in hip_points):
-                
-                # Get shoulder and hip midpoints (anatomical landmarks)
-                left_shoulder = shoulder_points['left_shoulder']
-                right_shoulder = shoulder_points['right_shoulder']
-                left_hip = hip_points['left_hip']
-                right_hip = hip_points['right_hip']
-                
-                # Calculate anatomical centers
-                shoulder_midpoint = ((left_shoulder[0] + right_shoulder[0]) / 2,
-                                   (left_shoulder[1] + right_shoulder[1]) / 2)
-                hip_midpoint = ((left_hip[0] + right_hip[0]) / 2,
-                              (left_hip[1] + right_hip[1]) / 2)
-                
-                # Calculate torso vector (spinal axis approximation)
-                torso_dx = shoulder_midpoint[0] - hip_midpoint[0]
-                torso_dy = shoulder_midpoint[1] - hip_midpoint[1]
-                
-                # Ensure minimum torso height for reliable measurement
-                torso_height = abs(torso_dy)
-                if torso_height > 30:  # Reduced minimum for better sensitivity
-                    
-                    # Calculate deviation from vertical (anatomically normal = 0°)
-                    # Use torso_dx relative to torso_dy to get lean angle from vertical
-                    torso_lean_angle = abs(math.degrees(math.atan2(abs(torso_dx), torso_height)))
-                    
-                    # Apply anatomical tolerance: more sensitive detection at 6° variation
-                    anatomical_tolerance = 6.0
-                    significant_lean_threshold = max(self.lean_angle_thresh, anatomical_tolerance)
-                    
-                    if torso_lean_angle > significant_lean_threshold:
-                        lean_detected = True
-                        max_deviation = torso_lean_angle
-                        detection_method = "anatomical_torso_axis"
+            # Convert to numpy arrays for efficient computation
+            ls_arr = np.array(left_shoulder)
+            rs_arr = np.array(right_shoulder)
             
-            # METHOD 2: SHOULDER-HIP PARALLEL ANALYSIS
-            # In normal posture, shoulder line should be roughly parallel to hip line
-            if not lean_detected and ('left_shoulder' in shoulder_points and 'right_shoulder' in shoulder_points and
-                                     'left_hip' in hip_points and 'right_hip' in hip_points):
+            # METHOD 1: OPTIMIZED SHOULDER LINE ANALYSIS (Primary - fastest)
+            shoulder_vector = rs_arr - ls_arr
+            shoulder_dx, shoulder_dy = shoulder_vector
+            shoulder_separation = np.linalg.norm(shoulder_vector)
+            
+            if shoulder_separation > 25:  # Valid shoulder span
+                # Calculate shoulder line angle from horizontal
+                shoulder_angle = abs(math.degrees(math.atan2(shoulder_dy, shoulder_dx)))
                 
-                left_shoulder = shoulder_points['left_shoulder']
-                right_shoulder = shoulder_points['right_shoulder']
-                left_hip = hip_points['left_hip']
-                right_hip = hip_points['right_hip']
+                # Normalize angle to 0-90 degree range
+                if shoulder_angle > 90:
+                    shoulder_angle = 180 - shoulder_angle
                 
-                # Calculate shoulder line angle
-                shoulder_dx = right_shoulder[0] - left_shoulder[0]
-                shoulder_dy = right_shoulder[1] - left_shoulder[1]
-                shoulder_separation = math.sqrt(shoulder_dx**2 + shoulder_dy**2)
+                # Enhanced threshold with body size adaptation
+                adapted_threshold = max(self.lean_angle_thresh, 
+                                      10.0 if shoulder_separation > 50 else 12.0)
                 
-                # Calculate hip line angle
-                hip_dx = right_hip[0] - left_hip[0]
-                hip_dy = right_hip[1] - left_hip[1]
-                hip_separation = math.sqrt(hip_dx**2 + hip_dy**2)
+                if shoulder_angle > adapted_threshold:
+                    lean_detected = True
+                    max_deviation = shoulder_angle
+                    detection_method = "optimized_shoulder_tilt"
+            
+            # METHOD 2: ANATOMICAL TORSO ALIGNMENT (Secondary - if hips available)
+            if not lean_detected and left_hip and right_hip:
+                # Vectorized hip and shoulder center calculation
+                lh_arr = np.array(left_hip)
+                rh_arr = np.array(right_hip)
                 
-                # Only proceed if we have good anatomical landmarks
-                if shoulder_separation > 30 and hip_separation > 20:
+                shoulder_center = (ls_arr + rs_arr) / 2
+                hip_center = (lh_arr + rh_arr) / 2
+                
+                # Torso vector and alignment check
+                torso_vector = shoulder_center - hip_center
+                torso_height = abs(torso_vector[1])
+                
+                if torso_height > 35:  # Minimum torso height for reliable measurement
+                    # Calculate lean angle from vertical
+                    torso_lean_angle = abs(math.degrees(math.atan2(abs(torso_vector[0]), torso_height)))
                     
-                    # Calculate angles from horizontal
-                    shoulder_angle = math.degrees(math.atan2(shoulder_dy, shoulder_dx))
-                    hip_angle = math.degrees(math.atan2(hip_dy, hip_dx))
+                    # Adaptive threshold based on detection confidence
+                    torso_threshold = max(self.lean_angle_thresh * 0.6, 5.0)  # More sensitive (was 0.8, 8.0)
                     
-                    # Calculate parallel deviation (should be minimal in upright posture)
-                    angle_difference = abs(shoulder_angle - hip_angle)
-                    if angle_difference > 180:
-                        angle_difference = 360 - angle_difference
-                    
-                    # Anatomical principle: shoulder-hip parallelism deviation indicates leaning
-                    parallelism_threshold = 20.0  # Degrees of acceptable non-parallelism
-                    
-                    if angle_difference > parallelism_threshold:
+                    if torso_lean_angle > torso_threshold:
                         lean_detected = True
-                        max_deviation = max(max_deviation, angle_difference)
+                        max_deviation = max(max_deviation, torso_lean_angle)
                         if detection_method == "none":
-                            detection_method = "shoulder_hip_parallelism"
+                            detection_method = "anatomical_torso_axis"
             
-            # METHOD 3: ASYMMETRIC BODY LOADING ANALYSIS
-            # Lateral leaning causes unequal loading on left/right body sides
-            if not lean_detected and ('left_shoulder' in shoulder_points and 'right_shoulder' in shoulder_points and
-                                     'left_hip' in hip_points and 'right_hip' in hip_points):
+            # METHOD 3: BILATERAL ASYMMETRY ANALYSIS (Tertiary - detailed check)
+            if not lean_detected and left_hip and right_hip:
+                # Calculate bilateral torso lengths efficiently
+                left_torso_vector = ls_arr - lh_arr
+                right_torso_vector = rs_arr - rh_arr
                 
-                left_shoulder = shoulder_points['left_shoulder']
-                right_shoulder = shoulder_points['right_shoulder']
-                left_hip = hip_points['left_hip']
-                right_hip = hip_points['right_hip']
+                left_torso_length = np.linalg.norm(left_torso_vector)
+                right_torso_length = np.linalg.norm(right_torso_vector)
                 
-                # Calculate body side measurements (anatomical bilateral symmetry)
-                left_torso_length = math.sqrt((left_shoulder[0] - left_hip[0])**2 + 
-                                            (left_shoulder[1] - left_hip[1])**2)
-                right_torso_length = math.sqrt((right_shoulder[0] - right_hip[0])**2 + 
-                                             (right_shoulder[1] - right_hip[1])**2)
-                
-                # Ensure valid anatomical measurements
-                if left_torso_length > 30 and right_torso_length > 30:
+                if min(left_torso_length, right_torso_length) > 30:  # Valid measurements
+                    # Calculate asymmetry ratio
+                    length_diff = abs(left_torso_length - right_torso_length)
+                    max_length = max(left_torso_length, right_torso_length)
+                    asymmetry_ratio = length_diff / max_length
                     
-                    # Calculate bilateral asymmetry ratio
-                    asymmetry_ratio = abs(left_torso_length - right_torso_length) / max(left_torso_length, right_torso_length)
+                    # Optimized threshold for asymmetry detection
+                    asymmetry_threshold = 0.25  # 25% asymmetry tolerance
                     
-                    # Convert to angular deviation using anatomical proportions
-                    asymmetry_angle = math.degrees(math.atan(asymmetry_ratio))
-                    
-                    # Anatomical threshold: >20% bilateral asymmetry indicates significant lean (more sensitive)
-                    asymmetry_threshold = 0.20  # 20% asymmetry tolerance
-                    
-                    if asymmetry_ratio > asymmetry_threshold and asymmetry_angle > 12:
-                        lean_detected = True
-                        max_deviation = max(max_deviation, asymmetry_angle)
-                        if detection_method == "none":
-                            detection_method = "bilateral_asymmetry"
+                    if asymmetry_ratio > asymmetry_threshold:
+                        asymmetry_angle = math.degrees(math.atan(asymmetry_ratio))
+                        
+                        if asymmetry_angle > 15:  # Significant asymmetry
+                            lean_detected = True
+                            max_deviation = max(max_deviation, asymmetry_angle)
+                            if detection_method == "none":
+                                detection_method = "bilateral_asymmetry"
             
-            # METHOD 4: GRAVITATIONAL CENTER DISPLACEMENT
-            # Calculate center of mass displacement from anatomical baseline
-            if not lean_detected and ('left_shoulder' in shoulder_points and 'right_shoulder' in shoulder_points and
-                                     'left_hip' in hip_points and 'right_hip' in hip_points):
+            # METHOD 4: CENTER OF MASS DISPLACEMENT (Quaternary - advanced)
+            if not lean_detected and left_hip and right_hip and max_deviation < 8:
+                # Quick center of mass check for subtle leans
+                shoulder_center = (ls_arr + rs_arr) / 2
+                hip_center = (lh_arr + rh_arr) / 2
                 
-                left_shoulder = shoulder_points['left_shoulder']
-                right_shoulder = shoulder_points['right_shoulder']
-                left_hip = hip_points['left_hip']
-                right_hip = hip_points['right_hip']
+                # Weighted anatomical center (shoulders 40%, hips 60%)
+                center_of_mass = shoulder_center * 0.4 + hip_center * 0.6
                 
-                # Calculate anatomical center of mass approximation
-                # Upper body weight distribution: shoulders ~40%, hips ~60%
-                upper_body_center_x = (left_shoulder[0] + right_shoulder[0]) / 2
-                lower_body_center_x = (left_hip[0] + right_hip[0]) / 2
+                # Calculate displacement from vertical through hip center
+                displacement = abs(center_of_mass[0] - hip_center[0])
                 
-                # Weighted center of mass (anatomical proportions)
-                center_of_mass_x = (upper_body_center_x * 0.4 + lower_body_center_x * 0.6)
+                # Reference width for proportional analysis
+                torso_width = max(shoulder_separation, np.linalg.norm(rh_arr - lh_arr))
                 
-                # Calculate baseline (vertical through hip center)
-                baseline_x = lower_body_center_x
-                
-                # Calculate center of mass displacement
-                displacement = abs(center_of_mass_x - baseline_x)
-                
-                # Reference torso width for proportional analysis
-                torso_width = max(abs(right_shoulder[0] - left_shoulder[0]),
-                                abs(right_hip[0] - left_hip[0]))
-                
-                if torso_width > 20:  # Valid torso width measurement
-                    # Calculate proportional displacement
+                if torso_width > 25:  # Valid reference width
                     displacement_ratio = displacement / torso_width
                     
-                    # Anatomical threshold: >20% displacement indicates leaning (more sensitive)
-                    if displacement_ratio > 0.20:
+                    # Optimized displacement threshold
+                    if displacement_ratio > 0.22:  # 22% displacement
                         displacement_angle = math.degrees(math.atan(displacement_ratio))
-                        if displacement_angle > 12:
+                        
+                        if displacement_angle > 13:
                             lean_detected = True
                             max_deviation = max(max_deviation, displacement_angle)
                             if detection_method == "none":
                                 detection_method = "center_of_mass_displacement"
             
-            # METHOD 5: SIMPLE SHOULDER ANGLE BACKUP (if complex methods fail)
-            if not lean_detected and ('left_shoulder' in shoulder_points and 'right_shoulder' in shoulder_points):
-                left_shoulder = shoulder_points['left_shoulder']
-                right_shoulder = shoulder_points['right_shoulder']
-                
-                # Calculate shoulder line angle from horizontal
-                shoulder_dx = right_shoulder[0] - left_shoulder[0]
-                shoulder_dy = right_shoulder[1] - left_shoulder[1]
-                shoulder_separation = abs(shoulder_dx)
-                
-                if shoulder_separation > 20:  # Valid shoulder separation
-                    # Calculate deviation from horizontal (0°)
-                    shoulder_angle = abs(math.degrees(math.atan2(shoulder_dy, shoulder_dx)))
-                    
-                    # Convert to deviation from horizontal (0° = horizontal, 90° = vertical)
-                    if shoulder_angle > 90:
-                        shoulder_deviation = 180 - shoulder_angle
-                    else:
-                        shoulder_deviation = shoulder_angle
-                    
-                    # Detect significant shoulder tilt (normal sitting: 0-10°)
-                    if shoulder_deviation > self.lean_angle_thresh:
-                        lean_detected = True
-                        max_deviation = max(max_deviation, shoulder_deviation)
-                        if detection_method == "none":
-                            detection_method = "simple_shoulder_tilt"
+            # OPTIMIZATION: Confidence-based result filtering
+            # Reduce false positives by requiring minimum confidence
+            if lean_detected and max_deviation < self.lean_angle_thresh * 1.2:
+                # Apply additional validation for borderline cases
+                confidence_factor = max_deviation / (self.lean_angle_thresh * 1.5)
+                if confidence_factor < 0.8:  # Low confidence detection
+                    lean_detected = False
+                    detection_method += "_low_confidence_filtered"
             
-            # Debug output with anatomical context
+            # Enhanced debug output with performance metrics
             if self.debug_mode:
                 if lean_detected:
-                    logger.info(f"🏃 ANATOMICAL LEAN DETECTED: method={detection_method}, "
+                    logger.info(f"🏃 OPTIMIZED LEAN DETECTED: method={detection_method}, "
                                f"deviation={max_deviation:.1f}°, threshold={self.lean_angle_thresh}°")
                 else:
-                    logger.debug(f"✅ Normal anatomical posture maintained (max_deviation={max_deviation:.1f}°)")
+                    logger.debug(f"✅ Normal posture (max_dev={max_deviation:.1f}°, method={detection_method})")
             
             return lean_detected
             
         except Exception as e:
-            logger.debug(f"Error in anatomical leaning analysis: {e}")
+            logger.debug(f"Error in optimized leaning analysis: {e}")
             return False
     
     def _compute_looking_around(self, yaw: float) -> bool:

@@ -1,0 +1,89 @@
+{
+  "pose_detection": {
+    "gesture_detection": {
+      "min_confidence": 0.35,
+      "bbox_area_range": [
+        0.05,
+        0.8
+      ],
+      "aspect_ratio_range": [
+        0.3,
+        3.5
+      ],
+      "center_bias_x": 0.5,
+      "center_bias_y": 0.45,
+      "spatial_tolerance": 0.15
+    },
+    "looking_detection": {
+      "min_confidence": 0.4,
+      "bbox_area_range": [
+        0.08,
+        0.6
+      ],
+      "head_region_focus": true,
+      "center_bias_x": 0.5,
+      "center_bias_y": 0.35,
+      "spatial_tolerance": 0.12
+    },
+    "normal_baseline": {
+      "min_confidence": 0.3,
+      "bbox_area_range": [
+        0.06,
+        0.9
+      ],
+      "stable_center_threshold": 0.1,
+      "aspect_ratio_stable": [
+        0.4,
+        2.5
+      ]
+    }
+  },
+  "behavioral_analysis": {
+    "gesture_persistence_frames": 5,
+    "looking_persistence_frames": 7,
+    "normal_stability_frames": 10,
+    "transition_smoothing": 3,
+    "confidence_accumulation": true
+  },
+  "enhanced_features": {
+    "spatial_consistency_weight": 0.3,
+    "temporal_consistency_weight": 0.4,
+    "confidence_weight": 0.3,
+    "multi_behavior_penalty": 0.2
+  },
+  "Left Hand Gesture_specific": {
+    "expected_center_x": 0.5017574584960937,
+    "expected_center_y": 0.5722998128255209,
+    "size_variance": 0.15677251478314255,
+    "confidence_boost": 0.1,
+    "stability_factor": 0.828438242386149
+  },
+  "Looking Left_specific": {
+    "expected_center_x": 0.4891065474483945,
+    "expected_center_y": 0.5832175279529817,
+    "size_variance": 0.1120911372811036,
+    "confidence_boost": 0.1,
+    "stability_factor": 0.8028237749103455
+  },
+  "Looking Right_specific": {
+    "expected_center_x": 0.5425262720352563,
+    "expected_center_y": 0.5648899739583333,
+    "size_variance": 0.13402630299776325,
+    "confidence_boost": 0.1,
+    "stability_factor": 0.7736705323265809
+  },
+  "Right Hand Gesture_specific": {
+    "expected_center_x": 0.4858891302384394,
+    "expected_center_y": 0.5691643108742774,
+    "size_variance": 0.1450223107289674,
+    "confidence_boost": 0.1,
+    "stability_factor": 0.8017752979617166
+  },
+  "Normal_specific": {
+    "expected_center_x": 0.5221810413707386,
+    "expected_center_y": 0.5524689275568182,
+    "size_variance": 0.12045582497474074,
+    "confidence_boost": 0.1,
+    "stability_factor": 0.777803720234434
+  }
+}

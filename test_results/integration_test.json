@@ -1,0 +1,80 @@
+{
+  "system_status": {
+    "system_type": "Integrated CheatGPT with Realistic LSTM",
+    "lstm_model": {
+      "type": "Enhanced Realistic LSTM",
+      "accuracy": 88.64,
+      "loaded": true,
+      "classes": [
+        "mixed_suspicious",
+        "normal",
+        "suspicious_gesture",
+        "suspicious_looking"
+      ],
+      "parameters": 228008
+    },
+    "coco_enhancement": {
+      "enabled": true,
+      "spatial_patterns": 5,
+      "behavior_lookup": 5
+    },
+    "performance_metrics": {
+      "total_frames": 5,
+      "detections_made": 5,
+      "lstm_predictions": 5,
+      "fallback_predictions": 0,
+      "average_confidence": 0.8627982091903685,
+      "behavior_counts": {
+        "normal": 0,
+        "suspicious_gesture": 3,
+        "suspicious_looking": 2,
+        "mixed_suspicious": 0
+      }
+    },
+    "features": {
+      "realistic_accuracy": true,
+      "spatial_analysis": true,
+      "temporal_consistency": true,
+      "multi_task_learning": true,
+      "confidence_calibration": true
+    }
+  },
+  "test_results": [
+    {
+      "scenario": "Normal Behavior Sequence",
+      "predicted": "suspicious_looking",
+      "expected": "normal",
+      "confidence": 0.6131442189216614,
+      "match": false
+    },
+    {
+      "scenario": "Gesture Detection Sequence",
+      "predicted": "suspicious_gesture",
+      "expected": "suspicious_gesture",
+      "confidence": 0.95,
+      "match": true
+    },
+    {
+      "scenario": "Looking Behavior Sequence",
+      "predicted": "suspicious_gesture",
+      "expected": "suspicious_looking",
+      "confidence": 0.95,
+      "match": false
+    },
+    {
+      "scenario": "Mixed Suspicious Sequence",
+      "predicted": "suspicious_gesture",
+      "expected": "mixed_suspicious",
+      "confidence": 0.95,
+      "match": false
+    },
+    {
+      "scenario": "Transitional Sequence",
+      "predicted": "suspicious_looking",
+      "expected": "suspicious_gesture",
+      "confidence": 0.8508468270301819,
+      "match": false
+    }
+  ],
+  "timestamp": 1756314535.2112715
+}

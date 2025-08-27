@@ -1,0 +1,47 @@
+{
+  "Left Hand Gesture": {
+    "lstm_label": "suspicious_gesture",
+    "confidence_modifier": 1.0,
+    "spatial_weight": 1.0,
+    "expected_duration": [
+      3,
+      8
+    ]
+  },
+  "Looking Left": {
+    "lstm_label": "suspicious_looking",
+    "confidence_modifier": 1.0,
+    "spatial_weight": 1.0,
+    "expected_duration": [
+      5,
+      12
+    ]
+  },
+  "Looking Right": {
+    "lstm_label": "suspicious_looking",
+    "confidence_modifier": 1.0,
+    "spatial_weight": 1.0,
+    "expected_duration": [
+      5,
+      12
+    ]
+  },
+  "Right Hand Gesture": {
+    "lstm_label": "suspicious_gesture",
+    "confidence_modifier": 1.0,
+    "spatial_weight": 1.0,
+    "expected_duration": [
+      3,
+      8
+    ]
+  },
+  "Normal": {
+    "lstm_label": "normal",
+    "confidence_modifier": 1.0,
+    "spatial_weight": 1.0,
+    "expected_duration": [
+      8,
+      20
+    ]
+  }
+}

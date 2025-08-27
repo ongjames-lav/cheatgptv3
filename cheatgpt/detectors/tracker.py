@@ -158,7 +158,7 @@ class Tracker:
     def _associate_detections(self, detection_bboxes: List[List[float]], 
                             predicted_positions: Dict[str, List[float]], 
                             timestamp: float) -> Tuple[Dict[str, int], List[int]]:
-        """Associate detections with existing tracks using distance-based matching."""
+        """Associate detections with existing tracks using improved distance-based matching."""
         
         if not self.tracks or not detection_bboxes:
             return {}, list(range(len(detection_bboxes)))
@@ -169,19 +169,13 @@ class Tracker:
         
         for i, track_id in enumerate(track_ids):
             predicted_bbox = predicted_positions[track_id]
-            track_center = self._get_bbox_center(predicted_bbox)
             
             for j, detection_bbox in enumerate(detection_bboxes):
-                det_center = self._get_bbox_center(detection_bbox)
-                distance = self._calculate_distance(track_center, det_center)
+                # Use improved distance calculation
+                combined_distance = self._calculate_bbox_distance(predicted_bbox, detection_bbox)
                 
-                # Also consider IoU for better matching
-                iou = self._calculate_iou(predicted_bbox, detection_bbox)
-                
-                # Combined distance metric (distance with IoU bonus)
-                combined_distance = distance * (1.0 - iou * 0.5)
-                
-                if combined_distance < self.max_distance:
+                # Apply distance threshold (adjusted for new distance metric)
+                if combined_distance < self.max_distance * 1.5:  # More lenient threshold
                     distance_matrix[i, j] = combined_distance
         
         # Simple greedy assignment (can be improved with Hungarian algorithm)
@@ -242,6 +236,28 @@ class Tracker:
     def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
         """Calculate Euclidean distance between two points."""
         return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+    
+    def _calculate_bbox_distance(self, bbox1: List[float], bbox2: List[float]) -> float:
+        """Calculate distance between two bounding boxes using both center distance and IoU."""
+        # Center distance
+        center1 = self._get_bbox_center(bbox1)
+        center2 = self._get_bbox_center(bbox2)
+        center_dist = self._calculate_distance(center1, center2)
+        
+        # IoU (higher IoU = lower distance)
+        iou = self._calculate_iou(bbox1, bbox2)
+        iou_factor = 1.0 - iou  # Convert to distance metric
+        
+        # Size similarity factor
+        area1 = (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
+        area2 = (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
+        size_ratio = min(area1, area2) / max(area1, area2) if max(area1, area2) > 0 else 0
+        size_factor = 1.0 - size_ratio
+        
+        # Combined distance (weighted)
+        combined_distance = (0.5 * center_dist) + (0.3 * iou_factor * 100) + (0.2 * size_factor * 100)
+        
+        return combined_distance
     
     def _calculate_iou(self, bbox1: List[float], bbox2: List[float]) -> float:
         """Calculate Intersection over Union of two bounding boxes."""
