@@ -73,6 +73,7 @@ class Engine:
         # Temporal analysis tracking (per-person)
         self.looking_around_history = {}  # Track timestamps of looking detections per person
         self.leaning_history = {}  # Track timestamps of leaning detections per person
+        self.gesture_history = {}  # Track timestamps of gesture detections per person
         self.cheating_cooldown = {}  # Track IDs to prevent spam
         
         # Combined behavior tracking (legacy support)
@@ -301,6 +302,7 @@ class Engine:
                         'lean_flag': False,
                         'look_flag': False,
                         'phone_flag': False,
+                        'gesture_flag': False,
                         'lean_angle': 0.0,
                         'head_turn_angle': 0.0,
                         'confidence': 0.5
@@ -344,6 +346,15 @@ class Engine:
             if not self.leaning_history[person_id]:
                 del self.leaning_history[person_id]
         
+        # Clean gesture history for all persons  
+        for person_id in list(self.gesture_history.keys()):
+            self.gesture_history[person_id] = [
+                t for t in self.gesture_history[person_id] 
+                if current_time - t < history_window
+            ]
+            if not self.gesture_history[person_id]:
+                del self.gesture_history[person_id]
+        
         # Clean cheating cooldown
         self.cheating_cooldown = {pid: t for pid, t in self.cheating_cooldown.items() 
                                 if current_time - t < self.cheating_cooldown_duration}
@@ -356,13 +367,14 @@ class Engine:
             # Track current behaviors
             current_looking = pose.get('look_flag', False)
             current_leaning = pose.get('lean_flag', False)
+            current_gesture = pose.get('gesture_flag', False)
             
             # Debug logging for temporal tracking
-            logger.debug(f"🔍 Temporal Debug - Person {person_id}: looking={current_looking}, leaning={current_leaning}, yaw={pose.get('head_turn_angle', 0):.1f}°, lean_angle={pose.get('lean_angle', 0):.1f}°")
+            logger.debug(f"🔍 Temporal Debug - Person {person_id}: looking={current_looking}, leaning={current_leaning}, gesture={current_gesture}, yaw={pose.get('head_turn_angle', 0):.1f}°, lean_angle={pose.get('lean_angle', 0):.1f}°")
             
             # Debug logging for flags in pose data
-            if current_looking or current_leaning:
-                logger.info(f"👀 Temporal tracking flags - Person {person_id}: look_flag={current_looking}, lean_flag={current_leaning}")
+            if current_looking or current_leaning or current_gesture:
+                logger.info(f"👀 Temporal tracking flags - Person {person_id}: look_flag={current_looking}, lean_flag={current_leaning}, gesture_flag={current_gesture}")
             
             # Add to history if behaviors detected
             if current_looking:
@@ -375,19 +387,27 @@ class Engine:
                     self.leaning_history[person_id] = []
                 self.leaning_history[person_id].append(current_time)
                 logger.info(f"🔄 Added leaning detection at {current_time:.1f}s for person {person_id}")
+            if current_gesture:
+                if person_id not in self.gesture_history:
+                    self.gesture_history[person_id] = []
+                self.gesture_history[person_id].append(current_time)
+                logger.info(f"🤚 Added gesture detection at {current_time:.1f}s for person {person_id}")
             
             # Calculate current durations
             looking_duration = 0.0
             leaning_duration = 0.0
+            gesture_duration = 0.0
             
             if person_id in self.looking_around_history:
                 looking_duration = self._calculate_behavior_duration(self.looking_around_history[person_id], current_time)
             if person_id in self.leaning_history:
                 leaning_duration = self._calculate_behavior_duration(self.leaning_history[person_id], current_time)
+            if person_id in self.gesture_history:
+                gesture_duration = self._calculate_behavior_duration(self.gesture_history[person_id], current_time)
             
             # Log temporal progress for any significant duration
-            if looking_duration > 3.0 or leaning_duration > 2.0:
-                logger.warning(f"🕐 TEMPORAL PROGRESS - Person {person_id}: Looking={looking_duration:.1f}s, Leaning={leaning_duration:.1f}s")
+            if looking_duration > 3.0 or leaning_duration > 2.0 or gesture_duration > 3.0:
+                logger.warning(f"🕐 TEMPORAL PROGRESS - Person {person_id}: Looking={looking_duration:.1f}s, Leaning={leaning_duration:.1f}s, Gesture={gesture_duration:.1f}s")
             
             # Check for sustained combined behavior
             if current_looking and current_leaning:
@@ -460,6 +480,43 @@ class Engine:
                     
                     # Update cooldown timestamp to maintain detection state but allow red events
                     self.cheating_cooldown[person_id] = current_time
+            
+            # Check for sustained gesture alone (hands near face for extended time)
+            elif current_gesture:
+                # Duration already calculated above
+                
+                # Log progress for sustained gesture
+                if gesture_duration > 4.0:
+                    logger.info(f"🤚 Gesture Temporal Analysis - Person {person_id}: Gesture={gesture_duration:.1f}s (sustained)")
+                
+                # Escalate sustained gesture alone to cheating after threshold
+                gesture_threshold = 5.0  # 5 seconds for gesture detection
+                if gesture_duration >= gesture_threshold:
+                    # SUSTAINED GESTURE CHEATING - Create event every time to maintain red color
+                    temporal_events.append({
+                        'timestamp': current_time,
+                        'person_id': person_id,
+                        'event_type': 'Sustained Suspicious Gesture',
+                        'severity': 'red',
+                        'confidence': 0.8,
+                        'source': 'temporal_analysis',
+                        'details': f'Sustained suspicious gesture for {gesture_duration:.1f}s (threshold: {gesture_threshold:.1f}s)',
+                        'bbox': pose['bbox'],
+                        'looking_duration': 0,
+                        'leaning_duration': 0,
+                        'gesture_duration': gesture_duration,
+                        'overlap_duration': gesture_duration,
+                        'lean_angle': pose.get('lean_angle', 0),
+                        'head_turn_angle': pose.get('head_turn_angle', 0)
+                    })
+                    
+                    # Only log warning once when first detected to prevent spam
+                    if person_id not in self.cheating_cooldown:
+                        logger.warning(f"🚨 SUSTAINED GESTURE CHEATING DETECTED: Person {person_id} - {gesture_duration:.1f}s of continuous suspicious gestures")
+                        logger.warning(f"🎯 TEMPORAL EVENT CREATED: {temporal_events[-1]['event_type']} with severity {temporal_events[-1]['severity']}")
+                    
+                    # Update cooldown timestamp to maintain detection state but allow red events
+                    self.cheating_cooldown[person_id] = current_time
         
         # Debug: Log temporal events being returned
         if temporal_events:
@@ -523,6 +580,17 @@ class Engine:
                     'details': 'Phone detected - immediate cheating alert',
                     'bbox': pose['bbox']
                 })
+            elif pose['gesture_flag']:
+                events.append({
+                    'timestamp': timestamp,
+                    'person_id': person_id,
+                    'event_type': 'Suspicious Gesture',
+                    'severity': 'yellow',
+                    'confidence': 0.7,
+                    'source': 'immediate_rules',
+                    'details': 'Hands near face or raised hands detected',
+                    'bbox': pose['bbox']
+                })
             elif pose['lean_flag'] and pose['look_flag']:
                 events.append({
                     'timestamp': timestamp,
@@ -576,7 +644,7 @@ class Engine:
                     behavior_vector = create_enhanced_behavior_vector(pose)
                     current_behaviors.append(behavior_vector.tolist())
                 else:
-                    # Standard 9-dimensional feature vector
+                    # Standard 10-dimensional feature vector (updated with gesture detection)
                     lean_angle = pose.get('lean_angle', 0.0)
                     head_angle = pose.get('head_turn_angle', 0.0)
                     confidence = pose.get('confidence', 0.5)
@@ -585,6 +653,7 @@ class Engine:
                         float(pose['lean_flag']),                           # Binary lean flag
                         float(pose['look_flag']),                           # Binary look flag  
                         float(pose['phone_flag']),                          # Binary phone flag
+                        float(pose.get('gesture_flag', False)),             # Binary gesture flag
                         np.clip(lean_angle / 45.0, -1.0, 1.0),            # Normalized lean angle [-1,1]
                         np.clip(head_angle / 90.0, -1.0, 1.0),            # Normalized head angle [-1,1]
                         np.clip(confidence, 0.0, 1.0),                    # Clipped confidence [0,1]

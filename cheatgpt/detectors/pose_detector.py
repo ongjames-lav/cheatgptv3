@@ -229,6 +229,7 @@ class PoseDetector:
                         head_points = self._extract_head_keypoints(person_keypoints, keypoint_confs)
                         shoulder_points = self._extract_shoulder_keypoints(person_keypoints, keypoint_confs)
                         hip_points = self._extract_hip_keypoints(person_keypoints, keypoint_confs)
+                        arm_points = self._extract_arm_keypoints(person_keypoints, keypoint_confs)
                         
                         # OPTIMIZATION 7: Skip processing if insufficient keypoints
                         min_keypoints_required = 3
@@ -241,6 +242,7 @@ class PoseDetector:
                         lean_flag = self._compute_leaning(shoulder_points, hip_points)
                         look_flag = self._compute_looking_around(yaw)
                         phone_flag = self._compute_phone_near(bbox, phone_detections)
+                        gesture_flag = self._compute_suspicious_gesture(arm_points, head_points)
                         
                         # OPTIMIZATION 9: Enhanced pose estimate with additional metadata
                         pose_estimate = {
@@ -251,6 +253,7 @@ class PoseDetector:
                             'lean_flag': lean_flag,
                             'look_flag': look_flag,
                             'phone_flag': phone_flag,
+                            'gesture_flag': gesture_flag,
                             'lean_angle': abs(self._calculate_lean_angle(shoulder_points, hip_points)),
                             'head_turn_angle': abs(yaw),
                             'confidence': conf,
@@ -368,6 +371,23 @@ class PoseDetector:
                         hip_points[name] = (float(x), float(y))
         
         return hip_points
+    
+    def _extract_arm_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
+        """Extract arm keypoints (elbows and wrists) from pose data."""
+        arm_points = {}
+        
+        for name, idx in [('left_elbow', self.KEYPOINTS['left_elbow']),
+                         ('right_elbow', self.KEYPOINTS['right_elbow']),
+                         ('left_wrist', self.KEYPOINTS['left_wrist']),
+                         ('right_wrist', self.KEYPOINTS['right_wrist'])]:
+            if idx < len(keypoints):
+                x, y = keypoints[idx]
+                # Use optimized confidence threshold
+                if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
+                    if x > 0 and y > 0:  # Valid keypoint
+                        arm_points[name] = (float(x), float(y))
+        
+        return arm_points
     
     def _compute_head_angles(self, head_points: Dict[str, Tuple[float, float]]) -> Tuple[float, float]:
         """Optimized head angle computation with multi-method validation and temporal smoothing."""
@@ -505,10 +525,15 @@ class PoseDetector:
     def _compute_leaning(self, shoulder_points: Dict[str, Tuple[float, float]], 
                         hip_points: Dict[str, Tuple[float, float]]) -> bool:
         """
-        Optimized anatomically-accurate leaning detection with performance improvements.
+        Enhanced anatomically-accurate leaning detection optimized for cheating behavior detection.
         """
         try:
+            # Debug input data
+            logger.debug(f"🏃 Lean detection - Shoulder points: {shoulder_points}")
+            logger.debug(f"🏃 Lean detection - Hip points: {hip_points}")
+            
             if not shoulder_points or not hip_points:
+                logger.debug("🏃 No shoulder or hip points for lean analysis")
                 return False
             
             # Pre-extract coordinates for vectorized operations
@@ -517,41 +542,147 @@ class PoseDetector:
             left_hip = hip_points.get('left_hip')
             right_hip = hip_points.get('right_hip')
             
+            logger.debug(f"🏃 Extracted keypoints - LS: {left_shoulder}, RS: {right_shoulder}, LH: {left_hip}, RH: {right_hip}")
+            
             # Quick validation - need at least shoulder data
             if not left_shoulder or not right_shoulder:
+                logger.debug("🏃 Missing shoulder keypoints for lean detection")
                 return False
             
             lean_detected = False
             max_deviation = 0.0
             detection_method = "none"
+            lean_direction = "none"
             
             # Convert to numpy arrays for efficient computation
             ls_arr = np.array(left_shoulder)
             rs_arr = np.array(right_shoulder)
             
-            # METHOD 1: OPTIMIZED SHOULDER LINE ANALYSIS (Primary - fastest)
+            # METHOD 1: ENHANCED SHOULDER LINE ANALYSIS (Primary - fastest)
             shoulder_vector = rs_arr - ls_arr
             shoulder_dx, shoulder_dy = shoulder_vector
             shoulder_separation = np.linalg.norm(shoulder_vector)
             
+            logger.debug(f"🏃 Shoulder analysis - Vector: ({shoulder_dx:.1f}, {shoulder_dy:.1f}), Separation: {shoulder_separation:.1f}")
+            
             if shoulder_separation > 25:  # Valid shoulder span
                 # Calculate shoulder line angle from horizontal
-                shoulder_angle = abs(math.degrees(math.atan2(shoulder_dy, shoulder_dx)))
+                shoulder_angle = math.degrees(math.atan2(shoulder_dy, shoulder_dx))
+                shoulder_tilt = abs(shoulder_angle)
                 
                 # Normalize angle to 0-90 degree range
-                if shoulder_angle > 90:
-                    shoulder_angle = 180 - shoulder_angle
+                if shoulder_tilt > 90:
+                    shoulder_tilt = 180 - shoulder_tilt
+                
+                logger.debug(f"🏃 Shoulder angle: {shoulder_angle:.1f}°, Tilt: {shoulder_tilt:.1f}°")
+                
+                # Determine lean direction for cheating analysis
+                if shoulder_angle > 2:  # More sensitive - Left shoulder higher (leaning right)
+                    lean_direction = "right"
+                elif shoulder_angle < -2:  # More sensitive - Right shoulder higher (leaning left)
+                    lean_direction = "left"
+                
+                logger.debug(f"🏃 Lean direction from shoulders: {lean_direction}")
                 
                 # Enhanced threshold with body size adaptation
-                adapted_threshold = max(self.lean_angle_thresh, 
-                                      10.0 if shoulder_separation > 50 else 12.0)
+                # More sensitive for cheating detection scenarios
+                adapted_threshold = max(self.lean_angle_thresh * 0.6, 2.0)  # Even more sensitive threshold
                 
-                if shoulder_angle > adapted_threshold:
+                logger.debug(f"🏃 Shoulder tilt {shoulder_tilt:.1f}° vs threshold {adapted_threshold:.1f}°")
+                
+                if shoulder_tilt > adapted_threshold:
                     lean_detected = True
-                    max_deviation = shoulder_angle
+                    max_deviation = shoulder_tilt
                     detection_method = "optimized_shoulder_tilt"
+                    logger.info(f"🏃 LEAN DETECTED via shoulder tilt: {shoulder_tilt:.1f}° > {adapted_threshold:.1f}°, direction: {lean_direction}")
+                else:
+                    logger.debug(f"🏃 Shoulder tilt {shoulder_tilt:.1f}° below threshold {adapted_threshold:.1f}°")
             
-            # METHOD 2: ANATOMICAL TORSO ALIGNMENT (Secondary - if hips available)
+            # METHOD 2: ENHANCED ANATOMICAL TORSO ALIGNMENT (Secondary - if hips available)
+            if left_hip and right_hip:
+                # Vectorized hip and shoulder center calculation
+                lh_arr = np.array(left_hip)
+                rh_arr = np.array(right_hip)
+                
+                shoulder_center = (ls_arr + rs_arr) / 2
+                hip_center = (lh_arr + rh_arr) / 2
+                
+                # Torso vector and alignment check
+                torso_vector = shoulder_center - hip_center
+                torso_height = abs(torso_vector[1])
+                
+                if torso_height > 30:  # Reduced minimum torso height for better detection
+                    # Calculate lean angle from vertical (enhanced for cheating detection)
+                    torso_lean_angle = abs(math.degrees(math.atan2(abs(torso_vector[0]), torso_height)))
+                    
+                    # More sensitive threshold for suspicious posture detection
+                    torso_threshold = max(self.lean_angle_thresh * 0.5, 3.5)  # Even more sensitive
+                    
+                    if torso_lean_angle > torso_threshold:
+                        lean_detected = True
+                        max_deviation = max(max_deviation, torso_lean_angle)
+                        if detection_method == "none":
+                            detection_method = "anatomical_torso_axis"
+                        
+                        # Enhance direction detection for torso lean
+                        if torso_vector[0] > 10:  # Leaning right
+                            lean_direction = "right" if lean_direction == "none" else lean_direction
+                        elif torso_vector[0] < -10:  # Leaning left
+                            lean_direction = "left" if lean_direction == "none" else lean_direction
+            
+            # METHOD 3: ENHANCED BILATERAL ASYMMETRY ANALYSIS (Tertiary - detailed check)
+            if left_hip and right_hip:
+                # Calculate bilateral torso lengths efficiently
+                left_torso_vector = ls_arr - lh_arr
+                right_torso_vector = rs_arr - rh_arr
+                
+                left_torso_length = np.linalg.norm(left_torso_vector)
+                right_torso_length = np.linalg.norm(right_torso_vector)
+                
+                if min(left_torso_length, right_torso_length) > 25:  # Reduced for better detection
+                    # Calculate asymmetry ratio
+                    length_diff = abs(left_torso_length - right_torso_length)
+                    max_length = max(left_torso_length, right_torso_length)
+                    asymmetry_ratio = length_diff / max_length
+                    
+                    # More sensitive threshold for asymmetry detection
+                    asymmetry_threshold = 0.2  # Reduced from 0.25 to 0.2 (20% asymmetry tolerance)
+                    
+                    if asymmetry_ratio > asymmetry_threshold:
+                        asymmetry_angle = math.degrees(math.atan(asymmetry_ratio))
+                        
+                        if asymmetry_angle > 12:  # Reduced from 15 to 12 degrees
+                            lean_detected = True
+                            max_deviation = max(max_deviation, asymmetry_angle)
+                            if detection_method == "none":
+                                detection_method = "bilateral_asymmetry"
+                            
+                            # Determine direction based on which side is longer/shorter
+                            if left_torso_length > right_torso_length:
+                                lean_direction = "left" if lean_direction == "none" else lean_direction
+                            else:
+                                lean_direction = "right" if lean_direction == "none" else lean_direction
+            
+            # METHOD 4: NEW - SUSPICIOUS CHEATING POSTURE DETECTION
+            # Detect specific postures commonly associated with cheating behavior
+            if left_hip and right_hip and shoulder_separation > 30:
+                # Calculate overall body axis deviation
+                body_axis_vector = shoulder_center - hip_center
+                body_axis_angle = abs(math.degrees(math.atan2(body_axis_vector[0], abs(body_axis_vector[1]))))
+                
+                # Check for forward lean combined with side lean (common cheating posture)
+                forward_lean_threshold = 8.0  # Forward lean detection
+                side_lean_threshold = 6.0     # Side lean detection
+                
+                # Calculate forward lean (looking down at paper/device)
+                if torso_height > 25:
+                    forward_component = abs(torso_vector[1]) - abs(torso_vector[0])
+                    if forward_component < torso_height * 0.7:  # Significant forward lean
+                        if body_axis_angle > side_lean_threshold:
+                            lean_detected = True
+                            max_deviation = max(max_deviation, body_axis_angle)
+                            detection_method = "suspicious_cheating_posture"
+                            logger.debug(f"🚨 Suspicious cheating posture detected: forward+side lean, angle={body_axis_angle:.1f}°")
             if not lean_detected and left_hip and right_hip:
                 # Vectorized hip and shoulder center calculation
                 lh_arr = np.array(left_hip)
@@ -632,27 +763,74 @@ class PoseDetector:
                             if detection_method == "none":
                                 detection_method = "center_of_mass_displacement"
             
-            # OPTIMIZATION: Confidence-based result filtering
-            # Reduce false positives by requiring minimum confidence
-            if lean_detected and max_deviation < self.lean_angle_thresh * 1.2:
-                # Apply additional validation for borderline cases
-                confidence_factor = max_deviation / (self.lean_angle_thresh * 1.5)
-                if confidence_factor < 0.8:  # Low confidence detection
-                    lean_detected = False
-                    detection_method += "_low_confidence_filtered"
+            # METHOD 5: NEW - TEMPORAL LEANING PATTERN ANALYSIS
+            # Track suspicious leaning patterns over time for enhanced detection
+            current_time = time.time()
+            person_id = getattr(self, 'current_person_id', 'default')
+            
+            if not hasattr(self, 'lean_history'):
+                self.lean_history = {}
+            
+            if person_id not in self.lean_history:
+                self.lean_history[person_id] = {
+                    'angles': [],
+                    'directions': [],
+                    'timestamps': [],
+                    'max_consecutive': 0
+                }
+            
+            history = self.lean_history[person_id]
+            
+            # Clean old history (keep last 10 seconds)
+            cutoff_time = current_time - 10.0
+            valid_indices = [i for i, t in enumerate(history['timestamps']) if t > cutoff_time]
+            
+            if valid_indices:
+                history['angles'] = [history['angles'][i] for i in valid_indices]
+                history['directions'] = [history['directions'][i] for i in valid_indices]
+                history['timestamps'] = [history['timestamps'][i] for i in valid_indices]
+            else:
+                history['angles'] = []
+                history['directions'] = []
+                history['timestamps'] = []
+            
+            # Add current measurement
+            if max_deviation > 0:
+                history['angles'].append(max_deviation)
+                history['directions'].append(lean_direction)
+                history['timestamps'].append(current_time)
+                
+                # Check for sustained lean pattern (suspicious behavior)
+                if len(history['angles']) >= 3:
+                    recent_angles = history['angles'][-3:]
+                    recent_directions = history['directions'][-3:]
+                    
+                    # Check for consistent leaning in same direction (cheating pattern)
+                    if (len(set(recent_directions)) == 1 and  # Same direction
+                        all(angle > 4.0 for angle in recent_angles)):  # Consistent significant lean
+                        
+                        sustained_lean_angle = sum(recent_angles) / len(recent_angles)
+                        if sustained_lean_angle > 6.0:  # Enhanced threshold for sustained lean
+                            lean_detected = True
+                            max_deviation = max(max_deviation, sustained_lean_angle)
+                            detection_method = "sustained_suspicious_lean"
+                            logger.debug(f"🚨 Sustained suspicious lean detected: {lean_direction} direction, avg={sustained_lean_angle:.1f}°")
             
             # Enhanced debug output with performance metrics
             if self.debug_mode:
                 if lean_detected:
-                    logger.info(f"🏃 OPTIMIZED LEAN DETECTED: method={detection_method}, "
-                               f"deviation={max_deviation:.1f}°, threshold={self.lean_angle_thresh}°")
+                    logger.info(f"🏃 ENHANCED LEAN DETECTED: method={detection_method}, "
+                               f"deviation={max_deviation:.1f}°, direction={lean_direction}, threshold={self.lean_angle_thresh}°")
                 else:
                     logger.debug(f"✅ Normal posture (max_dev={max_deviation:.1f}°, method={detection_method})")
+            
+            # Final debug summary
+            logger.debug(f"🏃 Lean detection result: {lean_detected}, max_deviation: {max_deviation:.1f}°, method: {detection_method}, direction: {lean_direction}")
             
             return lean_detected
             
         except Exception as e:
-            logger.debug(f"Error in optimized leaning analysis: {e}")
+            logger.debug(f"Error in enhanced leaning analysis: {e}")
             return False
     
     def _compute_looking_around(self, yaw: float) -> bool:
@@ -788,3 +966,112 @@ class PoseDetector:
             'cuda_available': torch.cuda.is_available(),
             'force_cpu': self.force_cpu
         }
+    
+    def _compute_suspicious_gesture(self, arm_points: Dict[str, Tuple[float, float]], 
+                                   head_points: Dict[str, Tuple[float, float]]) -> bool:
+        """
+        Detect suspicious gestures like hands near face, touching head, or gesturing.
+        """
+        try:
+            # Debug logging
+            logger.debug(f"🤚 Gesture analysis - Arm points: {len(arm_points)} detected: {list(arm_points.keys())}")
+            logger.debug(f"🤚 Gesture analysis - Head points: {len(head_points)} detected: {list(head_points.keys())}")
+            
+            if not arm_points or not head_points:
+                logger.debug("🤚 No arm or head points for gesture analysis")
+                return False
+            
+            # Get hand/wrist positions
+            left_wrist = arm_points.get('left_wrist')
+            right_wrist = arm_points.get('right_wrist')
+            
+            logger.debug(f"🤚 Wrist positions - Left: {left_wrist}, Right: {right_wrist}")
+            
+            # Get head region (use nose as center, or estimate from available points)
+            head_center = None
+            if 'nose' in head_points:
+                head_center = head_points['nose']
+                logger.debug(f"🤚 Using nose as head center: {head_center}")
+            elif 'left_eye' in head_points and 'right_eye' in head_points:
+                # Estimate head center from eyes
+                left_eye = head_points['left_eye']
+                right_eye = head_points['right_eye']
+                head_center = ((left_eye[0] + right_eye[0]) / 2, (left_eye[1] + right_eye[1]) / 2)
+                logger.debug(f"🤚 Estimated head center from eyes: {head_center}")
+            
+            if not head_center:
+                logger.debug("🤚 No head center available for gesture analysis")
+                return False
+            
+            gesture_detected = False
+            detection_reason = ""
+            
+            # Calculate person/head scale for adaptive thresholds
+            if 'left_eye' in head_points and 'right_eye' in head_points:
+                eye_distance = abs(head_points['left_eye'][0] - head_points['right_eye'][0])
+                # Use eye distance to estimate head size and create adaptive threshold
+                # More conservative threshold for realistic cheating detection
+                head_radius = max(eye_distance * 2.5, 140)  # Reduced multiplier and increased minimum
+                logger.debug(f"🤚 Adaptive gesture detection using eye_distance: {eye_distance:.1f}px, head_radius: {head_radius:.1f}px")
+            else:
+                head_radius = 200  # More conservative default radius
+                logger.debug(f"🤚 Default gesture detection using head_radius: {head_radius}px")
+            
+            # ADVANCED GESTURE DETECTION - Multiple pattern checking
+            
+            # Pattern 1: Hand near face/head (classic cheating gesture)
+            for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
+                if wrist_pos:
+                    # Calculate distance from wrist to head center
+                    distance = math.sqrt((wrist_pos[0] - head_center[0])**2 + 
+                                       (wrist_pos[1] - head_center[1])**2)
+                    
+                    logger.debug(f"🤚 Distance check: {wrist_name} distance to head: {distance:.1f}px (threshold: {head_radius}px)")
+                    
+                    if distance < head_radius:
+                        gesture_detected = True
+                        detection_reason = f"{wrist_name}_near_head"
+                        logger.info(f"🤚 SUSPICIOUS GESTURE: {wrist_name} near head (distance: {distance:.1f}px)")
+                        break
+            
+            # Pattern 2: Hand in suspicious face region (conservative detection)
+            if not gesture_detected:
+                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
+                    if wrist_pos and head_center:
+                        # Check if hand is in face region (conservative area)
+                        horizontal_distance = abs(wrist_pos[0] - head_center[0])
+                        vertical_distance = abs(wrist_pos[1] - head_center[1])
+                        
+                        # Create conservative cheating gesture detection zone
+                        face_width = head_radius * 1.2   # More conservative horizontal area
+                        face_height = head_radius * 1.5  # More conservative vertical area
+                        
+                        if horizontal_distance < face_width and vertical_distance < face_height:
+                            # Stricter check: hand should be close to head level
+                            if wrist_pos[1] >= head_center[1] - 30 and wrist_pos[1] <= head_center[1] + 100:  # Tighter range
+                                gesture_detected = True
+                                detection_reason = f"{wrist_name}_in_face_region"
+                                logger.info(f"🤚 SUSPICIOUS GESTURE: {wrist_name} in face region (h:{horizontal_distance:.1f}, v:{vertical_distance:.1f})")
+                                break
+            
+            # Pattern 3: Hand raised high (suspicious gesturing)
+            if not gesture_detected:
+                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
+                    if wrist_pos and head_center:
+                        # Check if hand is significantly above head
+                        if wrist_pos[1] < head_center[1] - 100:  # 100 pixels above head
+                            gesture_detected = True
+                            detection_reason = f"{wrist_name}_raised_high"
+                            logger.info(f"🤚 SUSPICIOUS GESTURE: {wrist_name} raised high (y:{wrist_pos[1]} vs head:{head_center[1]})")
+                            break
+            
+            if gesture_detected:
+                logger.info(f"🤚 SUSPICIOUS GESTURE DETECTED: {detection_reason}")
+            else:
+                logger.debug(f"🤚 No suspicious gestures detected")
+            
+            return gesture_detected
+            
+        except Exception as e:
+            logger.debug(f"Error in gesture detection: {e}")
+            return False
