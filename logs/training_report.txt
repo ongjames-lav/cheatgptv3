@@ -1,0 +1,49 @@
+============================================================
+3-CLASS BEHAVIOR CLASSIFICATION TRAINING REPORT
+============================================================
+
+Training Date: 2025-08-29 11:40:37
+
+CLASS MAPPING:
+0 -> normal
+1 -> suspicious
+2 -> cheating
+
+FINAL METRICS:
+Best Validation Accuracy: 100.00%
+Final Training Accuracy: 98.86%
+Total Epochs: 19
+
+CLASSIFICATION REPORT:
+              precision    recall  f1-score   support
+
+      normal      1.000     1.000     1.000        13
+  suspicious      1.000     1.000     1.000        16
+    cheating      1.000     1.000     1.000        15
+
+    accuracy                          1.000        44
+   macro avg      1.000     1.000     1.000        44
+weighted avg      1.000     1.000     1.000        44
+
+
+CONFUSION MATRIX:
+[[13  0  0]
+ [ 0 16  0]
+ [ 0  0 15]]
+
+PER-CLASS METRICS:
+NORMAL:
+  Precision: 1.000
+  Recall: 1.000
+  F1-Score: 1.000
+
+SUSPICIOUS:
+  Precision: 1.000
+  Recall: 1.000
+  F1-Score: 1.000
+
+CHEATING:
+  Precision: 1.000
+  Recall: 1.000
+  F1-Score: 1.000
+
