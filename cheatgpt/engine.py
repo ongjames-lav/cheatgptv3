@@ -1,16 +1,18 @@
-"""Real-time CheatGPT3 Engine with YOLOv11 + Pose Rules + LSTM.
+"""Real-time CheatGPT3 Engine with YOLOv11 + Pose Rules + LSTM + Video Recording.
 
 This engine processes webcam frames in real-time using:
 - YOLOv11 for person and phone detection (GPU-accelerated)
 - Pose analysis for behavior extraction
 - Rule-based immediate evaluation
 - LSTM for temporal pattern recognition
+- Video recording with overlays for session evidence
 - GPU-first with CPU fallback
 """
 
 import os
 import time
 import logging
+import uuid
 from typing import Tuple, List, Dict, Any, Optional
 import cv2
 import numpy as np
@@ -26,20 +28,23 @@ from .detectors.yolo11_detector import YOLO11Detector
 from .detectors.pose_detector import PoseDetector
 from .db.db_manager import DBManager
 from .temporal.lstm_model import get_lstm_classifier
+from .video_recorder import VideoRecorder
+from .adaptive_video_recorder import AdaptiveVideoRecorder
+from .realtime_sync_recorder import RealTimeSyncRecorder
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Enhanced LSTM integration for 6-category dataset
+# Enhanced LSTM integration for realistic 88.64% accuracy model
 try:
     import sys
     sys.path.append('.')
-    from enhanced_lstm_integration import get_enhanced_lstm_classifier, create_enhanced_behavior_vector
+    from realistic_lstm_integration import RealisticLSTMClassifier
     ENHANCED_LSTM_AVAILABLE = True
-    logger.info("✅ Enhanced LSTM integration available")
-except ImportError:
-    logger.warning("Enhanced LSTM integration not available, using standard LSTM")
+    logger.info("✅ Realistic LSTM integration available (88.64% accuracy)")
+except ImportError as e:
+    logger.warning(f"Realistic LSTM integration not available: {e}, using standard LSTM")
     ENHANCED_LSTM_AVAILABLE = False
 
 class Engine:
@@ -83,6 +88,11 @@ class Engine:
         
         # Initialize components
         self._initialize_components()
+        
+        # Video recording
+        self.video_recorder = RealTimeSyncRecorder(base_fps=10.0)
+        self.current_session_id: Optional[str] = None
+        self.session_hotspots = {}  # Track hotspots for current session
         
         # Performance tracking
         self.frame_count = 0
@@ -129,14 +139,14 @@ class Engine:
         self.pose_detector = PoseDetector()
         logger.info("✅ Pose detector ready")
         
-        # Enhanced LSTM Behavior Classifier (6-category dataset)
+        # Realistic LSTM Behavior Classifier (88.64% accuracy with Roboflow dataset)
         if ENHANCED_LSTM_AVAILABLE:
-            self.lstm_classifier = get_enhanced_lstm_classifier(
-                model_path="weights/enhanced_lstm_behavior.pth",
-                label_encoder_path="weights/enhanced_label_encoder.pkl"
+            self.lstm_classifier = RealisticLSTMClassifier(
+                model_path="weights/realistic_lstm_behavior.pth",
+                encoder_path="weights/realistic_label_encoder.pkl"
             )
             self.enhanced_lstm = True
-            logger.info("🧠 Using Enhanced LSTM with 6-category dataset")
+            logger.info("🧠 Using Realistic LSTM with 88.64% accuracy (Roboflow dataset)")
         else:
             # Fallback to standard LSTM
             self.lstm_classifier = get_lstm_classifier(
@@ -223,6 +233,14 @@ class Engine:
             # Step 6: Create Visualization Overlay
             overlay_frame = self._create_real_time_overlay(frame, pose_results, phones, all_events)
             
+            # Step 7: Record Video Frame (if session active and recording)
+            if self.current_session_id and self.video_recorder.is_recording():
+                self.video_recorder.write_frame(overlay_frame)
+            
+            # Step 8: Update Session Hotspots
+            if self.current_session_id and all_events:
+                self._update_session_hotspots(all_events, ts)
+            
             # Performance tracking
             processing_time = time.time() - start_time
             self.processing_times.append(processing_time)
@@ -243,6 +261,169 @@ class Engine:
         except Exception as e:
             logger.error(f"Error processing frame {self.frame_count}: {e}")
             return frame, []
+    
+    def start_session(self, cam_id: str = "webcam", frame_size: Optional[Tuple[int, int]] = None) -> str:
+        """Start a new recording session.
+        
+        Args:
+            cam_id: Camera identifier
+            frame_size: (width, height) for video recording, auto-detected if None
+            
+        Returns:
+            session_id: Unique session identifier
+        """
+        try:
+            # Generate unique session ID
+            session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{str(uuid.uuid4())[:8]}"
+            
+            # Create session record in database
+            start_timestamp = time.time()
+            if not self.db.create_session(session_id, cam_id, start_timestamp):
+                logger.error("Failed to create session in database")
+                return ""
+            
+            # Set current session
+            self.current_session_id = session_id
+            self.session_hotspots = {}
+            
+            # Start video recording if frame size is provided
+            if frame_size:
+                success, video_path = self.video_recorder.start_recording(session_id, frame_size, cam_id)
+                if success:
+                    # Update database with video path
+                    self.db.update_session_video_path(session_id, video_path)
+                    logger.info(f"🎥 Session {session_id} started with video recording: {video_path}")
+                else:
+                    logger.warning(f"Session {session_id} started but video recording failed")
+            else:
+                logger.info(f"📝 Session {session_id} started (no video recording - frame size not specified)")
+            
+            return session_id
+            
+        except Exception as e:
+            logger.error(f"Failed to start session: {e}")
+            return ""
+    
+    def stop_session(self) -> dict:
+        """Stop the current recording session.
+        
+        Returns:
+            Session information dictionary
+        """
+        try:
+            if not self.current_session_id:
+                logger.warning("No active session to stop")
+                return {}
+            
+            session_id = self.current_session_id
+            end_timestamp = time.time()
+            
+            # Stop video recording
+            video_success, video_info = self.video_recorder.stop_recording()
+            
+            # Update session in database
+            frame_count = video_info.get('frame_count', self.frame_count) if video_success else self.frame_count
+            self.db.end_session(session_id, end_timestamp, frame_count)
+            
+            # Store final hotspots
+            for hotspot_key, hotspot_data in self.session_hotspots.items():
+                self.db.store_hotspot(
+                    session_id=session_id,
+                    x=hotspot_data['x'],
+                    y=hotspot_data['y'],
+                    width=hotspot_data['width'],
+                    height=hotspot_data['height'],
+                    event_count=hotspot_data['count'],
+                    severity_level=hotspot_data['severity'],
+                    detection_time=hotspot_data['last_time']
+                )
+            
+            session_info = {
+                'session_id': session_id,
+                'duration': end_timestamp - (video_info.get('start_time', end_timestamp) if video_success else end_timestamp),
+                'frame_count': frame_count,
+                'video_recorded': video_success,
+                'hotspot_count': len(self.session_hotspots)
+            }
+            
+            if video_success:
+                session_info.update(video_info)
+            
+            logger.info(f"🏁 Session {session_id} stopped")
+            logger.info(f"   Duration: {session_info['duration']:.1f}s")
+            logger.info(f"   Frames: {frame_count}")
+            logger.info(f"   Video recorded: {video_success}")
+            logger.info(f"   Hotspots: {len(self.session_hotspots)}")
+            
+            # Reset session state
+            self.current_session_id = None
+            self.session_hotspots = {}
+            
+            return session_info
+            
+        except Exception as e:
+            logger.error(f"Failed to stop session: {e}")
+            return {}
+    
+    def get_session_status(self) -> dict:
+        """Get current session status."""
+        if not self.current_session_id:
+            return {'active': False}
+        
+        recording_status = self.video_recorder.get_recording_status()
+        
+        return {
+            'active': True,
+            'session_id': self.current_session_id,
+            'hotspot_count': len(self.session_hotspots),
+            'recording': recording_status
+        }
+    
+    def _update_session_hotspots(self, events: List[Dict[str, Any]], timestamp: float):
+        """Update session hotspots based on detected events."""
+        try:
+            for event in events:
+                if 'bbox' not in event:
+                    continue
+                
+                x1, y1, x2, y2 = event['bbox']
+                center_x = (x1 + x2) / 2
+                center_y = (y1 + y2) / 2
+                width = x2 - x1
+                height = y2 - y1
+                
+                # Create hotspot key for spatial grouping (50-pixel grid)
+                grid_x = int(center_x // 50) * 50
+                grid_y = int(center_y // 50) * 50
+                hotspot_key = f"{grid_x}_{grid_y}"
+                
+                # Determine severity level
+                severity = event.get('severity', 'yellow')
+                
+                if hotspot_key in self.session_hotspots:
+                    # Update existing hotspot
+                    hotspot = self.session_hotspots[hotspot_key]
+                    hotspot['count'] += 1
+                    hotspot['last_time'] = timestamp
+                    
+                    # Upgrade severity if needed
+                    if severity == 'red' or (severity == 'orange' and hotspot['severity'] == 'yellow'):
+                        hotspot['severity'] = severity
+                else:
+                    # Create new hotspot
+                    self.session_hotspots[hotspot_key] = {
+                        'x': center_x,
+                        'y': center_y,
+                        'width': width,
+                        'height': height,
+                        'count': 1,
+                        'severity': severity,
+                        'first_time': timestamp,
+                        'last_time': timestamp
+                    }
+                
+        except Exception as e:
+            logger.error(f"Failed to update session hotspots: {e}")
     
     def _detect_objects(self, frame: np.ndarray) -> List[Dict[str, Any]]:
         """GPU-accelerated object detection with YOLOv11."""
@@ -636,12 +817,12 @@ class Engine:
         events = []
         
         try:
-            # OPTIMIZATION 1: Enhanced Feature Engineering
+            # OPTIMIZATION 1: Enhanced Feature Engineering with Realistic LSTM
             current_behaviors = []
             for pose in pose_results:
                 if self.enhanced_lstm and ENHANCED_LSTM_AVAILABLE:
-                    # Use enhanced 12-dimensional feature vector
-                    behavior_vector = create_enhanced_behavior_vector(pose)
+                    # Use realistic LSTM's enhanced behavior vector creation
+                    behavior_vector = self.lstm_classifier.create_enhanced_behavior_vector(pose)
                     current_behaviors.append(behavior_vector.tolist())
                 else:
                     # Standard 10-dimensional feature vector (updated with gesture detection)
@@ -703,18 +884,34 @@ class Engine:
                         # Prepare sequence for trained model
                         sequence = np.array(self.behavior_history[-seq_len:])
                         
-                        # Enhanced prediction with auxiliary outputs
-                        if self.enhanced_lstm and hasattr(self.lstm_classifier, 'predict_enhanced'):
-                            prediction = self.lstm_classifier.predict_enhanced(
-                                sequence, 
-                                additional_features={'spatial_features': pose_results[0] if pose_results else {}}
-                            )
+                        # Realistic LSTM prediction with behavior sequence
+                        if self.enhanced_lstm and hasattr(self.lstm_classifier, 'predict_behavior_sequence'):
+                            # Convert sequence to detection format for realistic LSTM
+                            detection_sequence = []
+                            for behavior_vec in self.behavior_history[-seq_len:]:
+                                # Convert behavior vector back to detection format
+                                detection_data = {
+                                    'lean_flag': int(behavior_vec[0]) if len(behavior_vec) > 0 else 0,
+                                    'look_flag': int(behavior_vec[1]) if len(behavior_vec) > 1 else 0,
+                                    'phone_flag': int(behavior_vec[2]) if len(behavior_vec) > 2 else 0,
+                                    'gesture_flag': int(behavior_vec[3]) if len(behavior_vec) > 3 else 0,
+                                    'lean_angle': float(behavior_vec[4]) if len(behavior_vec) > 4 else 0.0,
+                                    'head_turn_angle': float(behavior_vec[5]) if len(behavior_vec) > 5 else 0.0,
+                                    'confidence': float(behavior_vec[6]) if len(behavior_vec) > 6 else 0.5,
+                                    'center_x': float(behavior_vec[7]) if len(behavior_vec) > 7 else 0.5,
+                                    'center_y': float(behavior_vec[8]) if len(behavior_vec) > 8 else 0.5,
+                                    'bbox_area': float(behavior_vec[9]) if len(behavior_vec) > 9 else 0.0
+                                }
+                                detection_sequence.append(detection_data)
+                            
+                            prediction = self.lstm_classifier.predict_behavior_sequence(detection_sequence)
                         else:
                             # Standard prediction
                             prediction = self.lstm_classifier.predict(sequence)
                         
-                        if prediction['error'] is None:
-                            pred_confidence = prediction['confidence']
+                        # Handle prediction result format
+                        if prediction and (prediction.get('error') is None or 'prediction' in prediction):
+                            pred_confidence = prediction.get('confidence', 0.0)
                             
                             # Select best prediction based on confidence
                             if pred_confidence > best_confidence:
@@ -1058,6 +1255,11 @@ class Engine:
     def reset(self):
         """Reset engine state."""
         logger.info("🔄 Resetting real-time engine state...")
+        
+        # Stop any active session
+        if self.current_session_id:
+            self.stop_session()
+        
         self.frame_count = 0
         self.processing_times.clear()
         self.gpu_memory_usage.clear()
@@ -1084,3 +1286,13 @@ class Engine:
         return (f"Engine(device={stats['device']}, "
                 f"frames={stats['frame_count']}, "
                 f"fps={stats['performance']['avg_fps']:.1f})")
+    
+    def __del__(self):
+        """Destructor to ensure proper cleanup."""
+        try:
+            if hasattr(self, 'current_session_id') and self.current_session_id:
+                self.stop_session()
+            if hasattr(self, 'video_recorder'):
+                self.video_recorder.cleanup()
+        except Exception as e:
+            logger.error(f"Error during engine cleanup: {e}")

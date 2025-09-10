@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="sessions-container">
+    <div class="header">
+        <h2>🎬 CheatGPT Session Recordings</h2>
+        <p>Select a session to review the recorded video with hotspot analysis</p>
+    </div>
+
+    {% if sessions %}
+    <div class="sessions-grid">
+        {% for session in sessions %}
+        <div class="session-card">
+            <div class="session-header">
+                <h3>{{ session.session_id }}</h3>
+                <div class="session-status">
+                    {% if session.video_file %}
+                    <span class="status-badge available">✅ Video Available</span>
+                    {% else %}
+                    <span class="status-badge missing">❌ Video Missing</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="session-stats">
+                <div class="stat">
+                    <span class="stat-label">Duration:</span>
+                    <span class="stat-value">{{ "%.1f"|format(session.duration) }}s</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Events:</span>
+                    <span class="stat-value">{{ session.total_events }}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Start Time:</span>
+                    <span class="stat-value">{{ session.start_time|int|datetime_format }}</span>
+                </div>
+            </div>
+            
+            <div class="session-actions">
+                {% if session.video_file %}
+                <a href="/playback/{{ session.session_id }}" class="btn btn-primary">
+                    🎥 Watch Recording
+                </a>
+                {% endif %}
+                <a href="/timeline/{{ session.timeline_file }}" class="btn btn-secondary" target="_blank">
+                    📊 View Timeline Data
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📹</div>
+        <h3>No Recording Sessions Found</h3>
+        <p>Start a detection session to see recordings here.</p>
+        <div class="help-text">
+            <p><strong>How to create recordings:</strong></p>
+            <ul>
+                <li>Run: <code>python run_enhanced_detection.py</code></li>
+                <li>Recordings will appear in the <code>recordings/</code> directory</li>
+                <li>Timeline data will be saved as JSON files</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.sessions-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+.header h2 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+}
+
+.header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.sessions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.session-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.session-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+    font-family: monospace;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-badge.available {
+    background: #e8f5e8;
+    color: #2e7d2e;
+}
+
+.status-badge.missing {
+    background: #ffe8e8;
+    color: #d63384;
+}
+
+.session-stats {
+    margin-bottom: 20px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-family: monospace;
+    font-weight: bold;
+    color: #333;
+}
+
+.session-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.help-text {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.help-text ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.help-text code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sessions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .session-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .session-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+// Auto-refresh every 30 seconds to show new recordings
+setInterval(() => {
+    if (!document.hidden) {
+        location.reload();
+    }
+}, 30000);
+
+// Format timestamps
+document.addEventListener('DOMContentLoaded', function() {
+    // This would normally be handled by a Jinja2 filter, but for demo purposes
+    const timestamps = document.querySelectorAll('.stat-value');
+    timestamps.forEach(el => {
+        if (el.textContent.match(/^\d{10}$/)) {
+            const date = new Date(parseInt(el.textContent) * 1000);
+            el.textContent = date.toLocaleString();
+        }
+    });
+});
+</script>
+{% endblock %}
