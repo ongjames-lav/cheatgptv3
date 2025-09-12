@@ -391,6 +391,35 @@ class DatabaseManager:
             logger.error(f"Error getting session events for {session_id}: {e}")
             return []
     
+    def delete_session(self, session_id: str) -> bool:
+        """Delete a session and all its associated hotspots"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                # First delete associated hotspots
+                cursor = conn.execute("""
+                    DELETE FROM hotspots WHERE session_id = ?
+                """, (session_id,))
+                hotspots_deleted = cursor.rowcount
+                
+                # Then delete the session
+                cursor = conn.execute("""
+                    DELETE FROM sessions WHERE session_id = ?
+                """, (session_id,))
+                sessions_deleted = cursor.rowcount
+                
+                conn.commit()
+                
+                if sessions_deleted > 0:
+                    logger.info(f"Deleted session {session_id} and {hotspots_deleted} associated hotspots")
+                    return True
+                else:
+                    logger.warning(f"No session found with ID {session_id}")
+                    return False
+                    
+        except Exception as e:
+            logger.error(f"Error deleting session {session_id}: {e}")
+            return False
+    
     def cleanup_old_sessions(self, days_old: int = 30) -> int:
         """Clean up sessions older than specified days"""
         try:

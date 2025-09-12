@@ -485,6 +485,131 @@
             font-size: 10px;
         }
 
+        /* Session Card Actions */
+        .session-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .session-card:hover .session-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.delete-btn {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        .action-btn.delete-btn:hover {
+            background: rgba(255, 68, 68, 0.4);
+        }
+
+        /* Delete Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: #262626;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            color: #aaaaaa;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.cancel {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #505050;
+        }
+
+        .modal-btn.confirm {
+            background: #ff4444;
+            color: #ffffff;
+        }
+
+        .modal-btn.confirm:hover {
+            background: #ff3333;
+        }
+
+        .modal-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         /* Loading States */
         .loading {
             display: flex;
@@ -728,6 +853,20 @@
     <!-- Tooltip -->
     <div class="tooltip" id="tooltip"></div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-title">Delete Session</div>
+            <div class="modal-message" id="deleteMessage">
+                Are you sure you want to delete this session? This will permanently remove the session data and video file.
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="deleteCancelBtn">Cancel</button>
+                <button class="modal-btn confirm" id="deleteConfirmBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         class YouTubeAnalytics {
             constructor() {
@@ -738,6 +877,7 @@
                 this.video = document.getElementById('videoPlayer');
                 this.isPlaying = false;
                 this.isDragging = false;
+                this.sessionToDelete = null;
                 
                 this.initializeElements();
                 this.setupEventListeners();
@@ -769,6 +909,12 @@
 
                 // Tooltip
                 this.tooltip = document.getElementById('tooltip');
+
+                // Delete modal
+                this.deleteModal = document.getElementById('deleteModal');
+                this.deleteMessage = document.getElementById('deleteMessage');
+                this.deleteCancelBtn = document.getElementById('deleteCancelBtn');
+                this.deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
             }
 
             setupEventListeners() {
@@ -809,6 +955,15 @@
                 this.videoContainer.addEventListener('mouseleave', () => {
                     if (!this.isPlaying) return;
                     this.customControls.style.opacity = '0';
+                });
+
+                // Delete modal events
+                this.deleteCancelBtn.addEventListener('click', () => this.hideDeleteConfirmation());
+                this.deleteConfirmBtn.addEventListener('click', () => this.confirmDeleteSession());
+                this.deleteModal.addEventListener('click', (e) => {
+                    if (e.target === this.deleteModal) {
+                        this.hideDeleteConfirmation();
+                    }
                 });
             }
 
@@ -881,10 +1036,38 @@
                                 <span>${duration}</span>
                             </div>
                         </div>
+                        <div class="session-actions">
+                            <button class="action-btn play-btn" title="Play Session">
+                                ▶ Play
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Session">
+                                🗑 Delete
+                            </button>
+                        </div>
                     </div>
                 `;
 
-                card.addEventListener('click', () => this.loadSession(session));
+                // Add click handler for the main card (excluding action buttons)
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.session-actions')) {
+                        this.loadSession(session);
+                    }
+                });
+
+                // Add click handler for play button
+                const playBtn = card.querySelector('.play-btn');
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.loadSession(session);
+                });
+
+                // Add click handler for delete button
+                const deleteBtn = card.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showDeleteConfirmation(session);
+                });
+
                 return card;
             }
 
@@ -1133,6 +1316,117 @@
 
             showError(message) {
                 this.sessionsList.innerHTML = `<div class="error-message">${message}</div>`;
+            }
+
+            showDeleteConfirmation(session) {
+                this.sessionToDelete = session;
+                this.deleteMessage.textContent = `Are you sure you want to delete session "${session.session_id}"? This will permanently remove the session data and video file.`;
+                this.deleteModal.classList.add('show');
+                this.deleteConfirmBtn.disabled = false;
+            }
+
+            hideDeleteConfirmation() {
+                this.deleteModal.classList.remove('show');
+                this.sessionToDelete = null;
+            }
+
+            async confirmDeleteSession() {
+                if (!this.sessionToDelete) return;
+
+                const sessionId = this.sessionToDelete.session_id;
+                this.deleteConfirmBtn.disabled = true;
+                this.deleteConfirmBtn.textContent = 'Deleting...';
+
+                try {
+                    const response = await fetch(`/api/session/${sessionId}/delete`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        // Remove session from local array
+                        this.sessions = this.sessions.filter(s => s.session_id !== sessionId);
+                        
+                        // Re-render sessions list
+                        this.renderSessionsList();
+                        
+                        // If this was the currently loaded session, clear the player
+                        if (this.currentSession && this.currentSession.session_id === sessionId) {
+                            this.clearPlayer();
+                        }
+                        
+                        this.hideDeleteConfirmation();
+                        
+                        // Show success message
+                        this.showSuccessMessage(`Session "${sessionId}" deleted successfully`);
+                        
+                    } else {
+                        throw new Error(result.error || 'Failed to delete session');
+                    }
+                } catch (error) {
+                    console.error('Error deleting session:', error);
+                    this.showErrorMessage(`Failed to delete session: ${error.message}`);
+                } finally {
+                    this.deleteConfirmBtn.disabled = false;
+                    this.deleteConfirmBtn.textContent = 'Delete';
+                }
+            }
+
+            clearPlayer() {
+                this.currentSession = null;
+                this.events = [];
+                this.sessionTitle.textContent = 'Select a session to begin';
+                this.sessionMetadata.textContent = 'Choose a recording from the sidebar to start analyzing';
+                this.video.src = '';
+                this.renderTimeline();
+                this.renderEventMarkers();
+            }
+
+            showSuccessMessage(message) {
+                // Create temporary success notification
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    z-index: 10001;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            showErrorMessage(message) {
+                // Create temporary error notification
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #f44336;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    z-index: 10001;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
             }
         }
 

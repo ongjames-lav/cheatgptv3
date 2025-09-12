@@ -1092,6 +1092,57 @@ def api_session_report(session_id):
         logger.error(f"Error generating report for session {session_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/session/<session_id>/delete', methods=['DELETE'])
+def delete_session(session_id):
+    """Delete a session and its associated video file"""
+    try:
+        # Get session details before deletion
+        session = db.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Find and delete video file(s)
+        import glob
+        video_files_deleted = []
+        
+        # Search for video files matching this session
+        patterns = [
+            str(RECORDINGS_DIR / f"*{session_id}*.mp4"),
+            str(VIDEOS_DIR / f"*{session_id}*.mp4"),
+            str(Path(__file__).parent / "videos" / f"*{session_id}*.mp4")
+        ]
+        
+        for pattern in patterns:
+            matching_files = glob.glob(pattern)
+            for video_file in matching_files:
+                try:
+                    video_path = Path(video_file)
+                    if video_path.exists():
+                        video_path.unlink()  # Delete the file
+                        video_files_deleted.append(str(video_path))
+                        logger.info(f"🗑️ Deleted video file: {video_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete video file {video_file}: {e}")
+        
+        # Delete session from database (this will cascade delete events)
+        success = db.delete_session(session_id)
+        
+        if success:
+            logger.info(f"🗑️ Deleted session {session_id} and {len(video_files_deleted)} video files")
+            return jsonify({
+                'success': True,
+                'message': f'Session deleted successfully',
+                'session_id': session_id,
+                'video_files_deleted': len(video_files_deleted),
+                'files_deleted': video_files_deleted
+            })
+        else:
+            return jsonify({'error': 'Failed to delete session from database'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error deleting session {session_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 # Camera Control Routes
 
 @app.route('/camera/start', methods=['POST'])

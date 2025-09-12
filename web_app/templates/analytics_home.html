@@ -241,6 +241,42 @@
             gap: 12px;
         }
 
+        .selection-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #313131;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .selected-count {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-danger {
+            background: #ff4444;
+            border: none;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+
+        .btn-danger:disabled {
+            background: #666666;
+            cursor: not-allowed;
+        }
+
         .view-btn {
             background: #313131;
             border: none;
@@ -284,9 +320,61 @@
             position: relative;
         }
 
+        .video-card.selection-mode {
+            cursor: default;
+        }
+
+        .video-card.selected {
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+        }
+
         .video-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-card.selection-mode:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-card.selected:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
+        }
+
+        .selection-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 10;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffffff;
+            border-radius: 3px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .video-card.selection-mode .selection-checkbox {
+            display: flex;
+        }
+
+        .selection-checkbox.checked {
+            background: #ff0000;
+            border-color: #ff0000;
+        }
+
+        .selection-checkbox.checked::after {
+            content: '✓';
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .video-thumbnail {
@@ -379,6 +467,36 @@
             color: #ffffff;
             font-size: 12px;
             text-align: center;
+        }
+
+        .behavior-score-overlay {
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-weight: 600;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .behavior-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .score-icon {
+            font-size: 16px;
+        }
+
+        .score-level {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .score-description {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
         }
 
         .video-info {
@@ -624,6 +742,94 @@
         .tooltip.show {
             opacity: 1;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #212121;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #303030;
+        }
+
+        .modal-header h3 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #aaaaaa;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+            color: #ffffff;
+        }
+
+        .modal-body p {
+            margin: 0 0 16px;
+            line-height: 1.5;
+        }
+
+        .modal-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .warning-text {
+            color: #ff8888;
+            font-size: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 16px 24px 20px;
+            justify-content: flex-end;
+        }
     </style>
 </head>
 <body>
@@ -711,16 +917,24 @@
             <div class="content-header">
                 <h1 class="page-title">Recorded Sessions</h1>
                 <div class="view-controls">
-                    <button class="view-btn active" id="gridView">Grid</button>
-                    <button class="view-btn" id="listView">List</button>
-                    <select class="sort-select" id="sortSelect">
-                        <option value="date_desc">Newest First</option>
-                        <option value="date_asc">Oldest First</option>
-                        <option value="events_desc">Most Events</option>
-                        <option value="events_asc">Fewest Events</option>
-                        <option value="duration_desc">Longest</option>
-                        <option value="duration_asc">Shortest</option>
-                    </select>
+                    <div class="selection-controls" id="selectionControls" style="display: none;">
+                        <span class="selected-count" id="selectedCount">0 selected</span>
+                        <button class="btn-danger delete-btn" id="deleteSelectedBtn">🗑 Delete Selected</button>
+                        <button class="view-btn" id="cancelSelectionBtn">Cancel</button>
+                    </div>
+                    <div class="normal-controls" id="normalControls">
+                        <button class="view-btn" id="selectModeBtn">Select</button>
+                        <button class="view-btn active" id="gridView">Grid</button>
+                        <button class="view-btn" id="listView">List</button>
+                        <select class="sort-select" id="sortSelect">
+                            <option value="date_desc">Newest First</option>
+                            <option value="date_asc">Oldest First</option>
+                            <option value="events_desc">Most Events</option>
+                            <option value="events_asc">Fewest Events</option>
+                            <option value="duration_desc">Longest</option>
+                            <option value="duration_asc">Shortest</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -758,11 +972,31 @@
     <!-- Tooltip -->
     <div class="tooltip" id="tooltip"></div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Delete</h3>
+                <button class="modal-close" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <span id="deleteCount">0</span> selected session(s)?</p>
+                <p class="warning-text">This action cannot be undone. All session data, videos, and analytics will be permanently removed.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="view-btn" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         class AnalyticsHome {
             constructor() {
                 this.sessions = [];
                 this.filteredSessions = [];
+                this.selectedSessions = new Set();
+                this.selectionMode = false;
                 this.currentSort = 'date_desc';
                 this.activeFilters = {
                     eventTypes: ['phone', 'looking', 'leaning', 'gesture'],
@@ -788,6 +1022,21 @@
                 this.dateFrom = document.getElementById('dateFrom');
                 this.dateTo = document.getElementById('dateTo');
                 this.tooltip = document.getElementById('tooltip');
+                
+                // Selection controls
+                this.selectModeBtn = document.getElementById('selectModeBtn');
+                this.normalControls = document.getElementById('normalControls');
+                this.selectionControls = document.getElementById('selectionControls');
+                this.selectedCount = document.getElementById('selectedCount');
+                this.deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                this.cancelSelectionBtn = document.getElementById('cancelSelectionBtn');
+                
+                // Delete modal
+                this.deleteModal = document.getElementById('deleteModal');
+                this.deleteCount = document.getElementById('deleteCount');
+                this.closeDeleteModal = document.getElementById('closeDeleteModal');
+                this.cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+                this.confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             }
 
             setupEventListeners() {
@@ -811,6 +1060,23 @@
                 // View toggle
                 this.gridView.addEventListener('click', () => this.setView('grid'));
                 this.listView.addEventListener('click', () => this.setView('list'));
+
+                // Selection controls
+                this.selectModeBtn.addEventListener('click', () => this.enterSelectionMode());
+                this.cancelSelectionBtn.addEventListener('click', () => this.exitSelectionMode());
+                this.deleteSelectedBtn.addEventListener('click', () => this.showDeleteConfirmation());
+
+                // Delete modal
+                this.closeDeleteModal.addEventListener('click', () => this.hideDeleteModal());
+                this.cancelDeleteBtn.addEventListener('click', () => this.hideDeleteModal());
+                this.confirmDeleteBtn.addEventListener('click', () => this.deleteSelectedSessions());
+
+                // Close modal on outside click
+                this.deleteModal.addEventListener('click', (e) => {
+                    if (e.target === this.deleteModal) {
+                        this.hideDeleteModal();
+                    }
+                });
 
                 // Date filters
                 this.dateFrom.addEventListener('change', () => {
@@ -947,10 +1213,28 @@
 
                 // Add click listeners to cards
                 this.videoGrid.querySelectorAll('.video-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        const sessionId = card.dataset.sessionId;
-                        window.location.href = `/analytics/player?session=${sessionId}`;
-                    });
+                    const sessionId = card.dataset.sessionId;
+                    
+                    if (this.selectionMode) {
+                        card.classList.add('selection-mode');
+                        
+                        // Add checkbox click handler
+                        const checkbox = card.querySelector('.selection-checkbox');
+                        checkbox.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.toggleSessionSelection(sessionId, card);
+                        });
+                        
+                        // Add card click handler for selection
+                        card.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.toggleSessionSelection(sessionId, card);
+                        });
+                    } else {
+                        card.addEventListener('click', () => {
+                            window.location.href = `/analytics/player?session=${sessionId}`;
+                        });
+                    }
                 });
             }
 
@@ -959,17 +1243,16 @@
                 const duration = this.formatTime(session.duration || 0);
                 const eventCount = session.hotspot_count || 0;
                 const isActive = session.status === 'active'; // Assuming we have this field
+                const isSelected = this.selectedSessions.has(session.session_id);
                 
                 let eventCountClass = 'low';
                 if (eventCount > 10) eventCountClass = 'high';
                 else if (eventCount > 5) eventCountClass = 'medium';
 
-                const suspiciousPercentage = session.duration ? 
-                    Math.round((eventCount / (session.duration / 60)) * 10) : 0;
-
                 return `
-                    <div class="video-card" data-session-id="${session.session_id}" tabindex="0">
+                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${session.session_id}" tabindex="0">
                         <div class="video-thumbnail">
+                            <div class="selection-checkbox ${isSelected ? 'checked' : ''}"></div>
                             <img src="/api/thumbnail/${session.session_id}" 
                                  alt="Session ${session.session_id}" 
                                  onerror="this.style.display='none'">
@@ -977,9 +1260,6 @@
                             ${isActive ? '<div class="live-badge">LIVE</div>' : ''}
                             <div class="video-overlay">
                                 <button class="overlay-btn">View Analytics</button>
-                                <div class="overlay-stats">
-                                    ${suspiciousPercentage}% suspicious activity
-                                </div>
                             </div>
                         </div>
                         <div class="video-info">
@@ -993,7 +1273,7 @@
                                     <span>${duration}</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-icon">⚠</span>
+                                    <span class="stat-icon">📊</span>
                                     <span class="event-count ${eventCountClass}">${eventCount} events</span>
                                 </div>
                             </div>
@@ -1010,6 +1290,97 @@
                     this.videoGrid.style.gridTemplateColumns = '1fr';
                 } else {
                     this.videoGrid.style.gridTemplateColumns = '';
+                }
+            }
+
+            enterSelectionMode() {
+                this.selectionMode = true;
+                this.selectedSessions.clear();
+                this.normalControls.style.display = 'none';
+                this.selectionControls.style.display = 'flex';
+                this.updateSelectedCount();
+                this.renderSessions();
+            }
+
+            exitSelectionMode() {
+                this.selectionMode = false;
+                this.selectedSessions.clear();
+                this.normalControls.style.display = 'flex';
+                this.selectionControls.style.display = 'none';
+                this.renderSessions();
+            }
+
+            toggleSessionSelection(sessionId, cardElement) {
+                if (this.selectedSessions.has(sessionId)) {
+                    this.selectedSessions.delete(sessionId);
+                    cardElement.classList.remove('selected');
+                    cardElement.querySelector('.selection-checkbox').classList.remove('checked');
+                } else {
+                    this.selectedSessions.add(sessionId);
+                    cardElement.classList.add('selected');
+                    cardElement.querySelector('.selection-checkbox').classList.add('checked');
+                }
+                this.updateSelectedCount();
+            }
+
+            updateSelectedCount() {
+                const count = this.selectedSessions.size;
+                this.selectedCount.textContent = `${count} selected`;
+                this.deleteSelectedBtn.disabled = count === 0;
+            }
+
+            showDeleteConfirmation() {
+                if (this.selectedSessions.size === 0) return;
+                
+                this.deleteCount.textContent = this.selectedSessions.size;
+                this.deleteModal.classList.add('show');
+            }
+
+            hideDeleteModal() {
+                this.deleteModal.classList.remove('show');
+            }
+
+            async deleteSelectedSessions() {
+                const sessionIds = Array.from(this.selectedSessions);
+                const totalSessions = sessionIds.length;
+                let deletedCount = 0;
+
+                this.hideDeleteModal();
+                
+                // Show progress (you could add a progress modal here)
+                this.deleteSelectedBtn.disabled = true;
+                this.deleteSelectedBtn.textContent = 'Deleting...';
+
+                try {
+                    for (const sessionId of sessionIds) {
+                        const response = await fetch(`/api/session/${sessionId}/delete`, {
+                            method: 'DELETE'
+                        });
+
+                        if (response.ok) {
+                            deletedCount++;
+                        } else {
+                            console.error(`Failed to delete session ${sessionId}`);
+                        }
+                    }
+
+                    // Update the UI
+                    if (deletedCount === totalSessions) {
+                        alert(`Successfully deleted ${deletedCount} session(s)`);
+                    } else {
+                        alert(`Deleted ${deletedCount} out of ${totalSessions} session(s). Some deletions failed.`);
+                    }
+
+                    // Reload sessions and exit selection mode
+                    await this.loadSessions();
+                    this.exitSelectionMode();
+
+                } catch (error) {
+                    console.error('Error deleting sessions:', error);
+                    alert('An error occurred while deleting sessions');
+                } finally {
+                    this.deleteSelectedBtn.disabled = false;
+                    this.deleteSelectedBtn.textContent = '🗑 Delete Selected';
                 }
             }
 
