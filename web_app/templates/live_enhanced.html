@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheatGPT - Live Monitoring</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-bg: #111827;
+            --dark-surface: #1f2937;
+            --dark-border: #374151;
+            --text-light: #f9fafb;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .video-section {
+            flex: 0 0 70%;
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .video-feed {
+            width: 100%;
+            height: auto;
+            max-width: 1280px;  /* Match camera resolution */
+            max-height: 720px;  /* Match camera resolution */
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        /* Responsive scaling for different screen sizes */
+        @media (max-width: 1400px) {
+            .video-feed {
+                max-width: 100%;
+                max-height: calc(100vh - 40px);
+            }
+        }
+
+        /* Ensure video maintains aspect ratio on your laptop */
+        #video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .sidebar {
+            flex: 0 0 30%;
+            background: var(--dark-surface);
+            border-left: 1px solid var(--dark-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--dark-border);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .control-section {
+            margin-bottom: 30px;
+        }
+
+        .control-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .btn-group-vertical .btn {
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-success { background: var(--success-color); border-color: var(--success-color); }
+        .btn-danger { background: var(--danger-color); border-color: var(--danger-color); }
+        .btn-warning { background: var(--warning-color); border-color: var(--warning-color); }
+        .btn-secondary { background: #6b7280; border-color: #6b7280; }
+
+        .status-card {
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .status-value {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: var(--success-color); }
+        .badge-danger { background: var(--danger-color); }
+        .badge-warning { background: var(--warning-color); }
+        .badge-secondary { background: #6b7280; }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-time {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .no-video {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 60px 20px;
+        }
+
+        .no-video i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .video-section {
+                flex: none;
+                height: 60vh;
+            }
+            
+            .sidebar {
+                flex: none;
+                height: auto;
+                border-left: none;
+                border-top: 1px solid var(--dark-border);
+            }
+        }
+
+        /* Alert styles */
+        .alert {
+            border-radius: 6px;
+            border: none;
+            margin-bottom: 15px;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Video Section (70%) -->
+        <div class="video-section">
+            <div id="video-container">
+                <div class="no-video" id="no-video-message">
+                    <i class="fas fa-video-slash"></i>
+                    <h4>Camera Not Active</h4>
+                    <p>Click "Start Camera" to begin monitoring</p>
+                </div>
+                <img id="video-feed" class="video-feed" style="display: none;" src="">
+            </div>
+            
+            <!-- Video Overlay -->
+            <div class="video-overlay" id="video-overlay" style="display: none;">
+                <div><strong>Live Feed</strong></div>
+                <div id="overlay-status">Status: Initializing...</div>
+            </div>
+        </div>
+
+        <!-- Sidebar (30%) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-shield-alt"></i> CheatGPT</h2>
+                <small>Real-time Monitoring System</small>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Alerts -->
+                <div id="alert-container"></div>
+
+                <!-- Control Section -->
+                <div class="control-section">
+                    <h3><i class="fas fa-sliders-h"></i> Camera Controls</h3>
+                    <div class="btn-group-vertical w-100">
+                        <button class="btn btn-success" id="btn-start-camera">
+                            <i class="fas fa-play"></i> Start Camera
+                        </button>
+                        <button class="btn btn-danger" id="btn-stop-camera" disabled>
+                            <i class="fas fa-stop"></i> Stop Camera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Session Status -->
+                <div class="control-section">
+                    <h3><i class="fas fa-info-circle"></i> Session Status</h3>
+                    <div class="status-card">
+                        <div class="status-row">
+                            <span class="status-label">Session ID:</span>
+                            <span class="status-value" id="session-id">No Active Session</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">Elapsed Time:</span>
+                            <span class="status-value" id="elapsed-time">00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="control-section">
+                    <h3><i class="fas fa-server"></i> System Status</h3>
+                    <div class="status-card">
+                        <div class="status-row">
+                            <span class="status-label">Camera:</span>
+                            <span class="badge badge-secondary" id="camera-status">OFF</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">Recording:</span>
+                            <span class="badge badge-secondary" id="recording-status">OFF</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">Detection:</span>
+                            <span class="badge badge-secondary" id="detection-status">OFF</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">Session:</span>
+                            <span class="badge badge-secondary" id="session-status">Inactive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+
+    <script>
+        // Global variables
+        let socket;
+        let statusUpdateInterval;
+        let elapsedTimeInterval;
+        let sessionStartTime = null;
+        let sessionElapsedTime = 0;
+        let sessionActive = false;
+        let isConnected = false;
+
+        // DOM elements
+        const btnStartCamera = document.getElementById('btn-start-camera');
+        const btnStopCamera = document.getElementById('btn-stop-camera');
+        const videoFeed = document.getElementById('video-feed');
+        const noVideoMessage = document.getElementById('no-video-message');
+        const videoOverlay = document.getElementById('video-overlay');
+        const alertContainer = document.getElementById('alert-container');
+
+        // Verify critical DOM elements exist
+        console.log('🔍 DOM Elements Check:', {
+            startCamera: !!btnStartCamera,
+            stopCamera: !!btnStopCamera,
+            sessionIdElement: !!document.getElementById('session-id')
+        });
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSocketIO();
+            setupEventListeners();
+            startStatusUpdates();
+            updateUI();
+            
+            // Optimize video display for current screen size
+            setTimeout(optimizeVideoDisplay, 100);
+        });
+
+        // Socket.IO initialization
+        function initializeSocketIO() {
+            // Configure socket to use polling only to avoid WebSocket issues in development
+            socket = io({
+                transports: ['polling']
+            });
+            
+            socket.on('connect', function() {
+                console.log('✅ Connected to server - Real-time updates enabled');
+                isConnected = true;
+                showAlert('Connected to server - Real-time updates enabled', 'success');
+                
+                // Request immediate status update on connection
+                fetch('/api/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('📊 Initial status loaded:', data);
+                        updateStatusDisplay(data);
+                    })
+                    .catch(error => console.error('Error loading initial status:', error));
+            });
+
+            socket.on('disconnect', function() {
+                console.log('❌ Disconnected from server - Using polling fallback');
+                isConnected = false;
+                showAlert('Disconnected from server - Using polling fallback', 'warning');
+            });
+
+            socket.on('camera_started', function(data) {
+                console.log('Camera started:', data);
+                sessionStartTime = Date.now(); // Use client time for immediate response
+                sessionActive = true;
+                startElapsedTimeCounter();
+                updateVideoFeed(true);
+                updateUI();
+                showAlert('Camera started successfully', 'success');
+            });
+
+            socket.on('camera_stopped', function(data) {
+                console.log('Camera stopped:', data);
+                stopElapsedTimeCounter();
+                updateVideoFeed(false);
+                updateUI();
+                showAlert(`Session completed. Duration: ${Math.round(data.duration)}s`, 'success');
+            });
+
+            socket.on('critical_event', function(data) {
+                console.log('Critical event:', data);
+                addEventToLog(data);
+                showAlert(`Critical event: ${data.type}`, 'danger');
+            });
+
+            socket.on('session_ended', function(data) {
+                console.log('Session ended event received:', data);
+                showAlert(
+                    `Session ended! Video saved: ${data.video_filename || 'N/A'}. Duration: ${data.duration?.toFixed(1)}s`, 
+                    'info'
+                );
+                
+                // If refresh_page is true, refresh after a short delay
+                if (data.refresh_page) {
+                    setTimeout(() => {
+                        console.log('Auto-refreshing page from session end event...');
+                        window.location.reload();
+                    }, 3000);
+                }
+            });
+
+            // Real-time status updates
+            socket.on('status_update', function(data) {
+                console.log('🔄 Real-time status update received:', {
+                    timestamp: new Date().toLocaleTimeString()
+                });
+                updateStatusDisplay(data);
+            });
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            btnStartCamera.addEventListener('click', startCamera);
+            btnStopCamera.addEventListener('click', stopCamera);
+        }
+
+        // API calls
+        async function startCamera() {
+            try {
+                showLoading(btnStartCamera, true);
+                const response = await fetch('/camera/start', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('Camera started:', data);
+                    sessionStartTime = data.start_time;
+                    updateVideoFeed(true);
+                    updateUI();
+                    
+                    // Force enable buttons after camera start
+                    setTimeout(() => {
+                        btnStartCamera.disabled = true;
+                        btnStopCamera.disabled = false;
+                        clearAllLoadingStates();
+                        console.log('Force enabled buttons after camera start');
+                    }, 100);
+                } else {
+                    showAlert(data.error || 'Failed to start camera', 'danger');
+                }
+            } catch (error) {
+                console.error('Error starting camera:', error);
+                showAlert('Error starting camera', 'danger');
+            } finally {
+                showLoading(btnStartCamera, false);
+            }
+        }
+
+        async function stopCamera() {
+            try {
+                console.log('Stopping camera...');
+                showLoading(btnStopCamera, true);
+                
+                // Immediately update UI to show stopping
+                updateVideoFeed(false);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                
+                const response = await fetch('/camera/stop', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                console.log('Stop camera response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Stop camera response data:', data);
+                
+                if (data.success) {
+                    console.log('Camera stopped successfully:', data);
+                    sessionStartTime = null;
+                    updateVideoFeed(false);
+                    showAlert('Session ended and video saved. Refreshing page...', 'success');
+                    
+                    // Refresh the page after stopping camera and saving session
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500); // Give user time to see the success message
+                } else {
+                    showAlert(data.error || 'Failed to stop camera', 'danger');
+                }
+            } catch (error) {
+                console.error('Error stopping camera:', error);
+                showAlert(`Error stopping camera: ${error.message}`, 'danger');
+            } finally {
+                console.log('Clearing stop camera loading state');
+                showLoading(btnStopCamera, false);
+            }
+        }
+
+        // Test function to verify real-time updates
+        // Status updates
+        function startStatusUpdates() {
+            // More frequent polling as fallback for real-time updates
+            // Use 1 second interval to ensure live counting works even if SocketIO fails
+            statusUpdateInterval = setInterval(updateStatus, 1000); // 1 second for live updates
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                updateStatusDisplay(data);
+
+                // Periodic failsafe: check for stuck loading states every 10 seconds
+                if (Date.now() % 10000 < 1000) {
+                    const stuckButtons = [btnStartCamera, btnStopCamera]
+                        .filter(btn => btn && btn.getAttribute('data-original-html'));
+                    
+                    if (stuckButtons.length > 0) {
+                        console.log('Detected stuck buttons, clearing loading states:', stuckButtons.map(b => b.id));
+                        clearAllLoadingStates();
+                        // Force correct button states
+                        setTimeout(() => updateButtonStates(data), 100);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+
+        function updateStatusDisplay(data) {
+            console.log('Updating status display:', {
+                camera_active: data.camera_active,
+                session_id: data.current_session_id
+            });
+            
+            // Update session info
+            const sessionId = data.current_session_id;
+            if (sessionId) {
+                document.getElementById('session-id').textContent = sessionId.substring(0, 20) + '...';
+                // Start elapsed time counter if session just started
+                if (!sessionActive) {
+                    sessionActive = true;
+                    startElapsedTimeCounter();
+                }
+            } else {
+                document.getElementById('session-id').textContent = 'No Active Session';
+                // Stop elapsed time counter if session ended
+                if (sessionActive) {
+                    sessionActive = false;
+                    stopElapsedTimeCounter();
+                    document.getElementById('elapsed-time').textContent = '00:00';
+                }
+            }
+
+            // Update status badges
+            updateStatusBadge('camera-status', data.camera_active ? 'ON' : 'OFF', data.camera_active);
+            updateStatusBadge('recording-status', data.recording_active ? 'ON' : 'OFF', data.recording_active);
+            updateStatusBadge('detection-status', data.detection_engine_available ? 'READY' : 'OFF', data.detection_engine_available);
+            updateStatusBadge('session-status', data.current_session_id ? 'Active' : 'Inactive', !!data.current_session_id);
+
+            // Update button states
+            updateButtonStates(data);
+        }
+
+        function updateStatusBadge(elementId, text, isActive) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = `badge ${isActive ? 'badge-success' : 'badge-secondary'}`;
+        }
+
+        function updateButtonStates(data) {
+            const cameraActive = data.camera_active;
+            const sessionActive = !!data.current_session_id;
+
+            console.log('Updating button states:', { cameraActive, sessionActive });
+
+            // Clear loading states, but respect active screenshot operations
+            const buttons = [btnStartCamera, btnStopCamera];
+            buttons.forEach(button => {
+                if (button && button.getAttribute('data-original-html')) {
+                    showLoading(button, false);
+                }
+            });
+
+            // Update button states based on current status
+            btnStartCamera.disabled = cameraActive;
+            btnStopCamera.disabled = !cameraActive;
+            
+            console.log('Button states updated:', {
+                cameraActive,
+                sessionActive,
+                startDisabled: btnStartCamera.disabled,
+                stopDisabled: btnStopCamera.disabled
+            });
+
+            // Force enable buttons that should be clickable
+            if (cameraActive) {
+                btnStopCamera.disabled = false;
+                console.log('Forced enabled stop button');
+            } else {
+                btnStartCamera.disabled = false;
+                console.log('Forced enabled start button');
+            }
+        }
+
+        function updateVideoFeed(active) {
+            if (active) {
+                // Add timestamp to prevent caching and force reload
+                const timestamp = new Date().getTime();
+                videoFeed.src = '/video_feed?' + timestamp;
+                videoFeed.style.display = 'block';
+                noVideoMessage.style.display = 'none';
+                videoOverlay.style.display = 'block';
+                document.getElementById('overlay-status').textContent = 'Status: Live';
+                
+                // Add error handling for video feed
+                videoFeed.onerror = function() {
+                    console.error('Video feed failed to load, retrying...');
+                    setTimeout(() => {
+                        if (videoFeed.style.display !== 'none') {
+                            const newTimestamp = new Date().getTime();
+                            videoFeed.src = '/video_feed?' + newTimestamp;
+                        }
+                    }, 1000); // Retry after 1 second
+                };
+                
+                // Optimize video display for laptop resolution
+                optimizeVideoDisplay();
+            } else {
+                videoFeed.style.display = 'none';
+                noVideoMessage.style.display = 'block';
+                videoOverlay.style.display = 'none';
+                videoFeed.src = '';
+                videoFeed.onerror = null; // Remove error handler
+            }
+        }
+
+        function optimizeVideoDisplay() {
+            // Get the video section dimensions
+            const videoSection = document.querySelector('.video-section');
+            const videoContainer = document.getElementById('video-container');
+            
+            if (videoSection && videoContainer) {
+                const sectionWidth = videoSection.clientWidth;
+                const sectionHeight = videoSection.clientHeight;
+                
+                // Calculate optimal size maintaining 16:9 aspect ratio
+                const aspectRatio = 16 / 9;
+                let optimalWidth = sectionWidth - 40; // 20px padding on each side
+                let optimalHeight = optimalWidth / aspectRatio;
+                
+                // If height exceeds available space, scale by height instead
+                if (optimalHeight > sectionHeight - 40) {
+                    optimalHeight = sectionHeight - 40;
+                    optimalWidth = optimalHeight * aspectRatio;
+                }
+                
+                // Apply the calculated dimensions
+                videoFeed.style.maxWidth = optimalWidth + 'px';
+                videoFeed.style.maxHeight = optimalHeight + 'px';
+                
+                console.log(`Video optimized for: ${optimalWidth}x${optimalHeight} (container: ${sectionWidth}x${sectionHeight})`);
+            }
+        }
+
+        // Handle window resize to re-optimize video display
+        window.addEventListener('resize', function() {
+            if (videoFeed.style.display === 'block') {
+                optimizeVideoDisplay();
+            }
+        });
+
+        // Elapsed time management
+        function startElapsedTimeCounter() {
+            sessionStartTime = Date.now();
+            sessionElapsedTime = 0;
+            sessionActive = true;
+            
+            // Clear any existing timer
+            if (elapsedTimeInterval) {
+                clearInterval(elapsedTimeInterval);
+            }
+            
+            // Update elapsed time every second
+            elapsedTimeInterval = setInterval(() => {
+                if (sessionActive && sessionStartTime) {
+                    sessionElapsedTime = Math.floor((Date.now() - sessionStartTime) / 1000);
+                    updateElapsedTimeDisplay(sessionElapsedTime);
+                }
+            }, 1000);
+        }
+
+        function stopElapsedTimeCounter() {
+            sessionActive = false;
+            if (elapsedTimeInterval) {
+                clearInterval(elapsedTimeInterval);
+                elapsedTimeInterval = null;
+            }
+        }
+
+        function updateElapsedTimeDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            const timeString = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            document.getElementById('elapsed-time').textContent = timeString;
+        }
+
+        function showAlert(message, type) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.insertAdjacentHTML('afterbegin', alertHtml);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+
+        function showLoading(button, loading) {
+            if (loading) {
+                if (!button.disabled) {  // Only set loading if not already disabled
+                    const originalHtml = button.innerHTML;
+                    button.setAttribute('data-original-html', originalHtml);
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                    button.disabled = true;
+                }
+            } else {
+                const originalHtml = button.getAttribute('data-original-html');
+                if (originalHtml) {
+                    button.innerHTML = originalHtml;
+                    button.removeAttribute('data-original-html');
+                }
+                // For other buttons, let updateButtonStates handle the state
+            }
+        }
+
+        function updateUI() {
+            // Force status update
+            updateStatus();
+            // Force button state reset to clear any stuck loading states
+            setTimeout(() => {
+                clearAllLoadingStates();
+            }, 100);
+        }
+
+        function clearAllLoadingStates() {
+            // Clear loading state from all buttons
+            const buttons = [btnStartCamera, btnStopCamera];
+            buttons.forEach(button => {
+                if (button && button.getAttribute('data-original-html')) {
+                    showLoading(button, false);
+                }
+            });
+            
+            console.log('Cleared button loading states');
+        }
+
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e.error);
+            showAlert('An unexpected error occurred', 'danger');
+        });
+
+        // Keyboard shortcuts for debugging
+        window.addEventListener('keydown', function(e) {
+            // Press Ctrl+R to force reset UI (in addition to normal refresh)
+            if (e.ctrlKey && e.key === 'r' && e.shiftKey) {
+                e.preventDefault();
+                console.log('Force resetting UI...');
+                clearAllLoadingStates();
+                updateUI();
+                showAlert('UI force reset', 'info');
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+            }
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>

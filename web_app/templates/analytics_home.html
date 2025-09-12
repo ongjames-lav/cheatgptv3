@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheatGPT Analytics - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #ffffff;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: #212121;
+            padding: 12px 0;
+            border-bottom: 1px solid #303030;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 500;
+            color: #ff0000;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "🎯";
+            font-size: 24px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 40px;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            background: #121212;
+            border: 1px solid #303030;
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar:focus {
+            border-color: #065fd4;
+            box-shadow: 0 0 0 1px #065fd4;
+        }
+
+        .search-bar::placeholder {
+            color: #aaaaaa;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #313131;
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 0 16px 16px 0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #404040;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 18px;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: #303030;
+        }
+
+        .nav-item.active {
+            background: #ff0000;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 57px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #212121;
+            border-right: 1px solid #303030;
+            padding: 16px 0;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+            width: 0;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 70px;
+            left: 16px;
+            background: #313131;
+            border: none;
+            color: #ffffff;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1001;
+            display: none;
+        }
+
+        .filter-section {
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+
+        .filter-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #303030;
+        }
+
+        .filter-group {
+            margin-bottom: 16px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: #aaaaaa;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .filter-input {
+            width: 100%;
+            background: #121212;
+            border: 1px solid #303030;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            cursor: pointer;
+        }
+
+        .filter-checkbox input {
+            accent-color: #ff0000;
+        }
+
+        .filter-checkbox label {
+            font-size: 14px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .filter-count {
+            color: #aaaaaa;
+            font-size: 12px;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: #ffffff;
+        }
+
+        .view-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .view-btn {
+            background: #313131;
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .view-btn.active,
+        .view-btn:hover {
+            background: #ff0000;
+        }
+
+        .sort-select {
+            background: #313131;
+            border: 1px solid #404040;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* Video Card */
+        .video-card {
+            background: #181818;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: #303030;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .live-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #ff0000;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-card:hover .video-overlay {
+            opacity: 1;
+        }
+
+        .overlay-btn {
+            background: #ff0000;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+        }
+
+        .overlay-btn:hover {
+            background: #cc0000;
+        }
+
+        .overlay-stats {
+            color: #ffffff;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .video-info {
+            padding: 16px;
+        }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .video-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #aaaaaa;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .video-date {
+            font-size: 13px;
+        }
+
+        .video-stats {
+            display: flex;
+            gap: 16px;
+            color: #aaaaaa;
+            font-size: 13px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-icon {
+            font-size: 12px;
+        }
+
+        .event-count {
+            color: #ff4444;
+            font-weight: 600;
+        }
+
+        .event-count.high {
+            color: #ff0000;
+        }
+
+        .event-count.medium {
+            color: #ff8800;
+        }
+
+        .event-count.low {
+            color: #ffaa00;
+        }
+
+        /* Loading States */
+        .loading-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .loading-card {
+            background: #181818;
+            border-radius: 12px;
+            overflow: hidden;
+            animation: pulse-loading 1.5s ease-in-out infinite;
+        }
+
+        .loading-thumbnail {
+            width: 100%;
+            height: 180px;
+            background: #303030;
+        }
+
+        .loading-info {
+            padding: 16px;
+        }
+
+        .loading-line {
+            height: 16px;
+            background: #303030;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .loading-line.short {
+            width: 60%;
+        }
+
+        .loading-line.medium {
+            width: 80%;
+        }
+
+        @keyframes pulse-loading {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #aaaaaa;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 24px;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .empty-subtitle {
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        .empty-action {
+            background: #ff0000;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+            
+            .search-container {
+                margin: 0 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 57px;
+                left: 0;
+                height: calc(100vh - 57px);
+                z-index: 999;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .main-layout {
+                margin-left: 0;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .header-content {
+                padding: 0 16px;
+            }
+            
+            .search-container {
+                margin: 0 12px;
+            }
+            
+            .user-menu {
+                gap: 8px;
+            }
+            
+            .nav-item {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .view-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* Accessibility */
+        .video-card:focus {
+            outline: 2px solid #065fd4;
+            outline-offset: 2px;
+        }
+
+        .filter-checkbox:focus-within {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/analytics/home" class="logo">CheatGPT Analytics</a>
+            
+            <div class="search-container">
+                <input type="text" class="search-bar" id="searchInput" 
+                       placeholder="Search by Session ID, date, or event type...">
+                <button class="search-btn" id="searchBtn">🔍</button>
+            </div>
+            
+            <nav class="user-menu">
+                <a href="/analytics/home" class="nav-item active">Home</a>
+                <a href="/" class="nav-item">Live</a>
+                <a href="/analytics/player" class="nav-item">Player</a>
+                <a href="#" class="nav-item">Reports</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sidebar Toggle for Mobile -->
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Date Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Date Range</div>
+                <div class="filter-group">
+                    <label class="filter-label">From</label>
+                    <input type="date" class="filter-input" id="dateFrom">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">To</label>
+                    <input type="date" class="filter-input" id="dateTo">
+                </div>
+            </div>
+
+            <!-- Event Type Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Event Types</div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="eventPhone" value="phone" checked>
+                    <label for="eventPhone">Phone Use <span class="filter-count" id="phoneCount">(0)</span></label>
+                </div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="eventLooking" value="looking" checked>
+                    <label for="eventLooking">Looking Around <span class="filter-count" id="lookingCount">(0)</span></label>
+                </div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="eventLeaning" value="leaning" checked>
+                    <label for="eventLeaning">Leaning <span class="filter-count" id="leaningCount">(0)</span></label>
+                </div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="eventGesture" value="gesture" checked>
+                    <label for="eventGesture">Hand Gestures <span class="filter-count" id="gestureCount">(0)</span></label>
+                </div>
+            </div>
+
+            <!-- Severity Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Severity</div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="severityCritical" value="red" checked>
+                    <label for="severityCritical">Critical <span class="filter-count" id="criticalCount">(0)</span></label>
+                </div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="severityWarning" value="orange" checked>
+                    <label for="severityWarning">Warning <span class="filter-count" id="warningCount">(0)</span></label>
+                </div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="severityNotice" value="yellow" checked>
+                    <label for="severityNotice">Notice <span class="filter-count" id="noticeCount">(0)</span></label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="content">
+            <div class="content-header">
+                <h1 class="page-title">Recorded Sessions</h1>
+                <div class="view-controls">
+                    <button class="view-btn active" id="gridView">Grid</button>
+                    <button class="view-btn" id="listView">List</button>
+                    <select class="sort-select" id="sortSelect">
+                        <option value="date_desc">Newest First</option>
+                        <option value="date_asc">Oldest First</option>
+                        <option value="events_desc">Most Events</option>
+                        <option value="events_asc">Fewest Events</option>
+                        <option value="duration_desc">Longest</option>
+                        <option value="duration_asc">Shortest</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Video Grid -->
+            <div class="video-grid" id="videoGrid">
+                <!-- Loading state -->
+                <div class="loading-card">
+                    <div class="loading-thumbnail"></div>
+                    <div class="loading-info">
+                        <div class="loading-line"></div>
+                        <div class="loading-line short"></div>
+                        <div class="loading-line medium"></div>
+                    </div>
+                </div>
+                <div class="loading-card">
+                    <div class="loading-thumbnail"></div>
+                    <div class="loading-info">
+                        <div class="loading-line"></div>
+                        <div class="loading-line short"></div>
+                        <div class="loading-line medium"></div>
+                    </div>
+                </div>
+                <div class="loading-card">
+                    <div class="loading-thumbnail"></div>
+                    <div class="loading-info">
+                        <div class="loading-line"></div>
+                        <div class="loading-line short"></div>
+                        <div class="loading-line medium"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        class AnalyticsHome {
+            constructor() {
+                this.sessions = [];
+                this.filteredSessions = [];
+                this.currentSort = 'date_desc';
+                this.activeFilters = {
+                    eventTypes: ['phone', 'looking', 'leaning', 'gesture'],
+                    severities: ['red', 'orange', 'yellow'],
+                    dateFrom: null,
+                    dateTo: null,
+                    search: ''
+                };
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadSessions();
+            }
+
+            initializeElements() {
+                this.videoGrid = document.getElementById('videoGrid');
+                this.searchInput = document.getElementById('searchInput');
+                this.sortSelect = document.getElementById('sortSelect');
+                this.sidebar = document.getElementById('sidebar');
+                this.sidebarToggle = document.getElementById('sidebarToggle');
+                this.gridView = document.getElementById('gridView');
+                this.listView = document.getElementById('listView');
+                this.dateFrom = document.getElementById('dateFrom');
+                this.dateTo = document.getElementById('dateTo');
+                this.tooltip = document.getElementById('tooltip');
+            }
+
+            setupEventListeners() {
+                // Search
+                this.searchInput.addEventListener('input', (e) => {
+                    this.activeFilters.search = e.target.value.toLowerCase();
+                    this.applyFilters();
+                });
+
+                // Sort
+                this.sortSelect.addEventListener('change', (e) => {
+                    this.currentSort = e.target.value;
+                    this.applyFilters();
+                });
+
+                // Sidebar toggle
+                this.sidebarToggle.addEventListener('click', () => {
+                    this.sidebar.classList.toggle('show');
+                });
+
+                // View toggle
+                this.gridView.addEventListener('click', () => this.setView('grid'));
+                this.listView.addEventListener('click', () => this.setView('list'));
+
+                // Date filters
+                this.dateFrom.addEventListener('change', () => {
+                    this.activeFilters.dateFrom = this.dateFrom.value;
+                    this.applyFilters();
+                });
+
+                this.dateTo.addEventListener('change', () => {
+                    this.activeFilters.dateTo = this.dateTo.value;
+                    this.applyFilters();
+                });
+
+                // Filter checkboxes
+                document.querySelectorAll('.filter-checkbox input').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        this.updateFilters();
+                        this.applyFilters();
+                    });
+                });
+
+                // Close sidebar on outside click (mobile)
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 768 && 
+                        !this.sidebar.contains(e.target) && 
+                        !this.sidebarToggle.contains(e.target)) {
+                        this.sidebar.classList.remove('show');
+                    }
+                });
+            }
+
+            async loadSessions() {
+                try {
+                    const response = await fetch('/api/sessions/list');
+                    const data = await response.json();
+                    this.sessions = Array.isArray(data) ? data : (data.sessions || []);
+                    this.updateFilterCounts();
+                    this.applyFilters();
+                } catch (error) {
+                    console.error('Error loading sessions:', error);
+                    this.showError('Failed to load sessions');
+                }
+            }
+
+            updateFilters() {
+                // Event types
+                this.activeFilters.eventTypes = Array.from(
+                    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked')
+                ).map(cb => cb.value).filter(v => ['phone', 'looking', 'leaning', 'gesture'].includes(v));
+
+                // Severities
+                this.activeFilters.severities = Array.from(
+                    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked')
+                ).map(cb => cb.value).filter(v => ['red', 'orange', 'yellow'].includes(v));
+            }
+
+            updateFilterCounts() {
+                // This would be updated with real data from sessions
+                document.getElementById('phoneCount').textContent = `(${this.sessions.filter(s => s.phone_events > 0).length})`;
+                document.getElementById('lookingCount').textContent = `(${this.sessions.filter(s => s.looking_events > 0).length})`;
+                document.getElementById('leaningCount').textContent = `(${this.sessions.filter(s => s.leaning_events > 0).length})`;
+                document.getElementById('gestureCount').textContent = `(${this.sessions.filter(s => s.gesture_events > 0).length})`;
+                document.getElementById('criticalCount').textContent = `(${this.sessions.filter(s => s.critical_events > 0).length})`;
+                document.getElementById('warningCount').textContent = `(${this.sessions.filter(s => s.warning_events > 0).length})`;
+                document.getElementById('noticeCount').textContent = `(${this.sessions.filter(s => s.notice_events > 0).length})`;
+            }
+
+            applyFilters() {
+                let filtered = [...this.sessions];
+
+                // Search filter
+                if (this.activeFilters.search) {
+                    filtered = filtered.filter(session => 
+                        session.session_id.toLowerCase().includes(this.activeFilters.search) ||
+                        new Date(session.start_time * 1000).toLocaleDateString().includes(this.activeFilters.search)
+                    );
+                }
+
+                // Date filters
+                if (this.activeFilters.dateFrom) {
+                    const fromDate = new Date(this.activeFilters.dateFrom);
+                    filtered = filtered.filter(session => 
+                        new Date(session.start_time * 1000) >= fromDate
+                    );
+                }
+
+                if (this.activeFilters.dateTo) {
+                    const toDate = new Date(this.activeFilters.dateTo);
+                    toDate.setHours(23, 59, 59, 999); // End of day
+                    filtered = filtered.filter(session => 
+                        new Date(session.start_time * 1000) <= toDate
+                    );
+                }
+
+                // Sort
+                filtered.sort((a, b) => {
+                    switch (this.currentSort) {
+                        case 'date_desc':
+                            return b.start_time - a.start_time;
+                        case 'date_asc':
+                            return a.start_time - b.start_time;
+                        case 'events_desc':
+                            return (b.hotspot_count || 0) - (a.hotspot_count || 0);
+                        case 'events_asc':
+                            return (a.hotspot_count || 0) - (b.hotspot_count || 0);
+                        case 'duration_desc':
+                            return (b.duration || 0) - (a.duration || 0);
+                        case 'duration_asc':
+                            return (a.duration || 0) - (b.duration || 0);
+                        default:
+                            return 0;
+                    }
+                });
+
+                this.filteredSessions = filtered;
+                this.renderSessions();
+            }
+
+            renderSessions() {
+                if (this.filteredSessions.length === 0) {
+                    this.videoGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <div class="empty-icon">📹</div>
+                            <div class="empty-title">No sessions found</div>
+                            <div class="empty-subtitle">Try adjusting your filters or start a new recording session</div>
+                            <a href="/" class="empty-action">Start Live Monitoring</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.videoGrid.innerHTML = this.filteredSessions.map(session => 
+                    this.createSessionCard(session)
+                ).join('');
+
+                // Add click listeners to cards
+                this.videoGrid.querySelectorAll('.video-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const sessionId = card.dataset.sessionId;
+                        window.location.href = `/analytics/player?session=${sessionId}`;
+                    });
+                });
+            }
+
+            createSessionCard(session) {
+                const date = new Date(session.start_time * 1000);
+                const duration = this.formatTime(session.duration || 0);
+                const eventCount = session.hotspot_count || 0;
+                const isActive = session.status === 'active'; // Assuming we have this field
+                
+                let eventCountClass = 'low';
+                if (eventCount > 10) eventCountClass = 'high';
+                else if (eventCount > 5) eventCountClass = 'medium';
+
+                const suspiciousPercentage = session.duration ? 
+                    Math.round((eventCount / (session.duration / 60)) * 10) : 0;
+
+                return `
+                    <div class="video-card" data-session-id="${session.session_id}" tabindex="0">
+                        <div class="video-thumbnail">
+                            <img src="/api/thumbnail/${session.session_id}" 
+                                 alt="Session ${session.session_id}" 
+                                 onerror="this.style.display='none'">
+                            <div class="video-duration">${duration}</div>
+                            ${isActive ? '<div class="live-badge">LIVE</div>' : ''}
+                            <div class="video-overlay">
+                                <button class="overlay-btn">View Analytics</button>
+                                <div class="overlay-stats">
+                                    ${suspiciousPercentage}% suspicious activity
+                                </div>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">${session.session_id}</div>
+                            <div class="video-metadata">
+                                <div class="video-date">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
+                            </div>
+                            <div class="video-stats">
+                                <div class="stat-item">
+                                    <span class="stat-icon">⏱</span>
+                                    <span>${duration}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon">⚠</span>
+                                    <span class="event-count ${eventCountClass}">${eventCount} events</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            setView(view) {
+                this.gridView.classList.toggle('active', view === 'grid');
+                this.listView.classList.toggle('active', view === 'list');
+                
+                if (view === 'list') {
+                    this.videoGrid.style.gridTemplateColumns = '1fr';
+                } else {
+                    this.videoGrid.style.gridTemplateColumns = '';
+                }
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            showError(message) {
+                this.videoGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">Error</div>
+                        <div class="empty-subtitle">${message}</div>
+                        <button class="empty-action" onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AnalyticsHome();
+        });
+    </script>
+</body>
+</html>

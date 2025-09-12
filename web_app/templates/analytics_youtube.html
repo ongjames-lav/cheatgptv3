@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheatGPT Analytics - YouTube Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #ffffff;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: #212121;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #303030;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 500;
+            color: #ff0000;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-link {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #303030;
+        }
+
+        .nav-link.active {
+            background: #ff0000;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Left Section - Video Player (70%) */
+        .video-section {
+            flex: 0 0 70%;
+            padding: 24px;
+            background: #0f0f0f;
+        }
+
+        /* Session Title */
+        .session-title {
+            margin-bottom: 16px;
+        }
+
+        .session-title h1 {
+            font-size: 20px;
+            font-weight: 400;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .session-metadata {
+            color: #aaaaaa;
+            font-size: 14px;
+        }
+
+        /* Video Player */
+        .video-container {
+            position: relative;
+            background: #000000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 480px;
+            background: #000000;
+        }
+
+        .video-player::-webkit-media-controls-panel {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .video-player::-webkit-media-controls-play-button {
+            background-color: #ff0000;
+            border-radius: 50%;
+        }
+
+        .video-player::-webkit-media-controls-timeline {
+            background-color: #ff0000;
+        }
+
+        /* Custom Video Controls */
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-container:hover .custom-controls {
+            opacity: 1;
+        }
+
+        .progress-container {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #ff0000;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .event-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+        }
+
+        .event-marker {
+            position: absolute;
+            top: -2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transform: translateX(-50%);
+        }
+
+        .event-marker.severity-red {
+            background: #ff4444;
+            box-shadow: 0 0 8px #ff4444;
+        }
+
+        .event-marker.severity-orange {
+            background: #ff8800;
+            box-shadow: 0 0 8px #ff8800;
+        }
+
+        .event-marker.severity-yellow {
+            background: #ffdd00;
+            box-shadow: 0 0 8px #ffdd00;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .time-display {
+            color: #ffffff;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .speed-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .fullscreen-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Event Timeline */
+        .timeline-section {
+            background: #181818;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #303030;
+            padding-bottom: 16px;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .event-count {
+            background: #ff0000;
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .timeline-events {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+
+        .timeline-events::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .timeline-events::-webkit-scrollbar-track {
+            background: #303030;
+            border-radius: 4px;
+        }
+
+        .timeline-events::-webkit-scrollbar-thumb {
+            background: #606060;
+            border-radius: 4px;
+        }
+
+        .timeline-event {
+            background: #262626;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid;
+        }
+
+        .timeline-event:hover {
+            background: #303030;
+            transform: translateX(4px);
+        }
+
+        .timeline-event.active {
+            background: #ff0000;
+            color: #ffffff;
+        }
+
+        .timeline-event.severity-red {
+            border-left-color: #ff4444;
+        }
+
+        .timeline-event.severity-orange {
+            border-left-color: #ff8800;
+        }
+
+        .timeline-event.severity-yellow {
+            border-left-color: #ffdd00;
+        }
+
+        .event-time {
+            font-size: 12px;
+            color: #aaaaaa;
+            font-family: monospace;
+            margin-bottom: 4px;
+        }
+
+        .event-type {
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .event-confidence {
+            font-size: 12px;
+            color: #aaaaaa;
+        }
+
+        /* Right Section - Sidebar (30%) */
+        .sidebar {
+            flex: 0 0 30%;
+            background: #181818;
+            border-left: 1px solid #303030;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #181818;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #606060;
+            border-radius: 6px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #303030;
+            position: sticky;
+            top: 0;
+            background: #181818;
+            z-index: 10;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            width: 100%;
+            background: #262626;
+            border: 1px solid #303030;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #ff0000;
+        }
+
+        .sessions-list {
+            padding: 8px;
+        }
+
+        /* Session Card (YouTube Style) */
+        .session-card {
+            display: flex;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .session-card:hover {
+            background: #262626;
+        }
+
+        .session-card.active {
+            background: #ff0000;
+        }
+
+        .session-thumbnail {
+            flex: 0 0 120px;
+            height: 68px;
+            background: #303030;
+            border-radius: 6px;
+            margin-right: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .session-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .session-duration {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .session-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .session-card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .session-card-date {
+            font-size: 12px;
+            color: #aaaaaa;
+            margin-bottom: 4px;
+        }
+
+        .session-card-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #aaaaaa;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-icon {
+            font-size: 10px;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: #aaaaaa;
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #303030;
+            border-top: 2px solid #ff0000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error States */
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px;
+            text-align: center;
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaaaaa;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .video-section {
+                flex: none;
+            }
+            
+            .sidebar {
+                flex: none;
+                border-left: none;
+                border-top: 1px solid #303030;
+                max-height: 400px;
+            }
+            
+            .session-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .session-thumbnail {
+                flex: none;
+                width: 160px;
+                height: 90px;
+                margin-right: 0;
+                margin-bottom: 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .video-player {
+                height: 300px;
+            }
+            
+            .top-nav {
+                padding: 12px 16px;
+            }
+            
+            .video-section {
+                padding: 16px;
+            }
+            
+            .nav-links {
+                gap: 12px;
+            }
+            
+            .nav-link {
+                padding: 6px 8px;
+                font-size: 14px;
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        /* Button Animations */
+        .control-btn.playing {
+            color: #ff0000;
+            transform: scale(1.1);
+        }
+
+        /* Event marker hover effect */
+        .event-marker:hover {
+            transform: translateX(-50%) scale(1.2);
+        }
+
+        /* Focus styles for accessibility */
+        .control-btn:focus,
+        .session-card:focus,
+        .timeline-event:focus {
+            outline: 2px solid #ff0000;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-brand">CheatGPT Analytics</div>
+        <div class="nav-links">
+            <a href="/analytics/home" class="nav-link">Home</a>
+            <a href="/" class="nav-link">Live Monitor</a>
+            <a href="/analytics/player" class="nav-link active">Player</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Section - Video Player (70%) -->
+        <div class="video-section">
+            <!-- Session Title -->
+            <div class="session-title">
+                <h1 id="sessionTitle">Select a session to begin</h1>
+                <div class="session-metadata" id="sessionMetadata">
+                    Choose a recording from the sidebar to start analyzing
+                </div>
+            </div>
+
+            <!-- Video Player -->
+            <div class="video-container" id="videoContainer">
+                <video id="videoPlayer" class="video-player" preload="metadata">
+                    <source id="videoSource" src="" type="video/mp4">
+                    <p>Your browser does not support the video tag.</p>
+                </video>
+
+                <!-- Custom Video Controls -->
+                <div class="custom-controls" id="customControls">
+                    <!-- Progress Bar with Event Markers -->
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-fill" id="progressFill"></div>
+                            <div class="event-markers" id="eventMarkers"></div>
+                        </div>
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div class="controls-row">
+                        <div class="left-controls">
+                            <button class="control-btn" id="playPauseBtn">▶</button>
+                            <button class="control-btn" id="prevEventBtn">⏮</button>
+                            <button class="control-btn" id="nextEventBtn">⏭</button>
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="right-controls">
+                            <select class="speed-control" id="speedControl">
+                                <option value="0.25">0.25x</option>
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x</option>
+                            </select>
+                            <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Timeline -->
+            <div class="timeline-section">
+                <div class="timeline-header">
+                    <div class="timeline-title">Suspicious Events</div>
+                    <div class="event-count" id="eventCount">0</div>
+                </div>
+                <div class="timeline-events" id="timelineEvents">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div>No events to display</div>
+                        <div style="font-size: 12px; margin-top: 8px;">Load a session to see detected events</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section - Sessions Sidebar (30%) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Recorded Sessions</div>
+                <input type="text" class="search-box" id="searchBox" placeholder="Search sessions...">
+            </div>
+            
+            <div class="sessions-list" id="sessionsList">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    Loading sessions...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        class YouTubeAnalytics {
+            constructor() {
+                this.currentSession = null;
+                this.events = [];
+                this.sessions = [];
+                this.currentEventIndex = -1;
+                this.video = document.getElementById('videoPlayer');
+                this.isPlaying = false;
+                this.isDragging = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadSessions();
+            }
+
+            initializeElements() {
+                // Video elements
+                this.videoContainer = document.getElementById('videoContainer');
+                this.customControls = document.getElementById('customControls');
+                this.playPauseBtn = document.getElementById('playPauseBtn');
+                this.prevEventBtn = document.getElementById('prevEventBtn');
+                this.nextEventBtn = document.getElementById('nextEventBtn');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressFill = document.getElementById('progressFill');
+                this.eventMarkers = document.getElementById('eventMarkers');
+                this.currentTimeDisplay = document.getElementById('currentTime');
+                this.totalTimeDisplay = document.getElementById('totalTime');
+                this.speedControl = document.getElementById('speedControl');
+                this.fullscreenBtn = document.getElementById('fullscreenBtn');
+
+                // Session elements
+                this.sessionTitle = document.getElementById('sessionTitle');
+                this.sessionMetadata = document.getElementById('sessionMetadata');
+                this.timelineEvents = document.getElementById('timelineEvents');
+                this.eventCount = document.getElementById('eventCount');
+                this.sessionsList = document.getElementById('sessionsList');
+                this.searchBox = document.getElementById('searchBox');
+
+                // Tooltip
+                this.tooltip = document.getElementById('tooltip');
+            }
+
+            setupEventListeners() {
+                // Video controls
+                this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+                this.prevEventBtn.addEventListener('click', () => this.navigateEvent(-1));
+                this.nextEventBtn.addEventListener('click', () => this.navigateEvent(1));
+                this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+
+                // Progress bar interaction
+                this.progressBar.addEventListener('click', (e) => this.seekTo(e));
+                this.progressBar.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.onDrag(e));
+                document.addEventListener('mouseup', () => this.endDrag());
+
+                // Speed control
+                this.speedControl.addEventListener('change', (e) => {
+                    this.video.playbackRate = parseFloat(e.target.value);
+                });
+
+                // Video events
+                this.video.addEventListener('timeupdate', () => this.updateProgress());
+                this.video.addEventListener('loadedmetadata', () => this.onVideoLoaded());
+                this.video.addEventListener('play', () => this.onPlay());
+                this.video.addEventListener('pause', () => this.onPause());
+                this.video.addEventListener('ended', () => this.onEnded());
+
+                // Search
+                this.searchBox.addEventListener('input', (e) => this.searchSessions(e.target.value));
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+                // Custom controls visibility
+                this.videoContainer.addEventListener('mouseenter', () => {
+                    this.customControls.style.opacity = '1';
+                });
+                this.videoContainer.addEventListener('mouseleave', () => {
+                    if (!this.isPlaying) return;
+                    this.customControls.style.opacity = '0';
+                });
+            }
+
+            async loadSessions() {
+                try {
+                    const response = await fetch('/sessions');
+                    const data = await response.json();
+                    this.sessions = Array.isArray(data) ? data : (data.sessions || []);
+                    this.renderSessionsList();
+                    
+                    // Auto-load session from URL parameter
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const sessionParam = urlParams.get('session');
+                    if (sessionParam) {
+                        const session = this.sessions.find(s => s.session_id === sessionParam);
+                        if (session) {
+                            setTimeout(() => this.loadSession(session), 500);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading sessions:', error);
+                    this.showError('Failed to load sessions');
+                }
+            }
+
+            renderSessionsList() {
+                if (this.sessions.length === 0) {
+                    this.sessionsList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📹</div>
+                            <div>No recordings found</div>
+                            <div style="font-size: 12px; margin-top: 8px;">Start monitoring to create recordings</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.sessionsList.innerHTML = '';
+                this.sessions.forEach(session => {
+                    const card = this.createSessionCard(session);
+                    this.sessionsList.appendChild(card);
+                });
+            }
+
+            createSessionCard(session) {
+                const card = document.createElement('div');
+                card.className = 'session-card';
+                card.dataset.sessionId = session.session_id;
+
+                const date = new Date(session.start_time * 1000);
+                const duration = this.formatTime(session.duration || 0);
+                const eventCount = session.hotspot_count || 0;
+
+                card.innerHTML = `
+                    <div class="session-thumbnail">
+                        <img src="/api/thumbnail/${session.session_id}" alt="Session thumbnail" 
+                             onerror="this.style.display='none'">
+                        <div class="session-duration">${duration}</div>
+                    </div>
+                    <div class="session-info">
+                        <div class="session-card-title">${session.session_id}</div>
+                        <div class="session-card-date">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
+                        <div class="session-card-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">⚠</span>
+                                <span>${eventCount} events</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">⏱</span>
+                                <span>${duration}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => this.loadSession(session));
+                return card;
+            }
+
+            async loadSession(session) {
+                try {
+                    this.currentSession = session;
+                    
+                    // Update active session in sidebar
+                    document.querySelectorAll('.session-card').forEach(card => {
+                        card.classList.toggle('active', card.dataset.sessionId === session.session_id);
+                    });
+
+                    // Update session info
+                    this.sessionTitle.textContent = session.session_id;
+                    const date = new Date(session.start_time * 1000);
+                    this.sessionMetadata.textContent = `Recorded on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()} • Duration: ${this.formatTime(session.duration || 0)}`;
+
+                    // Load video
+                    const videoSource = document.getElementById('videoSource');
+                    videoSource.src = `/playback/${session.session_id}`;
+                    this.video.load();
+
+                    // Load events
+                    const eventsResponse = await fetch(`/events/${session.session_id}`);
+                    const eventsData = await eventsResponse.json();
+                    this.events = Array.isArray(eventsData) ? eventsData : (eventsData.events || []);
+
+                    this.renderTimeline();
+                    this.renderEventMarkers();
+
+                } catch (error) {
+                    console.error('Error loading session:', error);
+                    this.showError('Failed to load session');
+                }
+            }
+
+            renderTimeline() {
+                this.eventCount.textContent = this.events.length;
+                
+                if (this.events.length === 0) {
+                    this.timelineEvents.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✅</div>
+                            <div>No suspicious events detected</div>
+                            <div style="font-size: 12px; margin-top: 8px;">This session appears clean</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.timelineEvents.innerHTML = '';
+                this.events.forEach((event, index) => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = `timeline-event severity-${event.severity}`;
+                    eventElement.dataset.index = index;
+
+                    eventElement.innerHTML = `
+                        <div class="event-time">${this.formatTime(event.timestamp_seconds)}</div>
+                        <div class="event-type">${event.description}</div>
+                        <div class="event-confidence">Confidence: ${Math.round(event.confidence * 100)}%</div>
+                    `;
+
+                    eventElement.addEventListener('click', () => this.jumpToEvent(index));
+                    this.timelineEvents.appendChild(eventElement);
+                });
+            }
+
+            renderEventMarkers() {
+                this.eventMarkers.innerHTML = '';
+                
+                if (!this.video.duration || this.events.length === 0) return;
+
+                this.events.forEach((event, index) => {
+                    const marker = document.createElement('div');
+                    marker.className = `event-marker severity-${event.severity}`;
+                    marker.dataset.index = index;
+                    
+                    const position = (event.timestamp_seconds / this.video.duration) * 100;
+                    marker.style.left = `${position}%`;
+                    
+                    marker.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.jumpToEvent(index);
+                    });
+
+                    marker.addEventListener('mouseenter', (e) => {
+                        this.showTooltip(e.target, `${event.description} (${this.formatTime(event.timestamp_seconds)})`);
+                    });
+
+                    marker.addEventListener('mouseleave', () => {
+                        this.hideTooltip();
+                    });
+
+                    this.eventMarkers.appendChild(marker);
+                });
+            }
+
+            jumpToEvent(index) {
+                if (index < 0 || index >= this.events.length) return;
+                
+                const event = this.events[index];
+                this.video.currentTime = event.timestamp_seconds;
+                this.currentEventIndex = index;
+
+                // Update timeline highlighting
+                document.querySelectorAll('.timeline-event').forEach((el, i) => {
+                    el.classList.toggle('active', i === index);
+                });
+            }
+
+            navigateEvent(direction) {
+                const newIndex = this.currentEventIndex + direction;
+                if (newIndex >= 0 && newIndex < this.events.length) {
+                    this.jumpToEvent(newIndex);
+                }
+            }
+
+            togglePlayPause() {
+                if (this.video.paused) {
+                    this.video.play();
+                } else {
+                    this.video.pause();
+                }
+            }
+
+            onPlay() {
+                this.isPlaying = true;
+                this.playPauseBtn.innerHTML = '⏸';
+                this.playPauseBtn.classList.add('playing');
+            }
+
+            onPause() {
+                this.isPlaying = false;
+                this.playPauseBtn.innerHTML = '▶';
+                this.playPauseBtn.classList.remove('playing');
+            }
+
+            onEnded() {
+                this.isPlaying = false;
+                this.playPauseBtn.innerHTML = '▶';
+                this.playPauseBtn.classList.remove('playing');
+            }
+
+            onVideoLoaded() {
+                this.totalTimeDisplay.textContent = this.formatTime(this.video.duration);
+                this.renderEventMarkers();
+            }
+
+            updateProgress() {
+                if (this.isDragging) return;
+                
+                const progress = (this.video.currentTime / this.video.duration) * 100;
+                this.progressFill.style.width = `${progress}%`;
+                this.currentTimeDisplay.textContent = this.formatTime(this.video.currentTime);
+            }
+
+            seekTo(e) {
+                if (!this.video.duration) return;
+                
+                const rect = this.progressBar.getBoundingClientRect();
+                const progress = (e.clientX - rect.left) / rect.width;
+                this.video.currentTime = progress * this.video.duration;
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                this.seekTo(e);
+            }
+
+            onDrag(e) {
+                if (!this.isDragging) return;
+                this.seekTo(e);
+            }
+
+            endDrag() {
+                this.isDragging = false;
+            }
+
+            toggleFullscreen() {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    this.videoContainer.requestFullscreen();
+                }
+            }
+
+            searchSessions(query) {
+                const filteredSessions = this.sessions.filter(session => 
+                    session.session_id.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                this.sessionsList.innerHTML = '';
+                filteredSessions.forEach(session => {
+                    const card = this.createSessionCard(session);
+                    this.sessionsList.appendChild(card);
+                });
+            }
+
+            handleKeyboard(e) {
+                if (e.target.tagName.toLowerCase() === 'input') return;
+                
+                switch(e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        this.togglePlayPause();
+                        break;
+                    case 'ArrowLeft':
+                        this.video.currentTime -= 10;
+                        break;
+                    case 'ArrowRight':
+                        this.video.currentTime += 10;
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.navigateEvent(-1);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.navigateEvent(1);
+                        break;
+                    case 'f':
+                        this.toggleFullscreen();
+                        break;
+                }
+            }
+
+            showTooltip(element, text) {
+                this.tooltip.textContent = text;
+                this.tooltip.classList.add('show');
+                
+                const rect = element.getBoundingClientRect();
+                this.tooltip.style.left = `${rect.left + rect.width / 2}px`;
+                this.tooltip.style.top = `${rect.top - 30}px`;
+                this.tooltip.style.transform = 'translateX(-50%)';
+            }
+
+            hideTooltip() {
+                this.tooltip.classList.remove('show');
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            showError(message) {
+                this.sessionsList.innerHTML = `<div class="error-message">${message}</div>`;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new YouTubeAnalytics();
+        });
+    </script>
+</body>
+</html>
