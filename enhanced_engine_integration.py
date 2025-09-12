@@ -20,7 +20,7 @@ from realistic_lstm_integration import RealisticLSTMClassifier
 
 # Try to import existing engine components
 try:
-    from cheatgpt.pose_detector import PoseDetector
+    from cheatgpt.detectors.pose_detector import PoseDetector
     from cheatgpt.engine import Engine
     CHEATGPT_AVAILABLE = True
 except ImportError:

@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Hidden session data for JavaScript -->
+<script id="session-data" type="application/json">
+{
+    "sessionId": "{{ session_id }}",
+    "videoPath": "{{ video_path }}",
+    "duration": {{ duration | int }},
+    "startTime": {{ start_time | int }},
+    "events": {{ events | tojson | safe }}
+}
+</script>
+
 <div id="session-playback-container">
     <div class="playback-header">
         <h2>Session Playback</h2>
@@ -325,14 +336,9 @@
 </style>
 
 <script>
-// Session and timeline data - these would typically be passed from the backend
-const SESSION_DATA = {
-    sessionId: '{{ session_id }}',
-    videoPath: '{{ video_path }}',
-    duration: {{ duration }},
-    startTime: {{ start_time }},
-    events: {{ events|tojsonfilter|safe }}
-};
+// Get session data from hidden elements to avoid template syntax in JavaScript
+const sessionDataElement = document.getElementById('session-data');
+const SESSION_DATA = JSON.parse(sessionDataElement.textContent);
 
 // Debug logging
 console.log('SESSION_DATA:', SESSION_DATA);

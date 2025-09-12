@@ -2,6 +2,7 @@
 import sqlite3
 import os
 import logging
+import threading
 from typing import Optional
 
 DB_PATH = os.getenv("DATABASE_URL", "cheatgpt.db")
@@ -11,7 +12,10 @@ class DBManager:
     def __init__(self, path=DB_PATH):
         # support sqlite file path or sqlite URI
         self.path = path
-        self.conn = sqlite3.connect(self._sqlite_path())
+        # Configure SQLite for thread safety
+        self.conn = sqlite3.connect(self._sqlite_path(), check_same_thread=False)
+        self.conn.execute('PRAGMA journal_mode=WAL')  # Enable WAL mode for better concurrency
+        self._lock = threading.Lock()  # Thread safety lock
         self._create_tables()
 
     def _sqlite_path(self):
@@ -83,17 +87,18 @@ class DBManager:
                    event_type: str, confidence: float, evidence_path: Optional[str] = None, 
                    bbox: Optional[list] = None):
         """Store an event in the database."""
-        try:
-            cursor = self.conn.cursor()
-            bbox_str = str(bbox) if bbox else None
-            cursor.execute('''
-                INSERT INTO events (timestamp, cam_id, track_id, event_type, confidence, evidence_path, bbox)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (timestamp, cam_id, track_id, event_type, confidence, evidence_path, bbox_str))
-            self.conn.commit()
-            logger.debug(f"Event stored: {event_type} for {track_id}")
-        except Exception as e:
-            logger.error(f"Failed to store event: {e}")
+        with self._lock:
+            try:
+                cursor = self.conn.cursor()
+                bbox_str = str(bbox) if bbox else None
+                cursor.execute('''
+                    INSERT INTO events (timestamp, cam_id, track_id, event_type, confidence, evidence_path, bbox)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (timestamp, cam_id, track_id, event_type, confidence, evidence_path, bbox_str))
+                self.conn.commit()
+                logger.debug(f"Event stored: {event_type} for {track_id}")
+            except Exception as e:
+                logger.error(f"Failed to store event: {e}")
 
     def get_events(self, limit: int = 100):
         """Get recent events from the database."""
@@ -109,18 +114,19 @@ class DBManager:
 
     def create_session(self, session_id: str, cam_id: str, start_timestamp: float) -> bool:
         """Create a new session record."""
-        try:
-            cursor = self.conn.cursor()
-            cursor.execute('''
-                INSERT INTO sessions (session_id, cam_id, start_timestamp, status)
-                VALUES (?, ?, ?, 'active')
-            ''', (session_id, cam_id, start_timestamp))
-            self.conn.commit()
-            logger.info(f"Session created: {session_id}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to create session: {e}")
-            return False
+        with self._lock:
+            try:
+                cursor = self.conn.cursor()
+                cursor.execute('''
+                    INSERT INTO sessions (session_id, cam_id, start_timestamp, status)
+                    VALUES (?, ?, ?, 'active')
+                ''', (session_id, cam_id, start_timestamp))
+                self.conn.commit()
+                logger.info(f"Session created: {session_id}")
+                return True
+            except Exception as e:
+                logger.error(f"Failed to create session: {e}")
+                return False
 
     def update_session_video_path(self, session_id: str, video_path: str) -> bool:
         """Update session with video path."""
@@ -158,50 +164,51 @@ class DBManager:
                      event_count: int = 1, severity_level: str = "yellow", 
                      detection_time: Optional[float] = None):
         """Store or update a hotspot location."""
-        try:
-            if detection_time is None:
-                import time
-                detection_time = time.time()
-            
-            cursor = self.conn.cursor()
-            
-            # Check if hotspot already exists in this area (within 50 pixels)
-            cursor.execute('''
-                SELECT id, event_count FROM hotspots 
-                WHERE session_id = ? AND 
-                      ABS(x - ?) < 50 AND ABS(y - ?) < 50
-                ORDER BY 
-                    (ABS(x - ?) + ABS(y - ?)) ASC
-                LIMIT 1
-            ''', (session_id, x, y, x, y))
-            
-            existing = cursor.fetchone()
-            
-            if existing:
-                # Update existing hotspot
-                hotspot_id, current_count = existing
-                new_count = current_count + event_count
+        with self._lock:
+            try:
+                if detection_time is None:
+                    import time
+                    detection_time = time.time()
+                
+                cursor = self.conn.cursor()
+                
+                # Check if hotspot already exists in this area (within 50 pixels)
                 cursor.execute('''
-                    UPDATE hotspots 
-                    SET event_count = ?, severity_level = ?, last_detection_time = ?
-                    WHERE id = ?
-                ''', (new_count, severity_level, detection_time, hotspot_id))
-                logger.debug(f"Updated hotspot {hotspot_id} (count: {new_count})")
-            else:
-                # Create new hotspot
-                cursor.execute('''
-                    INSERT INTO hotspots 
-                    (session_id, x, y, width, height, event_count, severity_level, 
-                     first_detection_time, last_detection_time)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (session_id, x, y, width, height, event_count, severity_level, 
-                      detection_time, detection_time))
-                logger.debug(f"Created new hotspot at ({x:.0f}, {y:.0f})")
-            
-            self.conn.commit()
-            
-        except Exception as e:
-            logger.error(f"Failed to store hotspot: {e}")
+                    SELECT id, event_count FROM hotspots 
+                    WHERE session_id = ? AND 
+                          ABS(x - ?) < 50 AND ABS(y - ?) < 50
+                    ORDER BY 
+                        (ABS(x - ?) + ABS(y - ?)) ASC
+                    LIMIT 1
+                ''', (session_id, x, y, x, y))
+                
+                existing = cursor.fetchone()
+                
+                if existing:
+                    # Update existing hotspot
+                    hotspot_id, current_count = existing
+                    new_count = current_count + event_count
+                    cursor.execute('''
+                        UPDATE hotspots 
+                        SET event_count = ?, severity_level = ?, last_detection_time = ?
+                        WHERE id = ?
+                    ''', (new_count, severity_level, detection_time, hotspot_id))
+                    logger.debug(f"Updated hotspot {hotspot_id} (count: {new_count})")
+                else:
+                    # Create new hotspot
+                    cursor.execute('''
+                        INSERT INTO hotspots 
+                        (session_id, x, y, width, height, event_count, severity_level, 
+                         first_detection_time, last_detection_time)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (session_id, x, y, width, height, event_count, severity_level, 
+                          detection_time, detection_time))
+                    logger.debug(f"Created new hotspot at ({x:.0f}, {y:.0f})")
+                
+                self.conn.commit()
+                
+            except Exception as e:
+                logger.error(f"Failed to store hotspot: {e}")
 
     def get_session_hotspots(self, session_id: str):
         """Get all hotspots for a session."""

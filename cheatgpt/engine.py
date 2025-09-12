@@ -127,6 +127,15 @@ class Engine:
         
         return device
     
+    def _get_model_path(self, relative_path: str) -> str:
+        """Get absolute path for model files, accounting for different working directories."""
+        # Get the directory where this engine.py file is located
+        engine_dir = os.path.dirname(os.path.abspath(__file__))
+        # Go up to the cheatgptv3 root directory
+        project_root = os.path.dirname(engine_dir)
+        # Construct the absolute path
+        return os.path.join(project_root, relative_path)
+
     def _initialize_components(self):
         """Initialize all detection and analysis components."""
         logger.info("🔧 Initializing components...")
@@ -142,16 +151,16 @@ class Engine:
         # Realistic LSTM Behavior Classifier (88.64% accuracy with Roboflow dataset)
         if ENHANCED_LSTM_AVAILABLE:
             self.lstm_classifier = RealisticLSTMClassifier(
-                model_path="weights/realistic_lstm_behavior.pth",
-                encoder_path="weights/realistic_label_encoder.pkl"
+                model_path=self._get_model_path("weights/realistic_lstm_behavior.pth"),
+                encoder_path=self._get_model_path("weights/realistic_label_encoder.pkl")
             )
             self.enhanced_lstm = True
             logger.info("🧠 Using Realistic LSTM with 88.64% accuracy (Roboflow dataset)")
         else:
             # Fallback to standard LSTM
             self.lstm_classifier = get_lstm_classifier(
-                model_path="weights/lstm_behavior.pth",
-                label_encoder_path="weights/label_encoder.pkl",
+                model_path=self._get_model_path("weights/lstm_behavior.pth"),
+                label_encoder_path=self._get_model_path("weights/label_encoder.pkl"),
                 device=self.device
             )
             self.enhanced_lstm = False
@@ -1094,7 +1103,7 @@ class Engine:
     
     def _create_real_time_overlay(self, frame: np.ndarray, pose_results: List[Dict], 
                                  phones: List[Dict], events: List[Dict]) -> np.ndarray:
-        """Create real-time visualization overlay."""
+        """Create clean real-time visualization overlay with only bounding boxes and labels."""
         overlay_frame = frame.copy()
         
         # Create event lookup
@@ -1127,65 +1136,38 @@ class Engine:
                 status = event['event_type']
             
             # Draw bounding box
-            cv2.rectangle(overlay_frame, (x1, y1), (x2, y2), color, 3)
+            cv2.rectangle(overlay_frame, (x1, y1), (x2, y2), color, 2)
             
-            # Draw label
+            # Simple label - just person ID and status
             label = f"{person_id}: {status}"
             
-            # Add behavior indicators
-            indicators = []
-            if pose['lean_flag']:
-                indicators.append(f"L{pose.get('lean_angle', 0):.0f}°")
-            if pose['look_flag']:
-                indicators.append(f"H{pose.get('head_turn_angle', 0):.0f}°")
-            if pose['phone_flag']:
-                indicators.append("📱")
-            
-            if indicators:
-                label += f" [{' '.join(indicators)}]"
-            
-            # Draw label background and text
+            # Draw label background and text with better visibility
             label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-            cv2.rectangle(overlay_frame, (x1, y1-35), (x1 + label_size[0] + 10, y1), color, -1)
-            cv2.putText(overlay_frame, label, (x1+5, y1-12), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            # Draw black background for better contrast
+            cv2.rectangle(overlay_frame, (x1, y1-30), (x1 + label_size[0] + 10, y1), (0, 0, 0), -1)
+            # Draw colored border around label
+            cv2.rectangle(overlay_frame, (x1, y1-30), (x1 + label_size[0] + 10, y1), color, 2)
+            # Draw white text
+            cv2.putText(overlay_frame, label, (x1+5, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
         # Draw phone detections
         for phone in phones:
             x1, y1, x2, y2 = [int(coord) for coord in phone['bbox']]
             cv2.rectangle(overlay_frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
-            cv2.putText(overlay_frame, f"Phone {phone['conf']:.2f}", (x1, y1-10), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
-        
-        # Add system status
-        self._add_system_status(overlay_frame, pose_results, events)
+            # Better phone label visibility
+            phone_label = "Phone"
+            phone_size = cv2.getTextSize(phone_label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+            cv2.rectangle(overlay_frame, (x1, y1-30), (x1 + phone_size[0] + 10, y1), (0, 0, 0), -1)
+            cv2.rectangle(overlay_frame, (x1, y1-30), (x1 + phone_size[0] + 10, y1), (0, 255, 255), 2)
+            cv2.putText(overlay_frame, phone_label, (x1+5, y1-10), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
         return overlay_frame
     
     def _add_system_status(self, frame: np.ndarray, pose_results: List[Dict], events: List[Dict]):
-        """Add system status overlay."""
-        # Performance metrics
-        avg_fps = 1.0 / np.mean(self.processing_times[-30:]) if self.processing_times else 0
-        gpu_memory = np.mean(self.gpu_memory_usage[-10:]) if self.gpu_memory_usage else 0
-        
-        # Status lines
-        status_lines = [
-            f"CheatGPT3 Real-time | Frame: {self.frame_count}",
-            f"FPS: {avg_fps:.1f} | Device: {self.device}",
-            f"Persons: {len(pose_results)} | Events: {len(events)}",
-            f"GPU Mem: {gpu_memory:.1f}GB" if self.device.type == 'cuda' else "CPU Mode"
-        ]
-        
-        # Draw status background
-        status_height = len(status_lines) * 25 + 10
-        cv2.rectangle(frame, (10, 10), (350, status_height), (0, 0, 0), -1)
-        cv2.rectangle(frame, (10, 10), (350, status_height), (255, 255, 255), 2)
-        
-        # Draw status text
-        for i, line in enumerate(status_lines):
-            color = (0, 255, 0) if "Events: 0" in line else (255, 255, 255)
-            if len(events) > 0:
-                color = (0, 0, 255)  # Red if events detected
-            cv2.putText(frame, line, (15, 30 + i * 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        """Add system status overlay - DISABLED for clean video feed."""
+        # System status overlay removed for cleaner video display
+        pass
     
     def _save_evidence_frame(self, frame: np.ndarray, events: List[Dict], 
                             cam_id: str, timestamp: float):

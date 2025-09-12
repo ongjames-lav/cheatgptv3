@@ -39,7 +39,7 @@ class RealTimeSyncRecorder:
         
         # Video settings
         # Use H.264 codec for better web browser compatibility
-        self.fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H.264 codec
+        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')  # More compatible codec
         
         # Ensure videos directory exists
         self._ensure_videos_directory()
