@@ -18,67 +18,140 @@
             overflow-x: hidden;
         }
 
-        /* Top Navigation */
-        .top-nav {
+        /* Header */
+        .header {
             background: #212121;
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 12px 0;
             border-bottom: 1px solid #303030;
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
-        .nav-brand {
+        .header-content {
+            max-width: 1900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
             font-size: 20px;
             font-weight: 500;
             color: #ff0000;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 24px;
-        }
-
-        .nav-link {
-            color: #ffffff;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "🎯";
+            font-size: 24px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 40px;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            background: #121212;
+            border: 1px solid #303030;
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar:focus {
+            border-color: #065fd4;
+            box-shadow: 0 0 0 1px #065fd4;
+        }
+
+        .search-bar::placeholder {
+            color: #aaaaaa;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #313131;
+            border: none;
+            color: #ffffff;
             padding: 8px 12px;
-            border-radius: 4px;
+            border-radius: 0 16px 16px 0;
+            cursor: pointer;
             transition: background 0.2s;
         }
 
-        .nav-link:hover {
+        .search-btn:hover {
+            background: #404040;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 18px;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
             background: #303030;
         }
 
-        .nav-link.active {
+        .nav-item.active {
             background: #ff0000;
         }
 
         /* Main Layout */
-        .main-container {
+        .main-layout {
             display: flex;
-            min-height: calc(100vh - 56px);
+            max-width: 1900px;
+            width: 100%;
+            margin: 0 auto;
+            min-height: calc(100vh - 57px);
         }
 
-        /* Left Section - Video Player (70%) */
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 24px 32px;
+            max-width: calc(100% - 400px);
+        }
+
+        /* Video Section */
         .video-section {
-            flex: 0 0 70%;
-            padding: 24px;
             background: #0f0f0f;
+            margin-bottom: 32px;
         }
 
         /* Session Title */
         .session-title {
-            margin-bottom: 16px;
+            margin-bottom: 24px;
         }
 
         .session-title h1 {
-            font-size: 20px;
-            font-weight: 400;
+            font-size: 24px;
+            font-weight: 500;
             color: #ffffff;
             margin-bottom: 8px;
         }
@@ -199,18 +272,31 @@
         }
 
         .control-btn {
-            background: none;
+            background: #313131;
             border: none;
             color: #ffffff;
-            font-size: 24px;
+            font-size: 16px;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
+            padding: 10px 16px;
+            border-radius: 20px;
             transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .control-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #404040;
+        }
+
+        .control-btn.primary {
+            background: #ff0000;
+        }
+
+        .control-btn.primary:hover {
+            background: #cc0000;
         }
 
         .time-display {
@@ -226,21 +312,32 @@
         }
 
         .speed-control {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: #313131;
+            border: 1px solid #404040;
             color: #ffffff;
-            padding: 4px 8px;
+            padding: 8px 12px;
             border-radius: 4px;
             font-size: 12px;
         }
 
         .fullscreen-btn {
-            background: none;
+            background: #313131;
             border: none;
             color: #ffffff;
-            font-size: 20px;
+            font-size: 16px;
             cursor: pointer;
-            padding: 8px;
+            padding: 10px 16px;
+            border-radius: 20px;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .fullscreen-btn:hover {
+            background: #404040;
         }
 
         /* Event Timeline */
@@ -345,34 +442,25 @@
             color: #aaaaaa;
         }
 
-        /* Right Section - Sidebar (30%) */
+        /* Right Section - Sidebar */
         .sidebar {
-            flex: 0 0 30%;
+            flex: 0 0 400px;
             background: #181818;
             border-left: 1px solid #303030;
-            overflow-y: auto;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 12px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: #181818;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #606060;
-            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 57px);
+            position: sticky;
+            top: 57px;
         }
 
         .sidebar-header {
             padding: 20px;
             border-bottom: 1px solid #303030;
-            position: sticky;
-            top: 0;
             background: #181818;
             z-index: 10;
+            flex-shrink: 0;
         }
 
         .sidebar-title {
@@ -382,23 +470,24 @@
             margin-bottom: 12px;
         }
 
-        .search-box {
-            width: 100%;
-            background: #262626;
-            border: 1px solid #303030;
-            color: #ffffff;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #ff0000;
-        }
-
         .sessions-list {
             padding: 8px;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .sessions-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sessions-list::-webkit-scrollbar-track {
+            background: #181818;
+        }
+
+        .sessions-list::-webkit-scrollbar-thumb {
+            background: #606060;
+            border-radius: 4px;
         }
 
         /* Session Card (YouTube Style) */
@@ -499,27 +588,39 @@
         }
 
         .action-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: #313131;
             border: none;
             color: #ffffff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: #404040;
+        }
+
+        .action-btn.play-btn {
+            background: #ff0000;
+        }
+
+        .action-btn.play-btn:hover {
+            background: #cc0000;
         }
 
         .action-btn.delete-btn {
-            background: rgba(255, 68, 68, 0.2);
-            color: #ff4444;
+            background: #ff4444;
+            color: #ffffff;
         }
 
         .action-btn.delete-btn:hover {
-            background: rgba(255, 68, 68, 0.4);
+            background: #cc0000;
         }
 
         /* Delete Confirmation Modal */
@@ -579,21 +680,26 @@
         }
 
         .modal-btn {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
         }
 
         .modal-btn.cancel {
-            background: #404040;
+            background: #313131;
             color: #ffffff;
         }
 
         .modal-btn.cancel:hover {
-            background: #505050;
+            background: #404040;
         }
 
         .modal-btn.confirm {
@@ -602,7 +708,7 @@
         }
 
         .modal-btn.confirm:hover {
-            background: #ff3333;
+            background: #cc0000;
         }
 
         .modal-btn:disabled {
@@ -660,19 +766,22 @@
 
         /* Responsive Design */
         @media (max-width: 1024px) {
-            .main-container {
+            .main-layout {
                 flex-direction: column;
             }
             
-            .video-section {
-                flex: none;
+            .content {
+                max-width: 100%;
+                padding: 16px 24px;
             }
             
             .sidebar {
                 flex: none;
                 border-left: none;
                 border-top: 1px solid #303030;
+                height: 400px;
                 max-height: 400px;
+                position: static;
             }
             
             .session-card {
@@ -695,21 +804,25 @@
                 height: 300px;
             }
             
-            .top-nav {
-                padding: 12px 16px;
+            .header-content {
+                padding: 0 16px;
             }
             
-            .video-section {
-                padding: 16px;
+            .search-container {
+                margin: 0 12px;
             }
             
-            .nav-links {
-                gap: 12px;
+            .user-menu {
+                gap: 8px;
             }
             
-            .nav-link {
+            .nav-item {
                 padding: 6px 8px;
-                font-size: 14px;
+                font-size: 12px;
+            }
+            
+            .content {
+                padding: 16px;
             }
         }
 
@@ -752,93 +865,105 @@
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-brand">CheatGPT Analytics</div>
-        <div class="nav-links">
-            <a href="/analytics/home" class="nav-link">Home</a>
-            <a href="/" class="nav-link">Live Monitor</a>
-            <a href="/analytics/player" class="nav-link active">Player</a>
-        </div>
-    </nav>
-
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Left Section - Video Player (70%) -->
-        <div class="video-section">
-            <!-- Session Title -->
-            <div class="session-title">
-                <h1 id="sessionTitle">Select a session to begin</h1>
-                <div class="session-metadata" id="sessionMetadata">
-                    Choose a recording from the sidebar to start analyzing
-                </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/analytics/home" class="logo">CheatGPT</a>
+            
+            <div class="search-container">
+                <input type="text" class="search-bar" id="searchInput" 
+                       placeholder="Search sessions by ID, date, or event type...">
+                <button class="search-btn" id="searchBtn">Search</button>
             </div>
+            
+            <nav class="user-menu">
+                <a href="/analytics/home" class="nav-item">Home</a>
+                <a href="/" class="nav-item">Live</a>
+                <a href="/analytics/player" class="nav-item active">Player</a>
+                <a href="/analytics/reports" class="nav-item">Reports</a>
+            </nav>
+        </div>
+    </header>
 
-            <!-- Video Player -->
-            <div class="video-container" id="videoContainer">
-                <video id="videoPlayer" class="video-player" preload="metadata">
-                    <source id="videoSource" src="" type="video/mp4">
-                    <p>Your browser does not support the video tag.</p>
-                </video>
-
-                <!-- Custom Video Controls -->
-                <div class="custom-controls" id="customControls">
-                    <!-- Progress Bar with Event Markers -->
-                    <div class="progress-container">
-                        <div class="progress-bar" id="progressBar">
-                            <div class="progress-fill" id="progressFill"></div>
-                            <div class="event-markers" id="eventMarkers"></div>
-                        </div>
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Content -->
+        <main class="content">
+            <!-- Video Section -->
+            <div class="video-section">
+                <!-- Session Title -->
+                <div class="session-title">
+                    <h1 id="sessionTitle">Select a session to begin</h1>
+                    <div class="session-metadata" id="sessionMetadata">
+                        Choose a recording from the sidebar to start analyzing
                     </div>
+                </div>
 
-                    <!-- Control Buttons -->
-                    <div class="controls-row">
-                        <div class="left-controls">
-                            <button class="control-btn" id="playPauseBtn">▶</button>
-                            <button class="control-btn" id="prevEventBtn">⏮</button>
-                            <button class="control-btn" id="nextEventBtn">⏭</button>
-                            <div class="time-display">
-                                <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                <!-- Video Player -->
+                <div class="video-container" id="videoContainer">
+                    <video id="videoPlayer" class="video-player" preload="metadata">
+                        <source id="videoSource" src="" type="video/mp4">
+                        <p>Your browser does not support the video tag.</p>
+                    </video>
+
+                    <!-- Custom Video Controls -->
+                    <div class="custom-controls" id="customControls">
+                        <!-- Progress Bar with Event Markers -->
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progressBar">
+                                <div class="progress-fill" id="progressFill"></div>
+                                <div class="event-markers" id="eventMarkers"></div>
                             </div>
                         </div>
-                        
-                        <div class="right-controls">
-                            <select class="speed-control" id="speedControl">
-                                <option value="0.25">0.25x</option>
-                                <option value="0.5">0.5x</option>
-                                <option value="0.75">0.75x</option>
-                                <option value="1" selected>1x</option>
-                                <option value="1.25">1.25x</option>
-                                <option value="1.5">1.5x</option>
-                                <option value="2">2x</option>
-                            </select>
-                            <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
+
+                        <!-- Control Buttons -->
+                        <div class="controls-row">
+                            <div class="left-controls">
+                                <button class="control-btn primary" id="playPauseBtn">▶</button>
+                                <button class="control-btn" id="prevEventBtn">⏮</button>
+                                <button class="control-btn" id="nextEventBtn">⏭</button>
+                                <div class="time-display">
+                                    <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="right-controls">
+                                <select class="speed-control" id="speedControl">
+                                    <option value="0.25">0.25x</option>
+                                    <option value="0.5">0.5x</option>
+                                    <option value="0.75">0.75x</option>
+                                    <option value="1" selected>1x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="2">2x</option>
+                                </select>
+                                <button class="control-btn" id="fullscreenBtn">⛶</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Timeline -->
+                <div class="timeline-section">
+                    <div class="timeline-header">
+                        <div class="timeline-title">Suspicious Events</div>
+                        <div class="event-count" id="eventCount">0</div>
+                    </div>
+                    <div class="timeline-events" id="timelineEvents">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <div>No events to display</div>
+                            <div style="font-size: 12px; margin-top: 8px;">Load a session to see detected events</div>
                         </div>
                     </div>
                 </div>
             </div>
+        </main>
 
-            <!-- Event Timeline -->
-            <div class="timeline-section">
-                <div class="timeline-header">
-                    <div class="timeline-title">Suspicious Events</div>
-                    <div class="event-count" id="eventCount">0</div>
-                </div>
-                <div class="timeline-events" id="timelineEvents">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📊</div>
-                        <div>No events to display</div>
-                        <div style="font-size: 12px; margin-top: 8px;">Load a session to see detected events</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Section - Sessions Sidebar (30%) -->
+        <!-- Right Section - Sessions Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-title">Recorded Sessions</div>
-                <input type="text" class="search-box" id="searchBox" placeholder="Search sessions...">
             </div>
             
             <div class="sessions-list" id="sessionsList">
@@ -905,7 +1030,8 @@
                 this.timelineEvents = document.getElementById('timelineEvents');
                 this.eventCount = document.getElementById('eventCount');
                 this.sessionsList = document.getElementById('sessionsList');
-                this.searchBox = document.getElementById('searchBox');
+                this.searchInput = document.getElementById('searchInput');
+                this.searchBtn = document.getElementById('searchBtn');
 
                 // Tooltip
                 this.tooltip = document.getElementById('tooltip');
@@ -943,7 +1069,8 @@
                 this.video.addEventListener('ended', () => this.onEnded());
 
                 // Search
-                this.searchBox.addEventListener('input', (e) => this.searchSessions(e.target.value));
+                this.searchInput.addEventListener('input', (e) => this.searchSessions(e.target.value));
+                this.searchBtn.addEventListener('click', () => this.searchSessions(this.searchInput.value));
 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -1038,7 +1165,15 @@
                         </div>
                         <div class="session-actions">
                             <button class="action-btn play-btn" title="Play Session">
-                                ▶ Play
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            <button class="action-btn report-btn" title="View Report">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                </svg>
+                                Report
                             </button>
                             <button class="action-btn delete-btn" title="Delete Session">
                                 🗑 Delete
@@ -1059,6 +1194,13 @@
                 playBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.loadSession(session);
+                });
+
+                // Add click handler for report button
+                const reportBtn = card.querySelector('.report-btn');
+                reportBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.location.href = `/analytics/reports/${session.session_id}`;
                 });
 
                 // Add click handler for delete button

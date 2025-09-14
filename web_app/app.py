@@ -14,7 +14,7 @@ from typing import Dict, Optional
 from pathlib import Path
 from io import BytesIO
 
-from flask import Flask, render_template, request, jsonify, send_file, Response, redirect
+from flask import Flask, render_template, request, jsonify, send_file, Response, redirect, flash, url_for
 from flask_socketio import SocketIO, emit
 import cv2
 import numpy as np
@@ -728,6 +728,27 @@ def analytics_player():
     """Render YouTube-style analytics player page"""
     return render_template('analytics_youtube.html')
 
+@app.route('/analytics/reports')
+def analytics_reports():
+    """Render analytics reports page"""
+    return render_template('analytics_reports.html')
+
+@app.route('/analytics/reports/<session_id>')
+def analytics_session_report(session_id):
+    """Render individual session report page"""
+    try:
+        # Get session details by session_id string
+        session = db.get_session(session_id)
+        if not session:
+            flash('Session not found', 'error')
+            return redirect(url_for('analytics_home'))
+        
+        return render_template('analytics_session_report.html', session=session, session_id=session_id)
+    except Exception as e:
+        logger.error(f"Error loading session report {session_id}: {e}")
+        flash('Error loading session report', 'error')
+        return redirect(url_for('analytics_home'))
+
 @app.route('/analytics/old')
 def analytics_old():
     """Render original analytics page"""
@@ -1141,6 +1162,748 @@ def delete_session(session_id):
             
     except Exception as e:
         logger.error(f"Error deleting session {session_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Reports API Endpoints
+@app.route('/api/reports/overview')
+def api_reports_overview():
+    """Get comprehensive analytics overview for reports page"""
+    try:
+        # Get date range filter from query params
+        date_range = request.args.get('range', '30')  # Default to 30 days
+        
+        # Calculate date filter
+        import time
+        from datetime import datetime, timedelta
+        
+        now = time.time()
+        if date_range == 'all':
+            start_time = 0
+        else:
+            days = int(date_range)
+            start_time = now - (days * 24 * 60 * 60)
+        
+        # Get all sessions in date range
+        all_sessions = db.get_sessions_with_details(limit=1000)
+        filtered_sessions = [s for s in all_sessions if s['start_time'] >= start_time]
+        
+        # Calculate summary statistics
+        total_sessions = len(filtered_sessions)
+        total_hotspots = sum(s.get('hotspot_count', 0) for s in filtered_sessions)
+        total_duration = sum(s.get('duration', 0) for s in filtered_sessions)
+        avg_duration = total_duration / total_sessions if total_sessions > 0 else 0
+        avg_events_per_session = total_hotspots / total_sessions if total_sessions > 0 else 0
+        
+        # Get event type breakdown
+        event_types = {}
+        session_risk_levels = {'high': 0, 'medium': 0, 'low': 0}
+        
+        for session in filtered_sessions:
+            events = db.get_session_events(session['session_id'])
+            
+            # Risk level calculation (matching the frontend logic)
+            event_count = len(events)
+            if event_count > 50:
+                session_risk_levels['high'] += 1
+            elif event_count > 25:
+                session_risk_levels['medium'] += 1
+            else:
+                session_risk_levels['low'] += 1
+            
+            # Count event types
+            for event in events:
+                event_type = event.get('event_type', 'unknown')
+                # Normalize event types for better categorization
+                if 'phone' in event_type.lower() or 'device' in event_type.lower():
+                    category = 'Phone Detection'
+                elif 'head' in event_type.lower() or 'looking' in event_type.lower():
+                    category = 'Suspicious Looking'
+                elif 'leaning' in event_type.lower():
+                    category = 'Inappropriate Leaning'
+                elif 'gesture' in event_type.lower() or 'hand' in event_type.lower():
+                    category = 'Suspicious Gesture'
+                else:
+                    category = 'Other'
+                
+                event_types[category] = event_types.get(category, 0) + 1
+        
+        # Generate timeline data (daily aggregates)
+        timeline_data = []
+        duration_distribution = {'0-15': 0, '15-30': 0, '30-45': 0, '45-60': 0, '60+': 0}
+        
+        # Group sessions by day for timeline
+        daily_sessions = {}
+        daily_events = {}
+        daily_risk = {}
+        
+        for session in filtered_sessions:
+            session_date = datetime.fromtimestamp(session['start_time']).strftime('%Y-%m-%d')
+            
+            # Daily session count
+            daily_sessions[session_date] = daily_sessions.get(session_date, 0) + 1
+            
+            # Daily event count
+            daily_events[session_date] = daily_events.get(session_date, 0) + session.get('hotspot_count', 0)
+            
+            # Daily risk levels
+            if session_date not in daily_risk:
+                daily_risk[session_date] = {'high': 0, 'medium': 0, 'low': 0}
+            
+            event_count = session.get('hotspot_count', 0)
+            if event_count > 50:
+                daily_risk[session_date]['high'] += 1
+            elif event_count > 25:
+                daily_risk[session_date]['medium'] += 1
+            else:
+                daily_risk[session_date]['low'] += 1
+            
+            # Duration distribution
+            duration_minutes = session.get('duration', 0) / 60
+            if duration_minutes <= 15:
+                duration_distribution['0-15'] += 1
+            elif duration_minutes <= 30:
+                duration_distribution['15-30'] += 1
+            elif duration_minutes <= 45:
+                duration_distribution['30-45'] += 1
+            elif duration_minutes <= 60:
+                duration_distribution['45-60'] += 1
+            else:
+                duration_distribution['60+'] += 1
+        
+        # Convert daily data to timeline format
+        dates = sorted(daily_sessions.keys())[-30:]  # Last 30 days max
+        for date in dates:
+            timeline_data.append({
+                'date': date,
+                'sessions': daily_sessions.get(date, 0),
+                'events': daily_events.get(date, 0),
+                'high_risk': daily_risk.get(date, {}).get('high', 0),
+                'medium_risk': daily_risk.get(date, {}).get('medium', 0),
+                'low_risk': daily_risk.get(date, {}).get('low', 0)
+            })
+        
+        # Most recent sessions for sidebar
+        recent_sessions = filtered_sessions[:20]  # Top 20 recent sessions
+        
+        return jsonify({
+            'success': True,
+            'date_range': date_range,
+            'summary': {
+                'total_sessions': total_sessions,
+                'total_hotspots': total_hotspots,
+                'avg_duration': avg_duration,
+                'avg_events_per_session': avg_events_per_session,
+                'total_duration': total_duration
+            },
+            'event_types': event_types,
+            'session_risk_levels': session_risk_levels,
+            'timeline_data': timeline_data,
+            'duration_distribution': duration_distribution,
+            'recent_sessions': recent_sessions
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting reports overview: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reports/export/pdf', methods=['GET', 'POST'])
+def export_reports_pdf():
+    """Export comprehensive analytics report as PDF"""
+    try:
+        if not PDF_AVAILABLE:
+            return jsonify({'error': 'PDF export not available - ReportLab not installed'}), 500
+        
+        # Get date range from request (GET or POST)
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            date_range = data.get('range', '30')
+        else:
+            date_range = request.args.get('period', '30')
+        
+        # Get analytics data
+        overview_response = api_reports_overview()
+        if overview_response.status_code != 200:
+            return jsonify({'error': 'Failed to fetch analytics data'}), 500
+        
+        analytics_data = overview_response.get_json()
+        
+        # Create PDF report
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        
+        # Create temporary PDF file
+        report_filename = f"cheatgpt_analytics_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        report_path = Path("temp_reports") / report_filename
+        report_path.parent.mkdir(exist_ok=True)
+        
+        # Create PDF document
+        doc = SimpleDocTemplate(str(report_path), pagesize=A4)
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Title
+        title = Paragraph("CheatGPT Analytics Report", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 12))
+        
+        # Report metadata
+        range_text = {
+            '7': 'Last 7 days',
+            '30': 'Last 30 days', 
+            '90': 'Last 90 days',
+            '365': 'Last year',
+            'all': 'All time'
+        }.get(date_range, f'Last {date_range} days')
+        
+        meta_info = [
+            ['Report Period:', range_text],
+            ['Generated:', datetime.now().strftime('%Y-%m-%d %H:%M:%S')],
+            ['Total Sessions:', str(analytics_data['summary']['total_sessions'])],
+            ['Total Events:', str(analytics_data['summary']['total_hotspots'])],
+        ]
+        
+        meta_table = Table(meta_info, colWidths=[2*inch, 3*inch])
+        meta_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        story.append(Paragraph("Report Summary", styles['Heading2']))
+        story.append(meta_table)
+        story.append(Spacer(1, 12))
+        
+        # Summary statistics
+        summary = analytics_data['summary']
+        summary_data = [
+            ['Metric', 'Value'],
+            ['Total Sessions', str(summary['total_sessions'])],
+            ['Total Events Detected', str(summary['total_hotspots'])],
+            ['Average Session Duration', f"{summary['avg_duration']/60:.1f} minutes"],
+            ['Average Events per Session', f"{summary['avg_events_per_session']:.1f}"],
+            ['Total Monitoring Time', f"{summary['total_duration']/3600:.1f} hours"]
+        ]
+        
+        summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        story.append(Paragraph("Analytics Summary", styles['Heading2']))
+        story.append(summary_table)
+        story.append(Spacer(1, 12))
+        
+        # Event types breakdown
+        event_types = analytics_data['event_types']
+        if event_types:
+            event_data = [['Event Type', 'Count', 'Percentage']]
+            total_events = sum(event_types.values())
+            
+            for event_type, count in sorted(event_types.items(), key=lambda x: x[1], reverse=True):
+                percentage = (count / total_events * 100) if total_events > 0 else 0
+                event_data.append([event_type, str(count), f"{percentage:.1f}%"])
+            
+            event_table = Table(event_data, colWidths=[2.5*inch, 1*inch, 1*inch])
+            event_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            
+            story.append(Paragraph("Event Type Breakdown", styles['Heading2']))
+            story.append(event_table)
+            story.append(Spacer(1, 12))
+        
+        # Risk level distribution
+        risk_levels = analytics_data['session_risk_levels']
+        total_risk_sessions = sum(risk_levels.values())
+        
+        if total_risk_sessions > 0:
+            risk_data = [
+                ['Risk Level', 'Sessions', 'Percentage'],
+                ['High Risk (>50 events)', str(risk_levels['high']), f"{(risk_levels['high']/total_risk_sessions*100):.1f}%"],
+                ['Medium Risk (26-50 events)', str(risk_levels['medium']), f"{(risk_levels['medium']/total_risk_sessions*100):.1f}%"],
+                ['Low Risk (≤25 events)', str(risk_levels['low']), f"{(risk_levels['low']/total_risk_sessions*100):.1f}%"],
+            ]
+            
+            risk_table = Table(risk_data, colWidths=[2.5*inch, 1*inch, 1*inch])
+            risk_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.darkred),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            
+            story.append(Paragraph("Risk Level Distribution", styles['Heading2']))
+            story.append(risk_table)
+            story.append(Spacer(1, 12))
+        
+        # Recent sessions
+        recent_sessions = analytics_data['recent_sessions'][:10]  # Top 10
+        if recent_sessions:
+            session_data = [['Session ID', 'Date', 'Duration', 'Events', 'Risk Level']]
+            
+            for session in recent_sessions:
+                date = datetime.fromtimestamp(session['start_time']).strftime('%Y-%m-%d %H:%M')
+                duration = f"{session.get('duration', 0)/60:.1f}m"
+                events = str(session.get('hotspot_count', 0))
+                
+                # Determine risk level
+                event_count = session.get('hotspot_count', 0)
+                if event_count > 50:
+                    risk = 'High'
+                elif event_count > 25:
+                    risk = 'Medium'
+                else:
+                    risk = 'Low'
+                
+                session_data.append([
+                    session['session_id'][:16] + '...' if len(session['session_id']) > 16 else session['session_id'],
+                    date,
+                    duration,
+                    events,
+                    risk
+                ])
+            
+            session_table = Table(session_data, colWidths=[2*inch, 1.5*inch, 0.8*inch, 0.8*inch, 0.8*inch])
+            session_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.darkgreen),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 9),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            
+            story.append(Paragraph("Recent Sessions", styles['Heading2']))
+            story.append(session_table)
+        
+        # Footer
+        story.append(Spacer(1, 24))
+        footer_text = f"Report generated by CheatGPT Analytics v3.0 on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        story.append(Paragraph(footer_text, styles['Normal']))
+        
+        # Build PDF
+        doc.build(story)
+        
+        # Send file
+        return send_file(
+            str(report_path),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f"cheatgpt_analytics_{date_range}days_{datetime.now().strftime('%Y%m%d')}.pdf"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error exporting PDF report: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reports/export/csv', methods=['GET', 'POST'])
+def export_reports_csv():
+    """Export analytics data as CSV"""
+    try:
+        import csv
+        from io import StringIO
+        
+        # Get date range from request (GET or POST)
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            date_range = data.get('range', '30')
+        else:
+            date_range = request.args.get('period', '30')
+        
+        # Get analytics data
+        overview_response = api_reports_overview()
+        if overview_response.status_code != 200:
+            return jsonify({'error': 'Failed to fetch analytics data'}), 500
+        
+        analytics_data = overview_response.get_json()
+        
+        # Create CSV content
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow(['Session ID', 'Start Time', 'Duration (minutes)', 'Event Count', 'Risk Level', 'Status'])
+        
+        # Write session data
+        for session in analytics_data['recent_sessions']:
+            start_time = datetime.fromtimestamp(session['start_time']).strftime('%Y-%m-%d %H:%M:%S')
+            duration_minutes = round(session.get('duration', 0) / 60, 1)
+            event_count = session.get('hotspot_count', 0)
+            
+            # Determine risk level
+            if event_count > 50:
+                risk_level = 'High'
+            elif event_count > 25:
+                risk_level = 'Medium'
+            else:
+                risk_level = 'Low'
+            
+            writer.writerow([
+                session['session_id'],
+                start_time,
+                duration_minutes,
+                event_count,
+                risk_level,
+                session.get('status', 'completed')
+            ])
+        
+        # Create file response
+        output.seek(0)
+        
+        response = Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={
+                'Content-Disposition': f'attachment; filename=cheatgpt_sessions_{date_range}days_{datetime.now().strftime("%Y%m%d")}.csv'
+            }
+        )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error exporting CSV report: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Session-specific Reports API Endpoints
+@app.route('/api/reports/session/<session_id>')
+def api_session_analytics(session_id):
+    """Get analytics data for a specific session"""
+    try:
+        # Get session by session_id string first
+        session = db.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Get session analytics using the session_id string
+        analytics_data = db.get_session_analytics_by_session_id(session_id)
+        if not analytics_data:
+            return jsonify({'error': 'No analytics data found for session'}), 404
+        
+        return jsonify({
+            'success': True,
+            **analytics_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting session report for {session_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reports/export/session_pdf')
+def export_session_pdf():
+    """Export individual session report as PDF"""
+    try:
+        if not PDF_AVAILABLE:
+            return jsonify({'error': 'PDF export not available - ReportLab not installed'}), 500
+        
+        session_id = request.args.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'Session ID required'}), 400
+        
+        # Get session analytics
+        analytics_data = db.get_session_analytics_by_session_id(session_id)
+        if not analytics_data:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Create PDF report
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        
+        # Create temporary PDF file
+        report_filename = f"cheatgpt_session_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        report_path = Path("temp_reports") / report_filename
+        report_path.parent.mkdir(exist_ok=True)
+        
+        # Create PDF document
+        doc = SimpleDocTemplate(str(report_path), pagesize=A4)
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Title
+        session_info = analytics_data['session_info']
+        title = Paragraph(f"Session Report: {session_info.get('video_title', session_info['session_id'])}", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 12))
+        
+        # Session metadata
+        # Handle the date field properly - use created_at and parse as string
+        created_at = session_info.get('created_at', session_info.get('started_at', 'Unknown'))
+        if created_at and created_at != 'Unknown':
+            try:
+                # Parse the string date format: "2025-09-14 05:52:45"
+                start_time = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+            except (ValueError, AttributeError):
+                start_time = str(created_at)
+        else:
+            start_time = 'Unknown'
+        
+        meta_info = [
+            ['Session ID:', session_info['session_id']],
+            ['Start Time:', start_time],
+            ['Duration:', f"{analytics_data['summary']['duration_minutes']} minutes"],
+            ['Total Events:', str(analytics_data['summary']['total_events'])],
+            ['Events per Minute:', str(analytics_data['summary']['events_per_minute'])],
+            ['Status:', session_info['status'].title()]
+        ]
+        
+        meta_table = Table(meta_info, colWidths=[2*inch, 3*inch])
+        meta_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.lightgrey),
+            ('TEXTCOLOR',(0,0),(-1,-1),colors.black),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+            ('FONTSIZE', (0,0), (-1,-1), 10),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 12),
+        ]))
+        story.append(meta_table)
+        story.append(Spacer(1, 24))
+        
+        # Event Types Summary
+        story.append(Paragraph("Event Types Distribution", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        event_data = [['Event Type', 'Count']]
+        for event_type, count in analytics_data['event_types'].items():
+            event_data.append([event_type, str(count)])
+        
+        if len(event_data) > 1:
+            event_table = Table(event_data, colWidths=[3*inch, 1*inch])
+            event_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0,0), (-1,0), 12),
+                ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                ('GRID',(0,0),(-1,-1),1,colors.black)
+            ]))
+            story.append(event_table)
+        else:
+            story.append(Paragraph("No events detected in this session.", styles['Normal']))
+        
+        story.append(Spacer(1, 24))
+        
+        # Confidence Distribution
+        story.append(Paragraph("Confidence Distribution", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        conf_dist = analytics_data['confidence_distribution']
+        conf_data = [
+            ['Confidence Level', 'Count'],
+            ['High (90%+)', str(conf_dist.get('high', 0))],
+            ['Medium (70-89%)', str(conf_dist.get('medium', 0))],
+            ['Low (<70%)', str(conf_dist.get('low', 0))]
+        ]
+        
+        conf_table = Table(conf_data, colWidths=[3*inch, 1*inch])
+        conf_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.grey),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 12),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+            ('GRID',(0,0),(-1,-1),1,colors.black)
+        ]))
+        story.append(conf_table)
+        story.append(Spacer(1, 24))
+        
+        # Timeline Summary
+        story.append(Paragraph("Timeline Analysis", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        timeline_data = analytics_data.get('timeline', [])
+        if timeline_data:
+            timeline_table_data = [['Time (Minutes)', 'Events']]
+            for item in timeline_data:
+                timeline_table_data.append([f"{item['minute']}m", str(item['events'])])
+            
+            timeline_table = Table(timeline_table_data, colWidths=[2*inch, 1*inch])
+            timeline_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0,0), (-1,0), 12),
+                ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                ('GRID',(0,0),(-1,-1),1,colors.black)
+            ]))
+            story.append(timeline_table)
+        else:
+            story.append(Paragraph("No timeline data available.", styles['Normal']))
+        
+        story.append(Spacer(1, 24))
+        
+        # Detailed Events List
+        story.append(Paragraph("Detailed Events", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        try:
+            # Get detailed events
+            events_response = db.get_session_events(session_id)
+            if events_response and len(events_response) > 0:
+                events_table_data = [['Time', 'Event Type', 'Confidence']]
+                for event in events_response[:20]:  # Limit to first 20 events
+                    time_str = event.get('formatted_time', f"{event.get('timestamp_seconds', 0):.1f}s")
+                    event_type = event.get('event_type', 'Unknown')
+                    confidence = f"{(event.get('confidence', 0) * 100):.1f}%"
+                    events_table_data.append([time_str, event_type, confidence])
+                
+                if len(events_response) > 20:
+                    events_table_data.append(['...', f'and {len(events_response) - 20} more events', ''])
+                
+                events_table = Table(events_table_data, colWidths=[1*inch, 3*inch, 1*inch])
+                events_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+                    ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0,0), (-1,0), 12),
+                    ('FONTSIZE', (0,1), (-1,-1), 10),
+                    ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                    ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+                    ('GRID',(0,0),(-1,-1),1,colors.black)
+                ]))
+                story.append(events_table)
+            else:
+                story.append(Paragraph("No detailed events available.", styles['Normal']))
+        except Exception as events_error:
+            story.append(Paragraph(f"Error loading detailed events: {str(events_error)}", styles['Normal']))
+        
+        story.append(Spacer(1, 24))
+        
+        # Summary Statistics
+        story.append(Paragraph("Summary Statistics", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        summary = analytics_data.get('summary', {})
+        summary_data = [
+            ['Metric', 'Value'],
+            ['Total Events', str(summary.get('total_events', 0))],
+            ['Session Duration', f"{summary.get('duration_minutes', 0):.1f} minutes"],
+            ['Events per Minute', f"{summary.get('events_per_minute', 0):.2f}"],
+            ['Session Date', summary.get('session_date', 'Unknown')]
+        ]
+        
+        summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.grey),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 12),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+            ('GRID',(0,0),(-1,-1),1,colors.black)
+        ]))
+        story.append(summary_table)
+        
+        # Footer
+        story.append(Spacer(1, 24))
+        story.append(Paragraph(f"Report generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+        story.append(Paragraph("CheatGPT Analytics - Session Analysis Report", styles['Normal']))
+        
+        # Build PDF
+        doc.build(story)
+        
+        return send_file(
+            str(report_path),
+            as_attachment=True,
+            download_name=f"cheatgpt_session_{session_id}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error exporting session PDF report: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reports/export/session_csv')
+def export_session_csv():
+    """Export individual session data as CSV"""
+    try:
+        import csv
+        from io import StringIO
+        
+        session_id = request.args.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'Session ID required'}), 400
+        
+        # Get session events
+        session = db.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        events = db.get_session_events(session_id)
+        
+        # Create CSV content
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow(['Timestamp', 'Event Type', 'Confidence', 'Severity', 'Frame Number'])
+        
+        # Write event data
+        for event in events:
+            writer.writerow([
+                f"{event['timestamp_seconds']:.2f}s",
+                event['event_type'],
+                f"{event['confidence']:.2%}",
+                event['severity'],
+                event.get('frame_no', '')
+            ])
+        
+        # Create file response
+        output.seek(0)
+        
+        response = Response(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={
+                'Content-Disposition': f'attachment; filename=cheatgpt_session_{session_id}_{datetime.now().strftime("%Y%m%d")}.csv'
+            }
+        )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error exporting session CSV: {e}")
         return jsonify({'error': str(e)}), 500
 
 # Camera Control Routes

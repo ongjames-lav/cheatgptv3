@@ -449,6 +449,223 @@ class DatabaseManager:
             logger.error(f"Error cleaning up old sessions: {e}")
             return 0
 
+    def get_session_details(self, session_id: int) -> Optional[Dict]:
+        """Get detailed session information by ID (integer primary key)"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("""
+                    SELECT 
+                        s.id,
+                        s.session_id,
+                        s.video_path,
+                        s.start_ts,
+                        s.end_ts,
+                        s.duration,
+                        s.status,
+                        s.metadata,
+                        s.created_at,
+                        COUNT(h.id) as total_hotspots
+                    FROM sessions s
+                    LEFT JOIN hotspots h ON s.session_id = h.session_id
+                    WHERE s.id = ?
+                    GROUP BY s.id
+                """, (session_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    metadata = {}
+                    try:
+                        if row[7]:
+                            metadata = json.loads(row[7])
+                    except:
+                        pass
+                    
+                    return {
+                        'id': row[0],
+                        'session_id': row[1],
+                        'video_path': row[2],
+                        'video_title': metadata.get('video_title', f'Session {row[1]}'),
+                        'started_at': row[3],
+                        'ended_at': row[4],
+                        'duration': row[5] or 0,
+                        'status': row[6],
+                        'total_hotspots': row[9],
+                        'created_at': row[8]
+                    }
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error getting session details for ID {session_id}: {e}")
+            return None
+    
+    def get_session_analytics_by_session_id(self, session_id: str) -> Dict:
+        """Get analytics data for a specific session using session_id string"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                # Get session info
+                cursor = conn.execute("""
+                    SELECT id, session_id, created_at, status, duration, 
+                           (SELECT COUNT(*) FROM hotspots WHERE session_id = s.session_id) as total_hotspots
+                    FROM sessions s 
+                    WHERE session_id = ?
+                """, (session_id,))
+                
+                session_row = cursor.fetchone()
+                if not session_row:
+                    return {}
+                
+                session = {
+                    'id': session_row[0],
+                    'session_id': session_row[1],
+                    'created_at': session_row[2],
+                    'status': session_row[3],
+                    'duration': session_row[4],
+                    'total_hotspots': session_row[5]
+                }
+                
+                # Get event type distribution
+                cursor = conn.execute("""
+                    SELECT event_type, COUNT(*) as count
+                    FROM hotspots 
+                    WHERE session_id = ?
+                    GROUP BY event_type
+                    ORDER BY count DESC
+                """, (session_id,))
+                
+                event_types = {}
+                for row in cursor.fetchall():
+                    event_types[row[0]] = row[1]
+                
+                # Get confidence distribution
+                cursor = conn.execute("""
+                    SELECT 
+                        CASE 
+                            WHEN confidence >= 0.9 THEN 'high'
+                            WHEN confidence >= 0.7 THEN 'medium'
+                            ELSE 'low'
+                        END as confidence_level,
+                        COUNT(*) as count
+                    FROM hotspots 
+                    WHERE session_id = ?
+                    GROUP BY confidence_level
+                """, (session_id,))
+                
+                confidence_dist = {'high': 0, 'medium': 0, 'low': 0}
+                for row in cursor.fetchall():
+                    confidence_dist[row[0]] = row[1]
+                
+                # Get timeline data (events over time)
+                cursor = conn.execute("""
+                    SELECT 
+                        CAST(timestamp_offset / 60 AS INTEGER) as minute,
+                        COUNT(*) as count
+                    FROM hotspots 
+                    WHERE session_id = ?
+                    GROUP BY minute
+                    ORDER BY minute
+                """, (session_id,))
+                
+                timeline = []
+                for row in cursor.fetchall():
+                    timeline.append({
+                        'minute': row[0],
+                        'events': row[1]
+                    })
+                
+                return {
+                    'summary': {
+                        'total_events': session['total_hotspots'],
+                        'duration_minutes': round((session['duration'] or 0) / 60, 1),
+                        'events_per_minute': round(session['total_hotspots'] / max((session['duration'] or 0) / 60, 1), 2),
+                        'session_date': session['created_at']
+                    },
+                    'event_types': event_types,
+                    'confidence_distribution': confidence_dist,
+                    'timeline': timeline,
+                    'session_info': session
+                }
+                
+        except Exception as e:
+            logger.error(f"Error getting session analytics for session_id {session_id}: {e}")
+            return {}
+
+    def get_session_analytics(self, session_id: int) -> Dict:
+        """Get analytics data for a specific session"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                # Get session info
+                session = self.get_session_details(session_id)
+                if not session:
+                    return {}
+                
+                session_id_str = session['session_id']
+                
+                # Get event type distribution
+                cursor = conn.execute("""
+                    SELECT event_type, COUNT(*) as count
+                    FROM hotspots 
+                    WHERE session_id = ?
+                    GROUP BY event_type
+                    ORDER BY count DESC
+                """, (session_id_str,))
+                
+                event_types = {}
+                for row in cursor.fetchall():
+                    event_types[row[0]] = row[1]
+                
+                # Get confidence distribution
+                cursor = conn.execute("""
+                    SELECT 
+                        CASE 
+                            WHEN confidence >= 0.9 THEN 'high'
+                            WHEN confidence >= 0.7 THEN 'medium'
+                            ELSE 'low'
+                        END as confidence_level,
+                        COUNT(*) as count
+                    FROM hotspots 
+                    WHERE session_id = ?
+                    GROUP BY confidence_level
+                """, (session_id_str,))
+                
+                confidence_dist = {'high': 0, 'medium': 0, 'low': 0}
+                for row in cursor.fetchall():
+                    confidence_dist[row[0]] = row[1]
+                
+                # Get timeline data (events over time)
+                cursor = conn.execute("""
+                    SELECT 
+                        CAST(timestamp_offset / 60 AS INTEGER) as minute,
+                        COUNT(*) as count
+                    FROM hotspots 
+                    WHERE session_id = ?
+                    GROUP BY minute
+                    ORDER BY minute
+                """, (session_id_str,))
+                
+                timeline = []
+                for row in cursor.fetchall():
+                    timeline.append({
+                        'minute': row[0],
+                        'events': row[1]
+                    })
+                
+                return {
+                    'summary': {
+                        'total_events': session['total_hotspots'],
+                        'duration_minutes': round((session['duration'] or 0) / 60, 1),
+                        'events_per_minute': round(session['total_hotspots'] / max((session['duration'] or 0) / 60, 1), 2),
+                        'session_date': session['created_at']
+                    },
+                    'event_types': event_types,
+                    'confidence_distribution': confidence_dist,
+                    'timeline': timeline,
+                    'session_info': session
+                }
+                
+        except Exception as e:
+            logger.error(f"Error getting session analytics for ID {session_id}: {e}")
+            return {}
+
 
 # Global database instance
 db = DatabaseManager()

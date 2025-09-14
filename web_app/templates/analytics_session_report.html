@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheatGPT Analytics - Session Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #ffffff;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: #212121;
+            padding: 12px 0;
+            border-bottom: 1px solid #303030;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 500;
+            color: #ff0000;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "🎯";
+            font-size: 24px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 18px;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: #303030;
+        }
+
+        .nav-item.active {
+            background: #ff0000;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 65px);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .page-subtitle {
+            color: #aaaaaa;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #aaaaaa;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #aaaaaa;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #ffffff;
+        }
+
+        /* Session Info Card */
+        .session-info-card {
+            background: #1a1a1a;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Video Preview Section */
+        .video-preview-section {
+            background: #1a1a1a;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .video-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .video-preview-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000000;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .video-overlay:hover {
+            opacity: 0.8;
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            transition: transform 0.2s;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+
+        .video-info {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-duration {
+            font-family: monospace;
+            font-weight: 500;
+        }
+
+        .session-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .session-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .session-status {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .session-status.completed {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .session-status.recording {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .session-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #aaaaaa;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .meta-value {
+            font-size: 16px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* Controls */
+        .controls-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .export-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #ff0000;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #cc0000;
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #ffffff;
+            border: 1px solid #404040;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: #1a1a1a;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Summary Cards */
+        .summary-section {
+            margin-bottom: 32px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: #1a1a1a;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .summary-card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .summary-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff0000;
+            margin-bottom: 8px;
+        }
+
+        .summary-card-label {
+            font-size: 14px;
+            color: #aaaaaa;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* Events List */
+        .events-section {
+            background: #1a1a1a;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .events-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 20px;
+        }
+
+        .events-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .events-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #303030;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .event-time {
+            background: #2a2a2a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            color: #ffffff;
+        }
+
+        .event-type {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .event-confidence {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .confidence-high {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+
+        .confidence-medium {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+        }
+
+        .confidence-low {
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaaaaa;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-subtitle {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 16px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .session-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-section {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/analytics/home" class="logo">CheatGPT</a>
+            
+            <nav class="user-menu">
+                <a href="/analytics/home" class="nav-item">Home</a>
+                <a href="/" class="nav-item">Live</a>
+                <a href="/analytics/player" class="nav-item">Player</a>
+                <a href="/analytics/reports" class="nav-item active">Reports</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <div class="content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                    <a href="/analytics/reports" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                        Back to Reports
+                    </a>
+                </div>
+                <nav class="breadcrumb">
+                    <a href="/analytics">Analytics</a>
+                    <span>/</span>
+                    <a href="/analytics/reports">Reports</a>
+                    <span>/</span>
+                    <span>Session Report</span>
+                </nav>
+                <h1 class="page-title" id="pageTitle">Session Report</h1>
+                <p class="page-subtitle">Detailed analytics and insights for this session</p>
+            </div>
+
+            <!-- Session Info Card -->
+            <div class="session-info-card">
+                <div class="session-header">
+                    <h2 class="session-title" id="sessionTitle">Loading...</h2>
+                    <span class="session-status" id="sessionStatus">loading</span>
+                </div>
+                <div class="session-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Session ID</span>
+                        <span class="meta-value" id="sessionId">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Duration</span>
+                        <span class="meta-value" id="sessionDuration">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Started</span>
+                        <span class="meta-value" id="sessionStarted">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Total Events</span>
+                        <span class="meta-value" id="totalEvents">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-section">
+                <div class="view-controls">
+                    <a href="#" class="btn btn-secondary" id="viewVideoBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        View Video
+                    </a>
+                </div>
+                <div class="export-controls">
+                    <button class="btn btn-secondary" id="exportPDF">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                        Export PDF
+                    </button>
+                    <button class="btn btn-secondary" id="deleteSession" style="background: #ff4444; border-color: #ff4444;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
+                        </svg>
+                        Delete Session
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-section">
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="summary-card-icon">📊</div>
+                        <div class="summary-card-value" id="summaryEvents">0</div>
+                        <div class="summary-card-label">Total Events</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-icon">⏱️</div>
+                        <div class="summary-card-value" id="summaryDuration">0m</div>
+                        <div class="summary-card-label">Duration</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-icon">📈</div>
+                        <div class="summary-card-value" id="summaryRate">0.0</div>
+                        <div class="summary-card-label">Events/Min</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-icon">🎯</div>
+                        <div class="summary-card-value" id="summaryConfidence">0%</div>
+                        <div class="summary-card-label">Avg Confidence</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Event Types Distribution</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="eventTypesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Confidence Levels</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">📹 Video Preview</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="video-container">
+                            <video class="video-player" id="videoPlayer" preload="metadata" poster="">
+                                <source src="" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="video-overlay" id="videoOverlay">
+                                <div class="play-button">
+                                    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="video-info">
+                                <span id="videoFileName">Loading video...</span>
+                                <span class="video-duration" id="videoDuration">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card" style="grid-column: 1 / -1;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Events Timeline</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events List -->
+            <div class="events-section">
+                <div class="events-header">
+                    <h3 class="events-title">Event Details</h3>
+                </div>
+                <div class="events-list" id="eventsList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-title">Loading Events</div>
+                        <div class="empty-subtitle">Please wait while we load the session data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SessionReport {
+            constructor() {
+                this.sessionId = this.getSessionIdFromUrl();
+                this.sessionData = null;
+                this.analyticsData = null;
+                this.charts = {};
+                
+                this.init();
+            }
+
+            getSessionIdFromUrl() {
+                const pathParts = window.location.pathname.split('/');
+                const sessionId = pathParts[pathParts.length - 1];
+                console.log('Extracted session ID from URL:', sessionId);
+                return sessionId;
+            }
+
+            async init() {
+                try {
+                    await this.loadSessionData();
+                    this.setupEventListeners();
+                    this.updateUI();
+                    this.createCharts();
+                } catch (error) {
+                    console.error('Error initializing session report:', error);
+                    this.showError('Failed to load session data');
+                }
+            }
+
+            async loadSessionData() {
+                try {
+                    console.log('Loading session data for ID:', this.sessionId);
+                    // Load session analytics
+                    const response = await fetch(`/api/reports/session/${this.sessionId}`);
+                    console.log('API response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API error response:', errorText);
+                        throw new Error(`Failed to load session data: ${response.status} ${errorText}`);
+                    }
+                    
+                    this.analyticsData = await response.json();
+                    console.log('Received analytics data:', this.analyticsData);
+                    this.sessionData = this.analyticsData.session_info;
+                } catch (error) {
+                    console.error('Error loading session data:', error);
+                    throw error;
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('exportPDF').addEventListener('click', () => this.exportPDF());
+                document.getElementById('deleteSession').addEventListener('click', () => this.deleteSession());
+                document.getElementById('viewVideoBtn').addEventListener('click', () => this.viewVideo());
+                
+                // Video player event listeners
+                this.setupVideoPlayer();
+            }
+
+            setupVideoPlayer() {
+                const videoPlayer = document.getElementById('videoPlayer');
+                const videoOverlay = document.getElementById('videoOverlay');
+                
+                // Click to play/pause
+                videoOverlay.addEventListener('click', () => {
+                    if (videoPlayer.paused) {
+                        videoPlayer.play();
+                        videoOverlay.style.display = 'none';
+                    }
+                });
+                
+                // Show overlay when video is paused
+                videoPlayer.addEventListener('pause', () => {
+                    videoOverlay.style.display = 'flex';
+                });
+                
+                // Hide overlay when video is playing
+                videoPlayer.addEventListener('play', () => {
+                    videoOverlay.style.display = 'none';
+                });
+                
+                // Update duration when metadata is loaded
+                videoPlayer.addEventListener('loadedmetadata', () => {
+                    const duration = this.formatDuration(videoPlayer.duration);
+                    document.getElementById('videoDuration').textContent = duration;
+                });
+                
+                // Error handling
+                videoPlayer.addEventListener('error', (e) => {
+                    console.error('Video error:', e);
+                    document.getElementById('videoFileName').textContent = 'Error loading video';
+                });
+            }
+
+            updateUI() {
+                if (!this.sessionData) return;
+
+                // Update page title
+                document.getElementById('pageTitle').textContent = `Report: ${this.sessionData.video_title || 'Session ' + this.sessionData.session_id}`;
+                
+                // Update session info
+                document.getElementById('sessionTitle').textContent = this.sessionData.video_title || `Session ${this.sessionData.session_id}`;
+                document.getElementById('sessionStatus').textContent = this.sessionData.status || 'completed';
+                document.getElementById('sessionStatus').className = `session-status ${this.sessionData.status || 'completed'}`;
+                document.getElementById('sessionId').textContent = this.sessionData.session_id;
+                document.getElementById('sessionDuration').textContent = this.formatDuration(this.sessionData.duration || 0);
+                
+                // Fix the date parsing - use created_at and handle it as a string
+                const createdAt = this.sessionData.created_at || this.sessionData.started_at;
+                if (createdAt) {
+                    const date = new Date(createdAt);
+                    document.getElementById('sessionStarted').textContent = date.toLocaleString();
+                } else {
+                    document.getElementById('sessionStarted').textContent = 'Unknown';
+                }
+                
+                document.getElementById('totalEvents').textContent = this.sessionData.total_hotspots || 0;
+
+                // Update summary cards
+                const summary = this.analyticsData.summary;
+                document.getElementById('summaryEvents').textContent = summary.total_events || 0;
+                document.getElementById('summaryDuration').textContent = `${summary.duration_minutes || 0}m`;
+                document.getElementById('summaryRate').textContent = summary.events_per_minute || '0.0';
+                
+                // Calculate average confidence
+                const confDist = this.analyticsData.confidence_distribution;
+                const totalEvents = (confDist.high || 0) + (confDist.medium || 0) + (confDist.low || 0);
+                const avgConfidence = totalEvents > 0 ? 
+                    Math.round(((confDist.high || 0) * 0.95 + (confDist.medium || 0) * 0.8 + (confDist.low || 0) * 0.6) / totalEvents * 100) : 0;
+                document.getElementById('summaryConfidence').textContent = `${avgConfidence}%`;
+
+                // Update view video button
+                document.getElementById('viewVideoBtn').href = `/analytics/player?session=${this.sessionData.session_id}`;
+
+                // Load video preview
+                this.loadVideoPreview();
+                
+                this.loadEventsList();
+            }
+
+            loadVideoPreview() {
+                const videoPlayer = document.getElementById('videoPlayer');
+                const videoFileName = document.getElementById('videoFileName');
+                
+                // Set video source
+                const videoSrc = `/playback/${this.sessionData.session_id}`;
+                videoPlayer.src = videoSrc;
+                
+                // Set thumbnail
+                const thumbnailSrc = `/api/thumbnail/${this.sessionData.session_id}`;
+                videoPlayer.poster = thumbnailSrc;
+                
+                // Update filename display
+                videoFileName.textContent = `Session ${this.sessionData.session_id}`;
+            }
+
+            async loadEventsList() {
+                try {
+                    const response = await fetch(`/api/session/${this.sessionData.session_id}/events`);
+                    if (!response.ok) throw new Error('Failed to load events');
+                    
+                    const data = await response.json();
+                    const events = data.events || [];
+                    this.renderEventsList(events);
+                } catch (error) {
+                    console.error('Error loading events:', error);
+                    document.getElementById('eventsList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">❌</div>
+                            <div class="empty-title">Error Loading Events</div>
+                            <div class="empty-subtitle">Could not load event details</div>
+                        </div>
+                    `;
+                }
+            }
+
+            renderEventsList(events) {
+                const eventsContainer = document.getElementById('eventsList');
+                
+                if (events.length === 0) {
+                    eventsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <div class="empty-title">No Events</div>
+                            <div class="empty-subtitle">No events detected in this session</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                eventsContainer.innerHTML = events.map(event => `
+                    <div class="event-item">
+                        <div class="event-info">
+                            <span class="event-time">${event.formatted_time || this.formatTime(event.timestamp_seconds || 0)}</span>
+                            <span class="event-type">${event.event_type}</span>
+                        </div>
+                        <span class="event-confidence confidence-${event.severity || 'medium'}">
+                            ${Math.round((event.confidence || 0) * 100)}%
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            createCharts() {
+                console.log('Creating charts with data:', this.analyticsData);
+                try {
+                    this.createEventTypesChart();
+                    this.createConfidenceChart();
+                    this.createTimelineChart();
+                } catch (error) {
+                    console.error('Error creating charts:', error);
+                }
+            }
+
+            createEventTypesChart() {
+                const ctx = document.getElementById('eventTypesChart').getContext('2d');
+                
+                if (!this.analyticsData || !this.analyticsData.event_types) {
+                    console.warn('No event types data available');
+                    return;
+                }
+                
+                const eventTypes = this.analyticsData.event_types;
+                
+                const labels = Object.keys(eventTypes);
+                const data = Object.values(eventTypes);
+                const colors = ['#ff0000', '#ff4444', '#ff6666', '#ff8888', '#ffaaaa'];
+
+                this.charts.eventTypes = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#ffffff' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createConfidenceChart() {
+                const ctx = document.getElementById('confidenceChart').getContext('2d');
+                const confDist = this.analyticsData.confidence_distribution;
+
+                this.charts.confidence = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['High (90%+)', 'Medium (70-90%)', 'Low (<70%)'],
+                        datasets: [{
+                            label: 'Events',
+                            data: [confDist.high || 0, confDist.medium || 0, confDist.low || 0],
+                            backgroundColor: ['#ff0000', '#ff8800', '#ffaa00'],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#aaaaaa' },
+                                grid: { color: '#303030' }
+                            },
+                            x: {
+                                ticks: { color: '#aaaaaa' },
+                                grid: { color: '#303030' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createTimelineChart() {
+                const ctx = document.getElementById('timelineChart').getContext('2d');
+                
+                // Check if we have timeline data
+                if (!this.analyticsData || !this.analyticsData.timeline) {
+                    console.warn('No timeline data available');
+                    return;
+                }
+                
+                const timeline = this.analyticsData.timeline;
+
+                const labels = timeline.map(item => `${item.minute}m`);
+                const data = timeline.map(item => item.events);
+
+                this.charts.timeline = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Events per Minute',
+                            data: data,
+                            borderColor: '#ff0000',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#ffffff' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#aaaaaa' },
+                                grid: { color: '#303030' }
+                            },
+                            x: {
+                                ticks: { color: '#aaaaaa' },
+                                grid: { color: '#303030' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            formatDuration(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                
+                if (hours > 0) {
+                    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+                return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            exportPDF() {
+                const params = new URLSearchParams({
+                    session_id: this.sessionId
+                });
+                
+                fetch(`/api/reports/export/session_pdf?${params}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Export failed');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `cheatgpt-session-${this.sessionId}-${new Date().toISOString().split('T')[0]}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    })
+                    .catch(error => {
+                        console.error('PDF export error:', error);
+                        alert('Failed to export PDF report');
+                    });
+            }
+
+            deleteSession() {
+                if (!this.sessionData) {
+                    alert('No session data available');
+                    return;
+                }
+
+                const confirmed = confirm(`Are you sure you want to delete session "${this.sessionData.session_id}"? This action cannot be undone and will permanently remove all session data, videos, and analytics.`);
+                
+                if (!confirmed) return;
+
+                // Call the delete API
+                fetch(`/api/session/${this.sessionData.session_id}/delete`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Delete failed');
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        alert('Session deleted successfully');
+                        // Redirect to reports page
+                        window.location.href = '/analytics/reports';
+                    } else {
+                        throw new Error(result.error || 'Delete failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete session error:', error);
+                    alert(`Failed to delete session: ${error.message}`);
+                });
+            }
+
+            viewVideo() {
+                window.location.href = `/analytics/player?session=${this.sessionData.session_id}`;
+            }
+
+            showError(message) {
+                document.querySelector('.content').innerHTML = `
+                    <div class="empty-state" style="padding: 100px 20px;">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">Error</div>
+                        <div class="empty-subtitle">${message}</div>
+                        <div style="margin-top: 20px;">
+                            <a href="/analytics" class="btn btn-primary">Back to Analytics</a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SessionReport();
+        });
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CheatGPT Analytics - Home</title>
+    <title>CheatGPT - Home</title>
     <style>
         * {
             margin: 0;
@@ -29,9 +29,10 @@
         }
 
         .header-content {
-            max-width: 1400px;
+            max-width: 1900px;
+            width: 100%;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 0 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -123,103 +124,278 @@
 
         /* Main Layout */
         .main-layout {
-            display: flex;
-            max-width: 1400px;
+            display: block;
+            max-width: 1900px;
+            width: 100%;
             margin: 0 auto;
             min-height: calc(100vh - 57px);
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 240px;
-            background: #212121;
-            border-right: 1px solid #303030;
-            padding: 16px 0;
-            overflow-y: auto;
-            transition: transform 0.3s;
+        /* Content Area */
+        .content {
+            width: 100%;
+            padding: 24px 32px;
+            max-width: 1900px;
+            margin: 0 auto;
         }
 
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-            width: 0;
+        /* Summary Cards Section */
+        .summary-section {
+            margin-bottom: 32px;
         }
 
-        .sidebar-toggle {
-            position: fixed;
-            top: 70px;
-            left: 16px;
-            background: #313131;
-            border: none;
-            color: #ffffff;
-            padding: 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 1001;
-            display: none;
-        }
-
-        .filter-section {
-            padding: 0 16px;
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
             margin-bottom: 24px;
         }
 
-        .filter-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: #ffffff;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #303030;
+        .summary-card {
+            background: #181818;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #303030;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .filter-group {
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .summary-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 16px;
         }
 
-        .filter-label {
+        .summary-card-title {
+            font-size: 14px;
+            color: #aaaaaa;
+            font-weight: 500;
+        }
+
+        .summary-card-icon {
+            font-size: 20px;
+            color: #ff0000;
+        }
+
+        .summary-card-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .summary-card-subtitle {
             font-size: 12px;
             color: #aaaaaa;
-            margin-bottom: 6px;
-            display: block;
         }
 
-        .filter-input {
-            width: 100%;
-            background: #121212;
-            border: 1px solid #303030;
+        .summary-card-trend {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .trend-positive {
+            color: #10b981;
+        }
+
+        .trend-negative {
+            color: #ef4444;
+        }
+
+        .trend-neutral {
+            color: #aaaaaa;
+        }
+
+        /* Featured Session Section */
+        .featured-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 500;
             color: #ffffff;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .filter-checkbox {
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 4px 0;
-            cursor: pointer;
         }
 
-        .filter-checkbox input {
-            accent-color: #ff0000;
-        }
-
-        .filter-checkbox label {
-            font-size: 14px;
-            color: #ffffff;
-            cursor: pointer;
-        }
-
-        .filter-count {
-            color: #aaaaaa;
-            font-size: 12px;
-        }
-
-        /* Content Area */
-        .content {
-            flex: 1;
+        .featured-video {
+            background: #181818;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            gap: 24px;
             padding: 24px;
+            border: 1px solid #303030;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .featured-video:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .featured-thumbnail {
+            width: 480px;
+            height: 270px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background: #303030;
+            flex-shrink: 0;
+        }
+
+        .featured-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .featured-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            border: none;
+            color: #ffffff;
+            width: 68px;
+            height: 48px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .featured-play-btn:hover {
+            background: #ff0000;
+        }
+
+        .featured-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .featured-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 270px;
+            padding: 4px 0;
+        }
+
+        .featured-title {
+            font-size: 22px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .featured-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            color: #aaaaaa;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        .featured-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .featured-stat {
+            text-align: center;
+            padding: 12px 8px;
+            background: #121212;
+            border-radius: 8px;
+            min-height: 65px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .featured-stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .featured-stat-label {
+            font-size: 11px;
+            color: #aaaaaa;
+            line-height: 1.2;
+        }
+
+        .featured-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+
+        .featured-btn {
+            background: #ff0000;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex: 1;
+            justify-content: center;
+            min-height: 40px;
+        }
+
+        .featured-btn:hover {
+            background: #cc0000;
+        }
+
+        .featured-btn.secondary {
+            background: #313131;
+        }
+
+        .featured-btn.secondary:hover {
+            background: #404040;
+        }
+
+        /* Recent Sessions Section */
+        .recent-section {
+            margin-bottom: 32px;
         }
 
         .content-header {
@@ -227,12 +403,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
-        }
-
-        .page-title {
-            font-size: 24px;
-            font-weight: 400;
-            color: #ffffff;
         }
 
         .view-controls {
@@ -305,7 +475,7 @@
         /* Video Grid */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
             margin-bottom: 40px;
         }
@@ -318,6 +488,7 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
+            border: 1px solid #303030;
         }
 
         .video-card.selection-mode {
@@ -380,7 +551,7 @@
         .video-thumbnail {
             position: relative;
             width: 100%;
-            height: 180px;
+            height: 200px;
             background: #303030;
             overflow: hidden;
         }
@@ -560,6 +731,41 @@
             color: #ffaa00;
         }
 
+        /* Video Actions */
+        .video-actions {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #303030;
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #404040;
+            background: #2a2a2a;
+            color: #ffffff;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: #ff0000;
+            border-color: #ff0000;
+            color: #ffffff;
+        }
+
+        .action-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
         /* Loading States */
         .loading-grid {
             display: grid;
@@ -641,41 +847,88 @@
         }
 
         /* Responsive Design */
+        @media (min-width: 1600px) {
+            .video-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 28px;
+            }
+            
+            .summary-cards {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 1599px) and (min-width: 1200px) {
+            .video-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
         @media (max-width: 1024px) {
             .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 20px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
             }
             
             .search-container {
                 margin: 0 20px;
             }
+
+            .featured-video {
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px;
+            }
+
+            .featured-thumbnail {
+                width: 100%;
+                height: 240px;
+            }
+
+            .featured-info {
+                min-height: auto;
+                padding: 0;
+            }
+
+            .featured-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+
+            .featured-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .featured-btn {
+                flex: none;
+                width: 100%;
+            }
+
+            .summary-cards {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+            }
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 57px;
-                left: 0;
-                height: calc(100vh - 57px);
-                z-index: 999;
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            
-            .sidebar-toggle {
-                display: block;
-            }
-            
             .main-layout {
-                margin-left: 0;
+                max-width: 100%;
             }
             
             .content {
                 padding: 16px;
+                max-width: 100%;
             }
             
             .video-grid {
@@ -836,136 +1089,140 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/analytics/home" class="logo">CheatGPT Analytics</a>
+            <a href="/analytics/home" class="logo">CheatGPT</a>
             
             <div class="search-container">
                 <input type="text" class="search-bar" id="searchInput" 
                        placeholder="Search by Session ID, date, or event type...">
-                <button class="search-btn" id="searchBtn">🔍</button>
+                <button class="search-btn" id="searchBtn">Search</button>
             </div>
             
             <nav class="user-menu">
                 <a href="/analytics/home" class="nav-item active">Home</a>
                 <a href="/" class="nav-item">Live</a>
                 <a href="/analytics/player" class="nav-item">Player</a>
-                <a href="#" class="nav-item">Reports</a>
+                <a href="/analytics/reports" class="nav-item">Reports</a>
             </nav>
         </div>
     </header>
 
-    <!-- Sidebar Toggle for Mobile -->
-    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-
     <!-- Main Layout -->
     <div class="main-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <!-- Date Filter -->
-            <div class="filter-section">
-                <div class="filter-title">Date Range</div>
-                <div class="filter-group">
-                    <label class="filter-label">From</label>
-                    <input type="date" class="filter-input" id="dateFrom">
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">To</label>
-                    <input type="date" class="filter-input" id="dateTo">
-                </div>
-            </div>
-
-            <!-- Event Type Filter -->
-            <div class="filter-section">
-                <div class="filter-title">Event Types</div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="eventPhone" value="phone" checked>
-                    <label for="eventPhone">Phone Use <span class="filter-count" id="phoneCount">(0)</span></label>
-                </div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="eventLooking" value="looking" checked>
-                    <label for="eventLooking">Looking Around <span class="filter-count" id="lookingCount">(0)</span></label>
-                </div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="eventLeaning" value="leaning" checked>
-                    <label for="eventLeaning">Leaning <span class="filter-count" id="leaningCount">(0)</span></label>
-                </div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="eventGesture" value="gesture" checked>
-                    <label for="eventGesture">Hand Gestures <span class="filter-count" id="gestureCount">(0)</span></label>
-                </div>
-            </div>
-
-            <!-- Severity Filter -->
-            <div class="filter-section">
-                <div class="filter-title">Severity</div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="severityCritical" value="red" checked>
-                    <label for="severityCritical">Critical <span class="filter-count" id="criticalCount">(0)</span></label>
-                </div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="severityWarning" value="orange" checked>
-                    <label for="severityWarning">Warning <span class="filter-count" id="warningCount">(0)</span></label>
-                </div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="severityNotice" value="yellow" checked>
-                    <label for="severityNotice">Notice <span class="filter-count" id="noticeCount">(0)</span></label>
-                </div>
-            </div>
-        </aside>
-
         <!-- Content -->
         <main class="content">
-            <div class="content-header">
-                <h1 class="page-title">Recorded Sessions</h1>
-                <div class="view-controls">
-                    <div class="selection-controls" id="selectionControls" style="display: none;">
-                        <span class="selected-count" id="selectedCount">0 selected</span>
-                        <button class="btn-danger delete-btn" id="deleteSelectedBtn">🗑 Delete Selected</button>
-                        <button class="view-btn" id="cancelSelectionBtn">Cancel</button>
-                    </div>
-                    <div class="normal-controls" id="normalControls">
-                        <button class="view-btn" id="selectModeBtn">Select</button>
-                        <button class="view-btn active" id="gridView">Grid</button>
-                        <button class="view-btn" id="listView">List</button>
-                        <select class="sort-select" id="sortSelect">
-                            <option value="date_desc">Newest First</option>
-                            <option value="date_asc">Oldest First</option>
-                            <option value="events_desc">Most Events</option>
-                            <option value="events_asc">Fewest Events</option>
-                            <option value="duration_desc">Longest</option>
-                            <option value="duration_asc">Shortest</option>
-                        </select>
-                    </div>
+            <!-- Featured Session Section -->
+            <section class="featured-section" id="featuredSection" style="display: none;">
+                <h2 class="section-title">Featured Session</h2>
+                <div class="featured-video" id="featuredVideo">
+                    <!-- Will be populated by JavaScript -->
                 </div>
-            </div>
+            </section>
 
-            <!-- Video Grid -->
-            <div class="video-grid" id="videoGrid">
-                <!-- Loading state -->
-                <div class="loading-card">
-                    <div class="loading-thumbnail"></div>
-                    <div class="loading-info">
-                        <div class="loading-line"></div>
-                        <div class="loading-line short"></div>
-                        <div class="loading-line medium"></div>
+            <!-- Recent Sessions Section -->
+            <section class="recent-section">
+                <div class="content-header">
+                    <h2 class="section-title">Recent Sessions</h2>
+                    <div class="view-controls">
+                        <div class="selection-controls" id="selectionControls" style="display: none;">
+                            <span class="selected-count" id="selectedCount">0 selected</span>
+                            <button class="btn-danger delete-btn" id="deleteSelectedBtn">Delete Selected</button>
+                            <button class="view-btn" id="cancelSelectionBtn">Cancel</button>
+                        </div>
+                        <div class="normal-controls" id="normalControls">
+                            <button class="view-btn" id="selectModeBtn">Select</button>
+                            <button class="view-btn active" id="gridView">Grid</button>
+                            <button class="view-btn" id="listView">List</button>
+                            <select class="sort-select" id="sortSelect">
+                                <option value="date_desc">Newest First</option>
+                                <option value="date_asc">Oldest First</option>
+                                <option value="events_desc">Most Events</option>
+                                <option value="events_asc">Fewest Events</option>
+                                <option value="duration_desc">Longest</option>
+                                <option value="duration_asc">Shortest</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="loading-card">
-                    <div class="loading-thumbnail"></div>
-                    <div class="loading-info">
-                        <div class="loading-line"></div>
-                        <div class="loading-line short"></div>
-                        <div class="loading-line medium"></div>
+
+                <!-- Video Grid -->
+                <div class="video-grid" id="videoGrid">
+                    <!-- Loading state -->
+                    <div class="loading-card">
+                        <div class="loading-thumbnail"></div>
+                        <div class="loading-info">
+                            <div class="loading-line"></div>
+                            <div class="loading-line short"></div>
+                            <div class="loading-line medium"></div>
+                        </div>
+                    </div>
+                    <div class="loading-card">
+                        <div class="loading-thumbnail"></div>
+                        <div class="loading-info">
+                            <div class="loading-line"></div>
+                            <div class="loading-line short"></div>
+                            <div class="loading-line medium"></div>
+                        </div>
+                    </div>
+                    <div class="loading-card">
+                        <div class="loading-thumbnail"></div>
+                        <div class="loading-info">
+                            <div class="loading-line"></div>
+                            <div class="loading-line short"></div>
+                            <div class="loading-line medium"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="loading-card">
-                    <div class="loading-thumbnail"></div>
-                    <div class="loading-info">
-                        <div class="loading-line"></div>
-                        <div class="loading-line short"></div>
-                        <div class="loading-line medium"></div>
+            </section>
+
+            <!-- Summary Cards Section -->
+            <section class="summary-section">
+                <div class="summary-cards" id="summaryCards">
+                    <!-- Loading placeholders - will be replaced by JavaScript -->
+                    <div class="summary-card">
+                        <div class="summary-card-header">
+                            <span class="summary-card-title">Total Sessions</span>
+                            <span class="summary-card-icon"></span>
+                        </div>
+                        <div class="summary-card-value" id="totalSessions">--</div>
+                        <div class="summary-card-subtitle">
+                            <span class="summary-card-trend trend-neutral" id="sessionsTrend">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-card-header">
+                            <span class="summary-card-title">Total Events</span>
+                            <span class="summary-card-icon"></span>
+                        </div>
+                        <div class="summary-card-value" id="totalEvents">--</div>
+                        <div class="summary-card-subtitle">
+                            <span class="summary-card-trend trend-neutral" id="eventsTrend">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-card-header">
+                            <span class="summary-card-title">Avg Duration</span>
+                            <span class="summary-card-icon"></span>
+                        </div>
+                        <div class="summary-card-value" id="avgDuration">--</div>
+                        <div class="summary-card-subtitle">
+                            <span class="summary-card-trend trend-neutral" id="durationTrend">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-card-header">
+                            <span class="summary-card-title">Avg Events/Session</span>
+                            <span class="summary-card-icon"></span>
+                        </div>
+                        <div class="summary-card-value" id="avgEventsPerSession">--</div>
+                        <div class="summary-card-subtitle">
+                            <span class="summary-card-trend trend-neutral" id="avgEventsTrend">Loading...</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 
@@ -999,10 +1256,6 @@
                 this.selectionMode = false;
                 this.currentSort = 'date_desc';
                 this.activeFilters = {
-                    eventTypes: ['phone', 'looking', 'leaning', 'gesture'],
-                    severities: ['red', 'orange', 'yellow'],
-                    dateFrom: null,
-                    dateTo: null,
                     search: ''
                 };
                 
@@ -1015,12 +1268,8 @@
                 this.videoGrid = document.getElementById('videoGrid');
                 this.searchInput = document.getElementById('searchInput');
                 this.sortSelect = document.getElementById('sortSelect');
-                this.sidebar = document.getElementById('sidebar');
-                this.sidebarToggle = document.getElementById('sidebarToggle');
                 this.gridView = document.getElementById('gridView');
                 this.listView = document.getElementById('listView');
-                this.dateFrom = document.getElementById('dateFrom');
-                this.dateTo = document.getElementById('dateTo');
                 this.tooltip = document.getElementById('tooltip');
                 
                 // Selection controls
@@ -1052,11 +1301,6 @@
                     this.applyFilters();
                 });
 
-                // Sidebar toggle
-                this.sidebarToggle.addEventListener('click', () => {
-                    this.sidebar.classList.toggle('show');
-                });
-
                 // View toggle
                 this.gridView.addEventListener('click', () => this.setView('grid'));
                 this.listView.addEventListener('click', () => this.setView('list'));
@@ -1077,70 +1321,156 @@
                         this.hideDeleteModal();
                     }
                 });
-
-                // Date filters
-                this.dateFrom.addEventListener('change', () => {
-                    this.activeFilters.dateFrom = this.dateFrom.value;
-                    this.applyFilters();
-                });
-
-                this.dateTo.addEventListener('change', () => {
-                    this.activeFilters.dateTo = this.dateTo.value;
-                    this.applyFilters();
-                });
-
-                // Filter checkboxes
-                document.querySelectorAll('.filter-checkbox input').forEach(checkbox => {
-                    checkbox.addEventListener('change', () => {
-                        this.updateFilters();
-                        this.applyFilters();
-                    });
-                });
-
-                // Close sidebar on outside click (mobile)
-                document.addEventListener('click', (e) => {
-                    if (window.innerWidth <= 768 && 
-                        !this.sidebar.contains(e.target) && 
-                        !this.sidebarToggle.contains(e.target)) {
-                        this.sidebar.classList.remove('show');
-                    }
-                });
             }
 
             async loadSessions() {
                 try {
+                    console.log('Loading sessions...');
                     const response = await fetch('/api/sessions/list');
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
                     const data = await response.json();
+                    console.log('Raw API response:', data);
+                    
                     this.sessions = Array.isArray(data) ? data : (data.sessions || []);
-                    this.updateFilterCounts();
+                    console.log('Processed sessions:', this.sessions);
+                    
+                    if (this.sessions.length === 0) {
+                        console.warn('No sessions found');
+                        this.showEmptyState();
+                        return;
+                    }
+                    
+                    this.updateSummaryCards();
+                    this.updateFeaturedSession();
                     this.applyFilters();
                 } catch (error) {
                     console.error('Error loading sessions:', error);
-                    this.showError('Failed to load sessions');
+                    this.showError(`Failed to load sessions: ${error.message}`);
                 }
             }
 
-            updateFilters() {
-                // Event types
-                this.activeFilters.eventTypes = Array.from(
-                    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked')
-                ).map(cb => cb.value).filter(v => ['phone', 'looking', 'leaning', 'gesture'].includes(v));
+            updateSummaryCards() {
+                const totalSessions = this.sessions.length;
+                const totalEvents = this.sessions.reduce((sum, session) => sum + (session.hotspot_count || session.event_count || 0), 0);
+                const avgDuration = totalSessions > 0 ? 
+                    this.sessions.reduce((sum, session) => sum + (session.duration || 0), 0) / totalSessions : 0;
+                const avgEventsPerSession = totalSessions > 0 ? (totalEvents / totalSessions) : 0;
 
-                // Severities
-                this.activeFilters.severities = Array.from(
-                    document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked')
-                ).map(cb => cb.value).filter(v => ['red', 'orange', 'yellow'].includes(v));
+                console.log('Summary stats:', { totalSessions, totalEvents, avgDuration, avgEventsPerSession });
+
+                // Update summary card values with safety checks
+                const totalSessionsEl = document.getElementById('totalSessions');
+                const totalEventsEl = document.getElementById('totalEvents');
+                const avgDurationEl = document.getElementById('avgDuration');
+                const avgEventsPerSessionEl = document.getElementById('avgEventsPerSession');
+
+                if (totalSessionsEl) totalSessionsEl.textContent = totalSessions;
+                if (totalEventsEl) totalEventsEl.textContent = totalEvents;
+                if (avgDurationEl) avgDurationEl.textContent = this.formatTime(avgDuration);
+                if (avgEventsPerSessionEl) avgEventsPerSessionEl.textContent = avgEventsPerSession.toFixed(1);
+
+                // Update trends with safety checks
+                const sessionsTrendEl = document.getElementById('sessionsTrend');
+                const eventsTrendEl = document.getElementById('eventsTrend');
+                const durationTrendEl = document.getElementById('durationTrend');
+                const avgEventsTrendEl = document.getElementById('avgEventsTrend');
+
+                if (sessionsTrendEl) sessionsTrendEl.textContent = 'Past 7 days';
+                if (eventsTrendEl) eventsTrendEl.textContent = 'Across all sessions';
+                if (durationTrendEl) durationTrendEl.textContent = 'Per session';
+                if (avgEventsTrendEl) avgEventsTrendEl.textContent = 'Events detected';
             }
 
-            updateFilterCounts() {
-                // This would be updated with real data from sessions
-                document.getElementById('phoneCount').textContent = `(${this.sessions.filter(s => s.phone_events > 0).length})`;
-                document.getElementById('lookingCount').textContent = `(${this.sessions.filter(s => s.looking_events > 0).length})`;
-                document.getElementById('leaningCount').textContent = `(${this.sessions.filter(s => s.leaning_events > 0).length})`;
-                document.getElementById('gestureCount').textContent = `(${this.sessions.filter(s => s.gesture_events > 0).length})`;
-                document.getElementById('criticalCount').textContent = `(${this.sessions.filter(s => s.critical_events > 0).length})`;
-                document.getElementById('warningCount').textContent = `(${this.sessions.filter(s => s.warning_events > 0).length})`;
-                document.getElementById('noticeCount').textContent = `(${this.sessions.filter(s => s.notice_events > 0).length})`;
+            updateFeaturedSession() {
+                if (this.sessions.length === 0) {
+                    document.getElementById('featuredSection').style.display = 'none';
+                    return;
+                }
+
+                console.log('Updating featured session from:', this.sessions.length, 'sessions');
+
+                // Find the newest session to feature
+                const featuredSession = this.sessions.reduce((newest, current) => {
+                    const currentTime = current.start_time || current.timestamp || current.created_at;
+                    const newestTime = newest.start_time || newest.timestamp || newest.created_at;
+                    return currentTime > newestTime ? current : newest;
+                });
+
+                console.log('Selected featured session (newest):', featuredSession);
+
+                // Handle different timestamp formats
+                let timestamp = featuredSession.start_time || featuredSession.timestamp || featuredSession.created_at;
+                if (typeof timestamp === 'string') {
+                    timestamp = new Date(timestamp).getTime() / 1000;
+                }
+
+                const date = new Date(timestamp * 1000);
+                const duration = this.formatTime(featuredSession.duration || 0);
+                const eventCount = featuredSession.hotspot_count || featuredSession.event_count || 0;
+                const sessionId = featuredSession.session_id || featuredSession.id;
+
+                const thumbnailSrc = featuredSession.thumbnail_path || 
+                                   featuredSession.video_path?.replace('.mp4', '.jpg') ||
+                                   `/api/thumbnail/${sessionId}`;
+
+                document.getElementById('featuredSection').style.display = 'block';
+                document.getElementById('featuredVideo').innerHTML = `
+                    <div class="featured-thumbnail">
+                        <img src="${thumbnailSrc}" 
+                             alt="Featured Session" 
+                             onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgwIiBoZWlnaHQ9IjI3MCIgdmlld0JveD0iMCAwIDQ4MCAyNzAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0ODAiIGhlaWdodD0iMjcwIiBmaWxsPSIjMzAzMDMwIi8+Cjx0ZXh0IHg9IjI0MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjNlbSI+Featured Session</text+Cjwvc3ZnPgo=';">
+                        <button class="featured-play-btn" onclick="window.location.href='/analytics/player?session=${sessionId}'">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </button>
+                        <div class="featured-duration">${duration}</div>
+                    </div>
+                    <div class="featured-info">
+                        <div class="featured-title">Session ${featuredSession.session_id}</div>
+                        <div class="featured-meta">
+                            <span>${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="featured-stats">
+                            <div class="featured-stat">
+                                <div class="featured-stat-value">${duration}</div>
+                                <div class="featured-stat-label">Duration</div>
+                            </div>
+                            <div class="featured-stat">
+                                <div class="featured-stat-value">${eventCount}</div>
+                                <div class="featured-stat-label">Events</div>
+                            </div>
+                            <div class="featured-stat">
+                                <div class="featured-stat-value">${featuredSession.status || 'Completed'}</div>
+                                <div class="featured-stat-label">Status</div>
+                            </div>
+                            <div class="featured-stat">
+                                <div class="featured-stat-value">${eventCount > 50 ? 'High' : eventCount > 25 ? 'Medium' : 'Low'}</div>
+                                <div class="featured-stat-label">Risk Level</div>
+                            </div>
+                        </div>
+                        <div class="featured-actions">
+                            <a href="/analytics/player?session=${featuredSession.session_id}" class="featured-btn">
+                                Watch Session
+                            </a>
+                            <button class="featured-btn secondary" id="downloadReportBtn">
+                                📄 Download PDF Report
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Add event listener for download button
+                const downloadBtn = document.getElementById('downloadReportBtn');
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', () => {
+                        this.downloadReport(featuredSession.session_id);
+                    });
+                }
             }
 
             applyFilters() {
@@ -1151,22 +1481,6 @@
                     filtered = filtered.filter(session => 
                         session.session_id.toLowerCase().includes(this.activeFilters.search) ||
                         new Date(session.start_time * 1000).toLocaleDateString().includes(this.activeFilters.search)
-                    );
-                }
-
-                // Date filters
-                if (this.activeFilters.dateFrom) {
-                    const fromDate = new Date(this.activeFilters.dateFrom);
-                    filtered = filtered.filter(session => 
-                        new Date(session.start_time * 1000) >= fromDate
-                    );
-                }
-
-                if (this.activeFilters.dateTo) {
-                    const toDate = new Date(this.activeFilters.dateTo);
-                    toDate.setHours(23, 59, 59, 999); // End of day
-                    filtered = filtered.filter(session => 
-                        new Date(session.start_time * 1000) <= toDate
                     );
                 }
 
@@ -1195,10 +1509,12 @@
             }
 
             renderSessions() {
+                console.log('Rendering sessions:', this.filteredSessions.length);
+                
                 if (this.filteredSessions.length === 0) {
                     this.videoGrid.innerHTML = `
                         <div class="empty-state" style="grid-column: 1 / -1;">
-                            <div class="empty-icon">📹</div>
+                            <div class="empty-icon">No Videos</div>
                             <div class="empty-title">No sessions found</div>
                             <div class="empty-subtitle">Try adjusting your filters or start a new recording session</div>
                             <a href="/" class="empty-action">Start Live Monitoring</a>
@@ -1207,13 +1523,16 @@
                     return;
                 }
 
-                this.videoGrid.innerHTML = this.filteredSessions.map(session => 
-                    this.createSessionCard(session)
-                ).join('');
+                // Clear loading state and render actual sessions
+                this.videoGrid.innerHTML = this.filteredSessions.map(session => {
+                    console.log('Creating card for session:', session.session_id);
+                    return this.createSessionCard(session);
+                }).join('');
 
                 // Add click listeners to cards
                 this.videoGrid.querySelectorAll('.video-card').forEach(card => {
                     const sessionId = card.dataset.sessionId;
+                    console.log('Adding listeners for session:', sessionId);
                     
                     if (this.selectionMode) {
                         card.classList.add('selection-mode');
@@ -1232,50 +1551,73 @@
                         });
                     } else {
                         card.addEventListener('click', () => {
+                            console.log('Navigating to player for session:', sessionId);
                             window.location.href = `/analytics/player?session=${sessionId}`;
                         });
                     }
                 });
+
+                console.log('Session rendering complete');
             }
 
             createSessionCard(session) {
-                const date = new Date(session.start_time * 1000);
+                console.log('Creating session card for:', session);
+                
+                // Handle different timestamp formats
+                let timestamp = session.start_time || session.timestamp || session.created_at;
+                if (typeof timestamp === 'string') {
+                    timestamp = new Date(timestamp).getTime() / 1000;
+                }
+                
+                const date = new Date(timestamp * 1000);
                 const duration = this.formatTime(session.duration || 0);
-                const eventCount = session.hotspot_count || 0;
-                const isActive = session.status === 'active'; // Assuming we have this field
+                const eventCount = session.hotspot_count || session.event_count || 0;
+                const isActive = session.status === 'active';
                 const isSelected = this.selectedSessions.has(session.session_id);
                 
                 let eventCountClass = 'low';
-                if (eventCount > 10) eventCountClass = 'high';
-                else if (eventCount > 5) eventCountClass = 'medium';
+                if (eventCount > 50) eventCountClass = 'high';
+                else if (eventCount > 25) eventCountClass = 'medium';
+
+                // Use multiple fallback strategies for thumbnails
+                const sessionId = session.session_id || session.id;
+                const thumbnailSrc = session.thumbnail_path || 
+                                   session.video_path?.replace('.mp4', '.jpg') ||
+                                   `/api/thumbnail/${sessionId}`;
+
+                console.log('Session card data:', { sessionId, date, duration, eventCount, thumbnailSrc });
 
                 return `
-                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${session.session_id}" tabindex="0">
+                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${sessionId}" tabindex="0">
                         <div class="video-thumbnail">
                             <div class="selection-checkbox ${isSelected ? 'checked' : ''}"></div>
-                            <img src="/api/thumbnail/${session.session_id}" 
-                                 alt="Session ${session.session_id}" 
-                                 onerror="this.style.display='none'">
+                            <img src="${thumbnailSrc}" 
+                                 alt="Session ${sessionId}" 
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMyMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMzAzMDMwIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjNlbSI+Session Video</text+Cjwvc3ZnPgo=';">
                             <div class="video-duration">${duration}</div>
                             ${isActive ? '<div class="live-badge">LIVE</div>' : ''}
                             <div class="video-overlay">
-                                <button class="overlay-btn">View Analytics</button>
+                                <button class="overlay-btn">▶</button>
                             </div>
                         </div>
                         <div class="video-info">
-                            <div class="video-title">${session.session_id}</div>
+                            <div class="video-title">Session ${sessionId}</div>
                             <div class="video-metadata">
                                 <div class="video-date">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
                             </div>
                             <div class="video-stats">
                                 <div class="stat-item">
-                                    <span class="stat-icon">⏱</span>
-                                    <span>${duration}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon">📊</span>
+                                    <span class="stat-icon">Events:</span>
                                     <span class="event-count ${eventCountClass}">${eventCount} events</span>
                                 </div>
+                            </div>
+                            <div class="video-actions">
+                                <button class="action-btn view-report-btn" data-session-id="${sessionId}" onclick="event.stopPropagation(); window.location.href='/analytics/reports/${sessionId}'">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                    </svg>
+                                    View Report
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1380,7 +1722,7 @@
                     alert('An error occurred while deleting sessions');
                 } finally {
                     this.deleteSelectedBtn.disabled = false;
-                    this.deleteSelectedBtn.textContent = '🗑 Delete Selected';
+                    this.deleteSelectedBtn.textContent = 'Delete Selected';
                 }
             }
 
@@ -1393,12 +1735,64 @@
             showError(message) {
                 this.videoGrid.innerHTML = `
                     <div class="empty-state" style="grid-column: 1 / -1;">
-                        <div class="empty-icon">❌</div>
+                        <div class="empty-icon">Error</div>
                         <div class="empty-title">Error</div>
                         <div class="empty-subtitle">${message}</div>
                         <button class="empty-action" onclick="location.reload()">Retry</button>
                     </div>
                 `;
+            }
+
+            showEmptyState() {
+                this.videoGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">No Videos</div>
+                        <div class="empty-title">No sessions found</div>
+                        <div class="empty-subtitle">Start a live monitoring session to see recordings here</div>
+                        <a href="/" class="empty-action">Start Live Monitoring</a>
+                    </div>
+                `;
+                
+                // Hide featured section and summary cards
+                document.getElementById('featuredSection').style.display = 'none';
+                document.getElementById('totalSessions').textContent = '0';
+                document.getElementById('totalEvents').textContent = '0';
+                document.getElementById('avgDuration').textContent = '0:00';
+                document.getElementById('avgEventsPerSession').textContent = '0.0';
+            }
+
+            downloadReport(sessionId) {
+                // Download PDF report for the session
+                const session = this.sessions.find(s => s.session_id === sessionId);
+                if (!session) {
+                    alert('Session not found');
+                    return;
+                }
+
+                // Use the same API pattern as analytics_session_report.html
+                const params = new URLSearchParams({
+                    session_id: sessionId
+                });
+                
+                fetch(`/api/reports/export/session_pdf?${params}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Export failed');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `cheatgpt-session-${sessionId}-${new Date().toISOString().split('T')[0]}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    })
+                    .catch(error => {
+                        console.error('PDF export error:', error);
+                        alert('Failed to export PDF report');
+                    });
             }
         }
 
