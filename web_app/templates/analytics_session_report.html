@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CheatGPT Analytics - Session Report</title>
+    <title>CheatGPT - Session Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -50,10 +51,11 @@
             gap: 8px;
         }
 
-        .logo::before {
-            content: "🎯";
-            font-size: 24px;
+        .logo img {
+            height: 50px;
+            width: auto;
         }
+
 
         .user-menu {
             display: flex;
@@ -64,10 +66,16 @@
         .nav-item {
             color: #ffffff;
             text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 18px;
+            padding: 12px;
+            border-radius: 8px;
             transition: background 0.2s;
-            font-size: 14px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 40px;
+            height: 40px;
         }
 
         .nav-item:hover {
@@ -76,6 +84,45 @@
 
         .nav-item.active {
             background: #ff0000;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        /* Tooltip styles */
+        .nav-item .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -30px;
+            font-size: 12px;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-item .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .nav-item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }
 
         /* Main Layout */
@@ -235,10 +282,95 @@
             margin-bottom: 16px;
         }
 
+        .session-title-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
         .session-title {
             font-size: 24px;
             font-weight: 600;
             color: #ffffff;
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .session-title-edit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .session-title-input {
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            padding: 8px 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .session-title-input:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+        }
+
+        .title-edit-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #ffffff;
+            background: #2a2a2a;
+        }
+
+        .btn-icon:hover {
+            background: #3a3a3a;
+        }
+
+        .edit-title-btn {
+            opacity: 0.6;
+        }
+
+        .edit-title-btn:hover {
+            opacity: 1;
+            background: #3a3a3a;
+        }
+
+        .save-btn {
+            background: #00aa00;
+        }
+
+        .save-btn:hover {
+            background: #00cc00;
+        }
+
+        .cancel-btn {
+            background: #aa0000;
+        }
+
+        .cancel-btn:hover {
+            background: #cc0000;
         }
 
         .session-status {
@@ -558,13 +690,27 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/analytics/home" class="logo">CheatGPT</a>
+            <a href="/analytics/home" class="logo">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="CheatGPT Logo">
+            </a>
             
             <nav class="user-menu">
-                <a href="/analytics/home" class="nav-item">Home</a>
-                <a href="/" class="nav-item">Live</a>
-                <a href="/analytics/player" class="nav-item">Player</a>
-                <a href="/analytics/reports" class="nav-item active">Reports</a>
+                <a href="/analytics/home" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span class="tooltip">Home</span>
+                </a>
+                <a href="/" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span class="tooltip">Live</span>
+                </a>
+                <a href="/analytics/player" class="nav-item">
+                    <i class="fas fa-play"></i>
+                    <span class="tooltip">Player</span>
+                </a>
+                <a href="/analytics/reports" class="nav-item active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="tooltip">Reports</span>
+                </a>
             </nav>
         </div>
     </header>
@@ -596,7 +742,29 @@
             <!-- Session Info Card -->
             <div class="session-info-card">
                 <div class="session-header">
-                    <h2 class="session-title" id="sessionTitle">Loading...</h2>
+                    <div class="session-title-container">
+                        <h2 class="session-title" id="sessionTitle">Loading...</h2>
+                        <div class="session-title-edit" id="sessionTitleEdit" style="display: none;">
+                            <input type="text" class="session-title-input" id="sessionTitleInput" maxlength="200" />
+                            <div class="title-edit-actions">
+                                <button class="btn-icon save-btn" id="saveTitleBtn" title="Save">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                                    </svg>
+                                </button>
+                                <button class="btn-icon cancel-btn" id="cancelTitleBtn" title="Cancel">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn-icon edit-title-btn" id="editTitleBtn" title="Rename Session">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+                            </svg>
+                        </button>
+                    </div>
                     <span class="session-status" id="sessionStatus">loading</span>
                 </div>
                 <div class="session-meta">
@@ -649,22 +817,38 @@
             <div class="summary-section">
                 <div class="summary-cards">
                     <div class="summary-card">
-                        <div class="summary-card-icon">📊</div>
+                        <div class="summary-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                            </svg>
+                        </div>
                         <div class="summary-card-value" id="summaryEvents">0</div>
                         <div class="summary-card-label">Total Events</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-card-icon">⏱️</div>
+                        <div class="summary-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+                            </svg>
+                        </div>
                         <div class="summary-card-value" id="summaryDuration">0m</div>
                         <div class="summary-card-label">Duration</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-card-icon">📈</div>
+                        <div class="summary-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z"/>
+                            </svg>
+                        </div>
                         <div class="summary-card-value" id="summaryRate">0.0</div>
                         <div class="summary-card-label">Events/Min</div>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-card-icon">🎯</div>
+                        <div class="summary-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9,12L11,14L15,10L13.59,8.59L11,11.17L9.41,9.59L8,11M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"/>
+                            </svg>
+                        </div>
                         <div class="summary-card-value" id="summaryConfidence">0%</div>
                         <div class="summary-card-label">Avg Confidence</div>
                     </div>
@@ -693,7 +877,7 @@
 
                 <div class="chart-card">
                     <div class="chart-header">
-                        <h3 class="chart-title">📹 Video Preview</h3>
+                        <h3 class="chart-title">Video Preview</h3>
                     </div>
                     <div class="chart-container">
                         <div class="video-container">
@@ -733,7 +917,7 @@
                 </div>
                 <div class="events-list" id="eventsList">
                     <div class="empty-state">
-                        <div class="empty-icon">📊</div>
+                        <div class="empty-icon"></div>
                         <div class="empty-title">Loading Events</div>
                         <div class="empty-subtitle">Please wait while we load the session data...</div>
                     </div>
@@ -798,6 +982,22 @@
                 document.getElementById('exportPDF').addEventListener('click', () => this.exportPDF());
                 document.getElementById('deleteSession').addEventListener('click', () => this.deleteSession());
                 document.getElementById('viewVideoBtn').addEventListener('click', () => this.viewVideo());
+                
+                // Title editing event listeners
+                document.getElementById('editTitleBtn').addEventListener('click', () => this.startEditingTitle());
+                document.getElementById('saveTitleBtn').addEventListener('click', () => this.saveTitle());
+                document.getElementById('cancelTitleBtn').addEventListener('click', () => this.cancelEditingTitle());
+                
+                // Handle Enter and Escape keys in title input
+                document.getElementById('sessionTitleInput').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.saveTitle();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.cancelEditingTitle();
+                    }
+                });
                 
                 // Video player event listeners
                 this.setupVideoPlayer();
@@ -1159,6 +1359,142 @@
 
             viewVideo() {
                 window.location.href = `/analytics/player?session=${this.sessionData.session_id}`;
+            }
+
+            startEditingTitle() {
+                const titleElement = document.getElementById('sessionTitle');
+                const editContainer = document.getElementById('sessionTitleEdit');
+                const editButton = document.getElementById('editTitleBtn');
+                const titleInput = document.getElementById('sessionTitleInput');
+                
+                // Set input value to current title
+                titleInput.value = this.sessionData.video_title || `Session ${this.sessionData.session_id}`;
+                
+                // Show edit interface, hide title and edit button
+                titleElement.style.display = 'none';
+                editButton.style.display = 'none';
+                editContainer.style.display = 'flex';
+                
+                // Focus the input and select all text
+                titleInput.focus();
+                titleInput.select();
+            }
+
+            cancelEditingTitle() {
+                const titleElement = document.getElementById('sessionTitle');
+                const editContainer = document.getElementById('sessionTitleEdit');
+                const editButton = document.getElementById('editTitleBtn');
+                
+                // Hide edit interface, show title and edit button
+                editContainer.style.display = 'none';
+                titleElement.style.display = 'block';
+                editButton.style.display = 'flex';
+            }
+
+            async saveTitle() {
+                const titleInput = document.getElementById('sessionTitleInput');
+                const newTitle = titleInput.value.trim();
+                
+                if (!newTitle) {
+                    alert('Title cannot be empty');
+                    titleInput.focus();
+                    return;
+                }
+                
+                if (newTitle === (this.sessionData.video_title || `Session ${this.sessionData.session_id}`)) {
+                    // No change, just cancel editing
+                    this.cancelEditingTitle();
+                    return;
+                }
+                
+                try {
+                    // Disable save button while saving
+                    const saveBtn = document.getElementById('saveTitleBtn');
+                    saveBtn.disabled = true;
+                    saveBtn.style.opacity = '0.5';
+                    
+                    const response = await fetch(`/api/session/${this.sessionData.session_id}/rename`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            new_title: newTitle
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                        throw new Error(errorData.error || `Failed to rename: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Update local data
+                        this.sessionData.video_title = newTitle;
+                        
+                        // Update UI
+                        document.getElementById('sessionTitle').textContent = newTitle;
+                        document.getElementById('pageTitle').textContent = `Report: ${newTitle}`;
+                        
+                        // Exit edit mode
+                        this.cancelEditingTitle();
+                        
+                        // Show success feedback
+                        this.showToast('Title updated successfully', 'success');
+                    } else {
+                        throw new Error(result.error || 'Failed to rename session');
+                    }
+                } catch (error) {
+                    console.error('Error renaming session:', error);
+                    alert(`Failed to rename session: ${error.message}`);
+                    titleInput.focus();
+                } finally {
+                    // Re-enable save button
+                    const saveBtn = document.getElementById('saveTitleBtn');
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                }
+            }
+
+            showToast(message, type = 'info') {
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.textContent = message;
+                
+                // Style the toast
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    right: 20px;
+                    background: ${type === 'success' ? '#00aa00' : type === 'error' ? '#aa0000' : '#2a2a2a'};
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                `;
+                
+                document.body.appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(0)';
+                }, 10);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
             }
 
             showError(message) {

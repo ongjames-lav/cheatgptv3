@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CheatGPT - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -48,9 +49,9 @@
             gap: 8px;
         }
 
-        .logo::before {
-            content: "🎯";
-            font-size: 24px;
+        .logo img {
+            height: 50px;
+            width: auto;
         }
 
         .search-container {
@@ -65,7 +66,7 @@
             background: #121212;
             border: 1px solid #303030;
             color: #ffffff;
-            padding: 10px 16px;
+            padding: 10px 44px 10px 16px;
             border-radius: 20px;
             font-size: 16px;
             outline: none;
@@ -83,16 +84,21 @@
 
         .search-btn {
             position: absolute;
-            right: 8px;
+            right: 4px;
             top: 50%;
             transform: translateY(-50%);
             background: #313131;
             border: none;
             color: #ffffff;
-            padding: 8px 12px;
-            border-radius: 0 16px 16px 0;
+            padding: 6px 8px;
+            border-radius: 14px;
             cursor: pointer;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
         }
 
         .search-btn:hover {
@@ -108,10 +114,16 @@
         .nav-item {
             color: #ffffff;
             text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 18px;
+            padding: 12px;
+            border-radius: 8px;
             transition: background 0.2s;
-            font-size: 14px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 40px;
+            height: 40px;
         }
 
         .nav-item:hover {
@@ -120,6 +132,45 @@
 
         .nav-item.active {
             background: #ff0000;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        /* Tooltip styles */
+        .nav-item .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -30px;
+            font-size: 12px;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-item .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .nav-item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }
 
         /* Main Layout */
@@ -1089,19 +1140,37 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/analytics/home" class="logo">CheatGPT</a>
+            <a href="/analytics/home" class="logo">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="CheatGPT Logo">
+            </a>
             
             <div class="search-container">
                 <input type="text" class="search-bar" id="searchInput" 
-                       placeholder="Search by Session ID, date, or event type...">
-                <button class="search-btn" id="searchBtn">Search</button>
+                       placeholder="Search">
+                <button class="search-btn" id="searchBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                </button>
             </div>
             
             <nav class="user-menu">
-                <a href="/analytics/home" class="nav-item active">Home</a>
-                <a href="/" class="nav-item">Live</a>
-                <a href="/analytics/player" class="nav-item">Player</a>
-                <a href="/analytics/reports" class="nav-item">Reports</a>
+                <a href="/analytics/home" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span class="tooltip">Home</span>
+                </a>
+                <a href="/" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span class="tooltip">Live</span>
+                </a>
+                <a href="/analytics/player" class="nav-item">
+                    <i class="fas fa-play"></i>
+                    <span class="tooltip">Player</span>
+                </a>
+                <a href="/analytics/reports" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="tooltip">Reports</span>
+                </a>
             </nav>
         </div>
     </header>

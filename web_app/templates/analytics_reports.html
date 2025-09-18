@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CheatGPT Analytics - Reports</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -50,10 +51,11 @@
             gap: 8px;
         }
 
-        .logo::before {
-            content: "🎯";
-            font-size: 24px;
+        .logo img {
+            height: 50px;
+            width: auto;
         }
+
 
         .search-container {
             flex: 1;
@@ -67,7 +69,7 @@
             background: #121212;
             border: 1px solid #303030;
             color: #ffffff;
-            padding: 10px 16px;
+            padding: 10px 44px 10px 16px;
             border-radius: 20px;
             font-size: 16px;
             outline: none;
@@ -85,16 +87,21 @@
 
         .search-btn {
             position: absolute;
-            right: 8px;
+            right: 4px;
             top: 50%;
             transform: translateY(-50%);
             background: #313131;
             border: none;
             color: #ffffff;
-            padding: 8px 12px;
-            border-radius: 0 16px 16px 0;
+            padding: 6px 8px;
+            border-radius: 14px;
             cursor: pointer;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
         }
 
         .search-btn:hover {
@@ -110,10 +117,16 @@
         .nav-item {
             color: #ffffff;
             text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 18px;
+            padding: 12px;
+            border-radius: 8px;
             transition: background 0.2s;
-            font-size: 14px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 40px;
+            height: 40px;
         }
 
         .nav-item:hover {
@@ -122,6 +135,45 @@
 
         .nav-item.active {
             background: #ff0000;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        /* Tooltip styles */
+        .nav-item .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -30px;
+            font-size: 12px;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-item .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .nav-item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }
 
         /* Main Layout */
@@ -618,19 +670,37 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/analytics/home" class="logo">CheatGPT</a>
+            <a href="/analytics/home" class="logo">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="CheatGPT Logo">
+            </a>
             
             <div class="search-container">
                 <input type="text" class="search-bar" id="searchInput" 
-                       placeholder="Search by Session ID, date, or event type...">
-                <button class="search-btn" id="searchBtn">Search</button>
+                       placeholder="Search">
+                <button class="search-btn" id="searchBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                </button>
             </div>
             
             <nav class="user-menu">
-                <a href="/analytics/home" class="nav-item">Home</a>
-                <a href="/" class="nav-item">Live</a>
-                <a href="/analytics/player" class="nav-item">Player</a>
-                <a href="/analytics/reports" class="nav-item active">Reports</a>
+                <a href="/analytics/home" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span class="tooltip">Home</span>
+                </a>
+                <a href="/" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span class="tooltip">Live</span>
+                </a>
+                <a href="/analytics/player" class="nav-item">
+                    <i class="fas fa-play"></i>
+                    <span class="tooltip">Player</span>
+                </a>
+                <a href="/analytics/reports" class="nav-item active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="tooltip">Reports</span>
+                </a>
             </nav>
         </div>
     </header>
@@ -655,7 +725,10 @@
                     </div>
                     <div class="controls-right">
                         <button class="btn-primary" id="downloadPDF">
-                            📄 Download PDF
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            </svg>
+                            Download PDF
                         </button>
                     </div>
                 </div>
@@ -663,12 +736,21 @@
 
             <!-- Summary Cards Section -->
             <section class="summary-section">
-                <h2 class="section-title">📊 Analytics Overview</h2>
+                <h2 class="section-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                        <path d="M3,13H7V11H3V13M3,17H9V15H3V17M3,9H7V7H3V9M9,13H21V11H9V13M9,17H21V15H9V17M9,9H21V7H9V9Z"/>
+                    </svg>
+                    Analytics Overview
+                </h2>
                 <div class="summary-cards" id="summaryCards">
                     <div class="summary-card">
                         <div class="summary-card-header">
                             <span class="summary-card-title">Total Sessions</span>
-                            <span class="summary-card-icon">🎥</span>
+                            <span class="summary-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19,3H5C3.9,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.9 20.1,3 19,3M19,19H5V8H19V19Z"/>
+                                </svg>
+                            </span>
                         </div>
                         <div class="summary-card-value" id="totalSessions">--</div>
                         <div class="summary-card-subtitle">
@@ -679,7 +761,11 @@
                     <div class="summary-card">
                         <div class="summary-card-header">
                             <span class="summary-card-title">Total Hotspots</span>
-                            <span class="summary-card-icon">⚠️</span>
+                            <span class="summary-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M1,21H23L12,2L1,21Z"/>
+                                </svg>
+                            </span>
                         </div>
                         <div class="summary-card-value" id="totalHotspots">--</div>
                         <div class="summary-card-subtitle">
@@ -690,7 +776,11 @@
                     <div class="summary-card">
                         <div class="summary-card-header">
                             <span class="summary-card-title">Avg Duration</span>
-                            <span class="summary-card-icon">⏱️</span>
+                            <span class="summary-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.9L16.2,16.2Z"/>
+                                </svg>
+                            </span>
                         </div>
                         <div class="summary-card-value" id="avgDuration">--</div>
                         <div class="summary-card-subtitle">
@@ -701,7 +791,11 @@
                     <div class="summary-card">
                         <div class="summary-card-header">
                             <span class="summary-card-title">Avg Events/Session</span>
-                            <span class="summary-card-icon">📈</span>
+                            <span class="summary-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.7L22,12V6H16Z"/>
+                                </svg>
+                            </span>
                         </div>
                         <div class="summary-card-value" id="avgEventsPerSession">--</div>
                         <div class="summary-card-subtitle">
@@ -717,7 +811,12 @@
                 <section class="charts-section">
                     <!-- Hotspots by Type Chart -->
                     <div class="chart-card">
-                        <h3 class="chart-title">🎯 Hotspots by Type</h3>
+                        <h3 class="chart-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                                <path d="M12,2A3,3 0 0,1 15,5A3,3 0 0,1 12,8A3,3 0 0,1 9,5A3,3 0 0,1 12,2M21,9V7H15L13.5,7.5C13.1,7.4 12.6,7.3 12,7.3C11.4,7.3 10.9,7.4 10.5,7.5L9,7H3V9H9L10.5,9.5C10.9,9.6 11.4,9.7 12,9.7C12.6,9.7 13.1,9.6 13.5,9.5L15,9H21M12,10.3C11.6,10.3 11.2,10.2 10.8,10.1L9,10H3V12H9L10.8,12.9C11.2,12.8 11.6,12.7 12,12.7C12.4,12.7 12.8,12.8 13.2,12.9L15,12H21V10H15L13.2,10.1C12.8,10.2 12.4,10.3 12,10.3Z"/>
+                            </svg>
+                            Hotspots by Type
+                        </h3>
                         <div class="chart-container">
                             <canvas id="hotspotsChart"></canvas>
                         </div>
@@ -725,7 +824,12 @@
 
                     <!-- Session Duration Distribution -->
                     <div class="chart-card">
-                        <h3 class="chart-title">⏰ Session Duration Distribution</h3>
+                        <h3 class="chart-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                                <path d="M3,3V5H21V3H3M4,6V8H20V6H4M5,9V11H19V9H5M6,12V14H18V12H6M7,15V17H17V15H7Z"/>
+                            </svg>
+                            Session Duration Distribution
+                        </h3>
                         <div class="chart-container">
                             <canvas id="durationChart"></canvas>
                         </div>
@@ -733,7 +837,12 @@
 
                     <!-- Events Timeline -->
                     <div class="chart-card large">
-                        <h3 class="chart-title">📈 Events Timeline</h3>
+                        <h3 class="chart-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                                <path d="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+                            </svg>
+                            Events Timeline
+                        </h3>
                         <div class="chart-container large">
                             <canvas id="timelineChart"></canvas>
                         </div>
@@ -741,7 +850,12 @@
 
                     <!-- Cheating Trends -->
                     <div class="chart-card large">
-                        <h3 class="chart-title">🔍 Cheating Trends Over Time</h3>
+                        <h3 class="chart-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                                <path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z"/>
+                            </svg>
+                            Cheating Trends Over Time
+                        </h3>
                         <div class="chart-container large">
                             <canvas id="trendsChart"></canvas>
                         </div>
@@ -769,7 +883,9 @@
             constructor() {
                 this.sessions = [];
                 this.filteredSessions = [];
+                this.allSessions = []; // Store all sessions for search filtering
                 this.currentDateRange = 30;
+                this.searchQuery = '';
                 this.charts = {};
                 
                 this.initializeElements();
@@ -782,6 +898,8 @@
                 this.sessionCount = document.getElementById('sessionCount');
                 this.downloadPDF = document.getElementById('downloadPDF');
                 this.sessionsList = document.getElementById('sessionsList');
+                this.searchInput = document.getElementById('searchInput');
+                this.searchBtn = document.getElementById('searchBtn');
                 
                 // Summary cards
                 this.totalSessions = document.getElementById('totalSessions');
@@ -797,6 +915,23 @@
                 });
 
                 this.downloadPDF.addEventListener('click', () => this.exportPDF());
+
+                // Search functionality
+                this.searchInput.addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.applySearchFilter();
+                });
+
+                this.searchBtn.addEventListener('click', () => {
+                    this.applySearchFilter();
+                });
+
+                // Handle Enter key in search
+                this.searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.applySearchFilter();
+                    }
+                });
             }
 
             async loadData() {
@@ -815,7 +950,13 @@
                     
                     // Store the data
                     this.analyticsData = data;
-                    this.filteredSessions = data.recent_sessions || [];
+                    this.allSessions = data.recent_sessions || []; // Store all sessions for search
+                    this.filteredSessions = [...this.allSessions]; // Start with all sessions
+                    
+                    // Apply current search filter if any
+                    if (this.searchQuery) {
+                        this.applySearchFilter();
+                    }
                     
                     // Update all displays
                     this.updateSummaryCards();
@@ -832,6 +973,39 @@
             applyDateFilter() {
                 // Reload data from backend with new date range
                 this.loadData();
+            }
+
+            applySearchFilter() {
+                if (!this.searchQuery.trim()) {
+                    // If no search query, show all sessions
+                    this.filteredSessions = [...this.allSessions];
+                } else {
+                    // Filter sessions based on search query
+                    this.filteredSessions = this.allSessions.filter(session => {
+                        const sessionId = (session.session_id || session.id || '').toLowerCase();
+                        const videoTitle = (session.video_title || '').toLowerCase();
+                        
+                        // Get date string for searching
+                        const timestamp = session.start_time || session.created_at || session.started_at || session.timestamp;
+                        const date = timestamp > 1e12 ? new Date(timestamp) : new Date(timestamp * 1000);
+                        const dateStr = date.toLocaleDateString().toLowerCase();
+                        const timeStr = date.toLocaleTimeString().toLowerCase();
+                        
+                        // Get event count for searching
+                        const eventCount = (session.hotspot_count || session.total_hotspots || session.event_count || 0).toString();
+                        
+                        // Search in session ID, title, date, time, and event count
+                        return sessionId.includes(this.searchQuery) ||
+                               videoTitle.includes(this.searchQuery) ||
+                               dateStr.includes(this.searchQuery) ||
+                               timeStr.includes(this.searchQuery) ||
+                               eventCount.includes(this.searchQuery);
+                    });
+                }
+                
+                // Update the sessions list and count
+                this.updateSessionsList();
+                this.updateSessionCount();
             }
 
             updateSessionCount() {
@@ -1128,14 +1302,18 @@
             }
 
             updateSessionsList() {
-                const sessions = this.analyticsData?.recent_sessions || [];
+                const sessions = this.filteredSessions || [];
                 
                 if (sessions.length === 0) {
+                    const message = this.searchQuery ? 
+                        'No sessions match your search criteria' : 
+                        'No sessions found for the selected period';
+                    
                     this.sessionsList.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">📊</div>
                             <div class="empty-title">No Data</div>
-                            <div class="empty-subtitle">No sessions found for the selected period</div>
+                            <div class="empty-subtitle">${message}</div>
                         </div>
                     `;
                     return;
