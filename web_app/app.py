@@ -170,6 +170,23 @@ class SessionReportGenerator:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Reduce Werkzeug logging verbosity
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
+
+# Reduce SocketIO logging
+logging.getLogger('socketio').setLevel(logging.WARNING)
+logging.getLogger('engineio').setLevel(logging.WARNING)
+
+# Completely disable Flask development server access logs
+import sys
+if 'werkzeug' in sys.modules:
+    import werkzeug
+    werkzeug._internal._log = lambda *args: None
+
+# Also disable werkzeug's access logger completely
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.disabled = True
+
 # Import CheatGPT detection engine
 try:
     import sys
@@ -180,11 +197,11 @@ try:
     if cheatgpt_path not in sys.path:
         sys.path.insert(0, cheatgpt_path)
     
-    from cheatgpt.engine import Engine
-    logger.info("✅ CheatGPT detection engine imported successfully")
+    from cheatgpt.engines.engine_hybrid import EngineHybrid
+    logger.info("✅ CheatGPT Hybrid detection engine imported successfully")
 except ImportError as e:
-    logger.error(f"❌ Failed to import CheatGPT detection engine: {e}")
-    Engine = None
+    logger.error(f"❌ Failed to import CheatGPT Hybrid detection engine: {e}")
+    EngineHybrid = None
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -235,19 +252,19 @@ last_stable_frame = None  # Cache last good detection frame
 
 # Initialize detection engine
 def initialize_detection_engine():
-    """Initialize the CheatGPT detection engine"""
+    """Initialize the CheatGPT Hybrid detection engine"""
     global detection_engine
     
-    if Engine is None:
-        logger.error("❌ CheatGPT Engine not available")
+    if EngineHybrid is None:
+        logger.error("❌ CheatGPT EngineHybrid not available")
         return False
     
     try:
-        detection_engine = Engine()
-        logger.info("✅ Detection engine initialized successfully")
+        detection_engine = EngineHybrid()
+        logger.info("✅ Hybrid detection engine initialized successfully")
         return True
     except Exception as e:
-        logger.error(f"❌ Failed to initialize detection engine: {e}")
+        logger.error(f"❌ Failed to initialize hybrid detection engine: {e}")
         return False
 
 # Initialize the engine at startup
@@ -498,7 +515,7 @@ def flush_events_to_database():
             )
             
             events_saved += 1
-            logger.info(f"💾 Saved aggregated event: {event_label} (confidence: {confidence:.2f}, count: {count}, duration: {duration:.1f}s)")
+            logger.debug(f"💾 Saved aggregated event: {event_label} (confidence: {confidence:.2f}, count: {count}, duration: {duration:.1f}s)")
             
         except Exception as e:
             logger.error(f"Error saving buffered event to database: {e}")
@@ -515,7 +532,7 @@ def flush_events_to_database():
             del sustained_events[key]
     
     if events_saved > 0:
-        logger.info(f"📊 Flushed {events_saved} intelligently grouped events to database")
+        logger.info(f"� Saved {events_saved} events to database")
 
 def should_flush_events(current_time):
     """
@@ -1929,8 +1946,14 @@ def start_camera():
             'elapsed_time': 0
         }
         
-        # Note: Detection engine will be used via process_frame in camera worker
-        # No need to start a separate session here to avoid camera conflicts
+        # Start detection engine session with frame size (matching demo pattern)
+        if detection_engine and hasattr(detection_engine, 'start_session'):
+            try:
+                # Use actual camera resolution like in demo
+                engine_session_id = detection_engine.start_session("web_camera", (640, 480))
+                logger.info(f"🎯 Started EngineHybrid session: {engine_session_id}")
+            except Exception as e:
+                logger.warning(f"Failed to start engine session: {e}")
         
         # Start camera worker thread for video feed and frame processing
         camera_active = True
@@ -2022,6 +2045,21 @@ def stop_camera():
         
         # Flush any remaining buffered events before ending session
         flush_events_to_database()
+        
+        # Stop detection engine session and get statistics (matching demo)
+        if detection_engine and hasattr(detection_engine, 'stop_session'):
+            try:
+                engine_stats = detection_engine.stop_session()
+                logger.info(f"🎯 Stopped EngineHybrid session: {engine_stats}")
+                
+                # Get detailed statistics like in demo
+                if hasattr(detection_engine, 'get_statistics'):
+                    detailed_stats = detection_engine.get_statistics()
+                    logger.info(f"📈 Engine Performance: {detailed_stats['performance']['avg_fps']:.1f} FPS, "
+                              f"Detection: {detailed_stats['performance']['avg_detection_time_ms']:.1f}ms, "
+                              f"Active persons: {detailed_stats['rule_engine']['active_persons']}")
+            except Exception as e:
+                logger.warning(f"Failed to stop engine session: {e}")
         
         # Update database
         if current_session_id:
@@ -2190,40 +2228,26 @@ def camera_worker():
             logger.error("Failed to open camera")
             return
         
-        # Initialize camera with optimized settings
+        # Initialize camera with optimized settings (matching demo)
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
             logger.error("Failed to open camera")
             return
         
-        # Set camera properties for optimal performance and display size
-        # Try 1280x720 first (HD 720p), fallback to 1024x576 if not supported
-        target_width = 1280
-        target_height = 720
-        
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, target_width)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, target_height)
-        cap.set(cv2.CAP_PROP_FPS, 30)  # Request 30 FPS from camera
+        # Set camera properties for enhanced HD resolution
+        cap.set(cv2.CAP_PROP_FPS, 30)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Enhanced from 640 to 1280 (HD)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Enhanced from 480 to 720 (HD)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Minimal buffer to reduce latency
-        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))  # Use MJPEG for better performance
         
-        # Verify actual resolution set by camera
+        # Verify actual resolution
         actual_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         actual_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        logger.info(f"📹 Camera initialized: {actual_width}x{actual_height} @ 30 FPS")
         
-        # If camera doesn't support requested resolution, try fallback
-        if actual_width != target_width or actual_height != target_height:
-            logger.info(f"⚠️ Camera doesn't support {target_width}x{target_height}, trying 1024x576...")
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1024)
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 576)
-            actual_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            actual_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        
-        logger.info(f"📹 Camera resolution set to: {actual_width}x{actual_height}")
-        
-        # Use actual camera resolution for video recording
-        recording_width = actual_width
-        recording_height = actual_height
+        # Use enhanced HD resolution for video recording
+        recording_width = 1280  # Enhanced from 640 to 1280
+        recording_height = 720   # Enhanced from 480 to 720
         
         # Initialize video recording
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -2280,47 +2304,58 @@ def camera_worker():
             frame_count += 1
             session_stats['frame_count'] = frame_count
             
-            # Run detection more frequently for smoother real-time monitoring
-            # Process detection every frame, but use lightweight processing for smooth FPS
-            run_detection = True  # Always run for smooth real-time monitoring
-            
-            if detection_engine and hasattr(detection_engine, 'process_frame') and run_detection:
+            # Process frame with hybrid engine (same as demo)
+            if detection_engine and hasattr(detection_engine, 'process_frame'):
                 try:
+                    # Direct processing like in demo - engine handles timing internally
                     overlay_frame, events = detection_engine.process_frame(frame, "webcam", current_time)
+                    
                     if overlay_frame is not None:
-                        # Apply advanced stabilization to eliminate flickering
-                        display_frame = stabilize_detections(frame, overlay_frame, current_time)
+                        display_frame = overlay_frame  # Use engine's optimized overlay directly
                         
-                        # Update hotspot count if any detections occurred
+                        # Handle events (same format as demo)
                         if events:
-                            logger.info(f"🔍 DEBUG: Raw events from engine: {events}")
+                            logger.info(f"🔍 Detection: {len(events)} events found")
                             
-                            # Buffer events for database (deduplication per second)
+                            # Log each event with severity emoji (matching demo style)
+                            for event in events:
+                                severity_emoji = {
+                                    'red': '🚨',
+                                    'orange': '⚠️', 
+                                    'yellow': '💛'
+                                }.get(event.get('severity', 'yellow'), '📊')
+                                
+                                event_type = event.get('event_type', 'Unknown')
+                                person_id = event.get('person_id', 'Unknown')
+                                confidence = event.get('confidence', 0) * 100
+                                details = event.get('details', '')
+                                
+                                logger.info(f"   {severity_emoji} {person_id}: {event_type} (confidence: {confidence:.1f}%)")
+                                if details:
+                                    logger.info(f"      Details: {details}")
+                            
+                            # Buffer events for database storage
                             timestamp_offset = current_time - session_start_time if session_start_time else 0
                             for event in events:
-                                # Buffer event instead of saving immediately
                                 buffer_event_for_database(event, current_time, timestamp_offset)
                             
-                            # Count hotspots (detected events) for real-time stats
+                            # Update session stats
                             session_stats['hotspot_count'] += len(events)
-                            logger.info(f"📡 Detected {len(events)} new events (buffered for deduplication)")
-                            
-                            # Emit immediate status update when hotspots are detected
                             emit_status_update()
-                        
-                        # Check if we should flush buffered events to database (every second)
-                        if should_flush_events(current_time):
-                            flush_events_to_database()
-                            global last_flush_time
-                            last_flush_time = current_time
                     else:
-                        # If no overlay, use cached stable frame or current frame
-                        display_frame = stabilize_detections(frame, None, current_time)
+                        display_frame = frame  # Fallback to original frame
+                        
                 except Exception as e:
-                    logger.debug(f"Error processing frame through engine: {e}")
-                    display_frame = frame.copy()
+                    logger.error(f"Error processing frame through hybrid engine: {e}")
+                    display_frame = frame
             else:
-                display_frame = frame.copy()
+                display_frame = frame
+            
+            # Check if we should flush buffered events to database
+            if should_flush_events(current_time):
+                flush_events_to_database()
+                global last_flush_time
+                last_flush_time = current_time
             
             # Time-based video recording for consistent playback speed
             # Write frames to video at exactly the target FPS regardless of processing speed
@@ -2353,10 +2388,10 @@ def camera_worker():
                 frame_queue.put(display_frame)
             
             # Calculate FPS more efficiently and log performance
-            if current_time - last_fps_time >= 2.0:  # Log every 2 seconds
+            if current_time - last_fps_time >= 10.0:  # Log every 10 seconds (reduced frequency)
                 actual_fps = frame_count / (current_time - (session_start_time or current_time))
                 session_stats['fps'] = actual_fps
-                logger.info(f"📊 Performance: {actual_fps:.1f} FPS, Queue size: {frame_queue.qsize()}")
+                logger.debug(f"📊 Performance: {actual_fps:.1f} FPS, Queue size: {frame_queue.qsize()}")
                 last_fps_time = current_time
             
             # Send status updates every 0.5 seconds for real-time UI updates
@@ -2366,13 +2401,11 @@ def camera_worker():
                     session_stats['fps'] = frame_count / (current_time - (session_start_time or current_time))
                 emit_status_update()
                 last_status_update = current_time
-                logger.debug(f"🔄 Real-time update sent: Frame {frame_count}, FPS {session_stats['fps']:.1f}")
+                # Remove the frequent debug log for cleaner output
             
-            # Frame rate control - target consistent timing for video recording
-            # Use longer delay to match the 4 FPS recording rate
-            # Optimized timing for smooth real-time monitoring (independent of video recording)
-            # High FPS for real-time display, video recording handles its own timing
-            time.sleep(0.05)  # ~20 FPS for smooth real-time monitoring
+            # Frame rate control - optimized for 30 FPS streaming (matching hybrid engine)
+            # The hybrid engine separates 30 FPS streaming from 10 FPS detection internally
+            time.sleep(0.033)  # ~30 FPS for smooth real-time streaming
             
     except Exception as e:
         logger.error(f"Camera worker error: {e}")
@@ -2419,5 +2452,15 @@ if __name__ == '__main__':
     # Initialize database
     db.init_database()
     
-    # Run the app
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    # Set up clean logging before starting the server
+    import os
+    os.environ['WERKZEUG_RUN_MAIN'] = 'true'  # Suppress werkzeug startup message
+    
+    # Disable all werkzeug logging
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.handlers.clear()
+    werkzeug_logger.propagate = False
+    werkzeug_logger.disabled = True
+    
+    # Run the app with minimal logging
+    socketio.run(app, debug=False, host='0.0.0.0', port=5000, use_reloader=False)
