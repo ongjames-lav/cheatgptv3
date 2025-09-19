@@ -25,6 +25,7 @@ class DatabaseManager:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     session_id TEXT UNIQUE NOT NULL,
                     video_path TEXT,
+                    video_title TEXT,
                     start_ts REAL NOT NULL,
                     end_ts REAL,
                     duration REAL,
@@ -33,6 +34,13 @@ class DatabaseManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            
+            # Add video_title column if it doesn't exist (for existing databases)
+            try:
+                conn.execute("ALTER TABLE sessions ADD COLUMN video_title TEXT")
+            except sqlite3.OperationalError:
+                # Column already exists, ignore
+                pass
             
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS hotspots (
@@ -179,6 +187,30 @@ class DatabaseManager:
             logger.error(f"Error getting sessions: {e}")
             return []
     
+    def update_session_title(self, session_id: str, new_title: str) -> bool:
+        """Update the video title for a session"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("""
+                    UPDATE sessions 
+                    SET video_title = ? 
+                    WHERE session_id = ?
+                """, (new_title, session_id))
+                
+                rows_affected = cursor.rowcount
+                conn.commit()
+                
+                if rows_affected > 0:
+                    logger.info(f"Updated session {session_id} title to: {new_title}")
+                    return True
+                else:
+                    logger.warning(f"No session found with ID {session_id}")
+                    return False
+                    
+        except Exception as e:
+            logger.error(f"Error updating session title for {session_id}: {e}")
+            return False
+
     def get_session(self, session_id: str) -> Optional[Dict]:
         """Get a specific session by ID"""
         try:
@@ -198,6 +230,8 @@ class DatabaseManager:
                     session_data = dict(row)
                     if session_data['metadata']:
                         session_data['metadata'] = json.loads(session_data['metadata'])
+                    # Ensure video_title is included
+                    session_data['video_title'] = session_data.get('video_title') or f"Session {session_id}"
                     return session_data
                 
                 return None
@@ -504,7 +538,7 @@ class DatabaseManager:
             with sqlite3.connect(self.db_path) as conn:
                 # Get session info
                 cursor = conn.execute("""
-                    SELECT id, session_id, created_at, status, duration, 
+                    SELECT id, session_id, created_at, status, duration, video_title,
                            (SELECT COUNT(*) FROM hotspots WHERE session_id = s.session_id) as total_hotspots
                     FROM sessions s 
                     WHERE session_id = ?
@@ -520,7 +554,8 @@ class DatabaseManager:
                     'created_at': session_row[2],
                     'status': session_row[3],
                     'duration': session_row[4],
-                    'total_hotspots': session_row[5]
+                    'video_title': session_row[5] or f"Session {session_row[1]}",
+                    'total_hotspots': session_row[6]
                 }
                 
                 # Get event type distribution

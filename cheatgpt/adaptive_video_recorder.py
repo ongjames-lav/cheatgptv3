@@ -41,8 +41,8 @@ class AdaptiveVideoRecorder:
         self.max_fps = 30.0  # Maximum FPS for very fast processing
         self.current_fps = target_fps
         
-        # Video settings
-        self.fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # Video settings - prioritize H.264 AVC1 for best web compatibility
+        self.fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H.264 AVC1 codec for web compatibility
         
         # Ensure videos directory exists
         self._ensure_videos_directory()

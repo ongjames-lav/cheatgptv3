@@ -424,18 +424,18 @@ class PoseDetector:
                     baseline_separation = 65.0
                     perspective_factor = eye_separation / baseline_separation
                     
-                    # Yaw estimation using geometric perspective
-                    if perspective_factor < 0.90:  # More sensitive - detect smaller turns (was 0.85)
+                    # Yaw estimation using geometric perspective - MORE SENSITIVE
+                    if perspective_factor < 0.95:  # More sensitive - detect even smaller turns (was 0.90)
                         # Calculate turn magnitude using perspective distortion
-                        yaw_magnitude = (0.90 - perspective_factor) * 65.0  # More sensitive scaling (was 60.0)
+                        yaw_magnitude = (0.95 - perspective_factor) * 70.0  # Increased scaling for more sensitivity (was 65.0)
                         
-                        # Direction determination using eye center offset
-                        if abs(eye_dx) > 3:  # More sensitive minimum offset (was 5)
+                        # Direction determination using eye center offset - MORE SENSITIVE
+                        if abs(eye_dx) > 2:  # More sensitive minimum offset (was 3)
                             direction_factor = eye_dx / eye_separation
-                            if direction_factor < -0.05:  # More sensitive - detect smaller turns (was -0.1)
+                            if direction_factor < -0.03:  # More sensitive - detect smaller turns (was -0.05)
                                 yaw = -min(yaw_magnitude, 35.0)
                                 confidence_score = 0.8
-                            elif direction_factor > 0.05:  # More sensitive - detect smaller turns (was 0.1)
+                            elif direction_factor > 0.03:  # More sensitive - detect smaller turns (was 0.05)
                                 yaw = min(yaw_magnitude, 35.0)
                                 confidence_score = 0.8
                         
@@ -486,12 +486,12 @@ class PoseDetector:
             if abs(ear_yaw) > abs(yaw) * 1.5:
                 yaw = ear_yaw
             
-            # METHOD 4: Temporal Smoothing and Noise Reduction
-            # Apply temporal smoothing to reduce jitter (can be enhanced with frame history)
-            if abs(yaw) < 3:  # Micro-movement threshold
+            # METHOD 4: Temporal Smoothing and Noise Reduction - MORE SENSITIVE
+            # Apply temporal smoothing to reduce jitter (more sensitive thresholds)
+            if abs(yaw) < 1.5:  # Reduced from 3 to 1.5 - detect smaller movements
                 yaw = 0.0
-            elif abs(yaw) < 8:  # Small movement - apply dampening
-                yaw *= 0.7
+            elif abs(yaw) < 4:  # Reduced from 8 to 4 - less dampening for small movements
+                yaw *= 0.85  # Reduced dampening from 0.7 to 0.85
             
             # METHOD 5: Enhanced Pitch Calculation
             if nose and (left_eye or right_eye):
@@ -1017,9 +1017,9 @@ class PoseDetector:
             # Calculate person/head scale for adaptive thresholds
             if 'left_eye' in head_points and 'right_eye' in head_points:
                 eye_distance = abs(head_points['left_eye'][0] - head_points['right_eye'][0])
-                # Use eye distance to estimate head size and create adaptive threshold
-                # More conservative threshold for realistic cheating detection
-                head_radius = max(eye_distance * 2.2, 100)  # Better balance - slightly larger detection zone
+                # Use eye distance to estimate head size and create adaptive threshold - MORE SENSITIVE
+                # More sensitive threshold for realistic cheating detection
+                head_radius = max(eye_distance * 2.5, 120)  # Increased detection zone (was 2.2 and 100)
                 logger.debug(f"🤚 Adaptive gesture detection using eye_distance: {eye_distance:.1f}px, head_radius: {head_radius:.1f}px")
             else:
                 head_radius = 140  # Better default radius for hand detection
@@ -1041,9 +1041,9 @@ class PoseDetector:
                 body_center_x = (left_shoulder[0] + right_shoulder[0]) / 2
                 body_center_y = (left_shoulder[1] + right_shoulder[1]) / 2
                 
-                # Calculate shoulder width for dynamic threshold
+                # Calculate shoulder width for dynamic threshold - MORE SENSITIVE
                 shoulder_width = abs(right_shoulder[0] - left_shoulder[0])
-                extension_threshold = shoulder_width * 0.25  # VERY sensitive - 25% of shoulder width
+                extension_threshold = shoulder_width * 0.15  # ULTRA sensitive - 15% of shoulder width (was 25%)
                 
                 if self.debug_mode:
                     logger.debug(f"🤚 Body center: ({body_center_x:.1f}, {body_center_y:.1f}), shoulder_width: {shoulder_width:.1f}, threshold: {extension_threshold:.1f}")
@@ -1085,9 +1085,9 @@ class PoseDetector:
                         shoulder_to_wrist_distance = abs(wrist_pos[0] - available_shoulder[0])
                         vertical_distance = abs(wrist_pos[1] - available_shoulder[1])
                         
-                        # Assume shoulder width ~120 pixels and use aggressive threshold
+                        # Assume shoulder width ~120 pixels and use more aggressive threshold
                         estimated_shoulder_width = 120
-                        extension_threshold = estimated_shoulder_width * 0.3  # 30% threshold
+                        extension_threshold = estimated_shoulder_width * 0.2  # 20% threshold (was 30%)
                         
                         if self.debug_mode:
                             logger.debug(f"🤚 Single shoulder - {wrist_name} H dist: {shoulder_to_wrist_distance:.1f}, threshold: {extension_threshold:.1f}")
@@ -1111,8 +1111,8 @@ class PoseDetector:
                         horizontal_distance = abs(wrist_pos[0] - head_center[0])
                         vertical_distance = abs(wrist_pos[1] - head_center[1])
                         
-                        # Very aggressive threshold - any significant horizontal extension
-                        absolute_extension_threshold = 80  # 80 pixels from head center
+                        # Ultra sensitive threshold - detect any significant horizontal extension
+                        absolute_extension_threshold = 60  # 60 pixels from head center (was 80)
                         
                         if self.debug_mode:
                             logger.debug(f"🤚 Absolute position - {wrist_name} H dist: {horizontal_distance:.1f}, threshold: {absolute_extension_threshold}")
@@ -1152,13 +1152,13 @@ class PoseDetector:
                         horizontal_distance = abs(wrist_pos[0] - head_center[0])
                         vertical_distance = abs(wrist_pos[1] - head_center[1])
                         
-                        # Create conservative cheating gesture detection zone
-                        face_width = head_radius * 1.2   # More conservative horizontal area
-                        face_height = head_radius * 1.5  # More conservative vertical area
+                        # Create more sensitive cheating gesture detection zone
+                        face_width = head_radius * 1.4   # More sensitive horizontal area (was 1.2)
+                        face_height = head_radius * 1.8  # More sensitive vertical area (was 1.5)
                         
                         if horizontal_distance < face_width and vertical_distance < face_height:
-                            # Stricter check: hand should be close to head level
-                            if wrist_pos[1] >= head_center[1] - 30 and wrist_pos[1] <= head_center[1] + 100:  # Tighter range
+                            # More generous check: hand should be in expanded head region
+                            if wrist_pos[1] >= head_center[1] - 50 and wrist_pos[1] <= head_center[1] + 120:  # Expanded range (was -30 to +100)
                                 gesture_detected = True
                                 detection_reason = f"{wrist_name}_in_face_region"
                                 logger.debug(f"🤚 SUSPICIOUS GESTURE: {wrist_name} in face region (h:{horizontal_distance:.1f}, v:{vertical_distance:.1f})")

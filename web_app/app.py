@@ -806,6 +806,7 @@ def playback_video(session_id):
         # Get session details including video path
         session = db.get_session(session_id)
         if not session:
+            logger.error(f"Session not found in database: {session_id}")
             return jsonify({'error': 'Session not found'}), 404
         
         video_path = None
@@ -817,6 +818,10 @@ def playback_video(session_id):
         pattern1 = str(RECORDINGS_DIR / f"*{session_id}*.mp4")
         matching_files = glob.glob(pattern1)
         
+        logger.info(f"Searching for video files with session_id: {session_id}")
+        logger.info(f"Pattern 1: {pattern1}")
+        logger.info(f"Matching files: {matching_files}")
+        
         if matching_files:
             video_path = Path(matching_files[0])
             logger.info(f"Found video file: {video_path}")
@@ -827,28 +832,68 @@ def playback_video(session_id):
             pattern2 = str(RECORDINGS_DIR / f"*{clean_session_id}*.mp4")
             matching_files = glob.glob(pattern2)
             
+            logger.info(f"Pattern 2 (clean ID): {pattern2}")
+            logger.info(f"Clean session ID: {clean_session_id}")
+            logger.info(f"Matching files with clean ID: {matching_files}")
+            
             if matching_files:
                 video_path = Path(matching_files[0])
                 logger.info(f"Found video file with clean ID: {video_path}")
             else:
                 logger.error(f"No video files found for session {session_id}")
                 logger.info(f"Searched in: {RECORDINGS_DIR}")
-                logger.info(f"Available files: {list(RECORDINGS_DIR.glob('*.mp4'))}")
-                return jsonify({'error': 'Video file not found'}), 404
+                all_mp4_files = list(RECORDINGS_DIR.glob('*.mp4'))
+                logger.info(f"Available MP4 files: {all_mp4_files}")
+                
+                # Try to find by timestamp pattern if session_id contains timestamp
+                if '_' in session_id:
+                    parts = session_id.split('_')
+                    if len(parts) >= 3:  # session_YYYYMMDD_HHMMSS_hash format
+                        timestamp_part = f"{parts[1]}_{parts[2]}"
+                        pattern3 = str(RECORDINGS_DIR / f"*{timestamp_part}*.mp4")
+                        timestamp_files = glob.glob(pattern3)
+                        logger.info(f"Pattern 3 (timestamp): {pattern3}")
+                        logger.info(f"Timestamp matching files: {timestamp_files}")
+                        
+                        if timestamp_files:
+                            video_path = Path(timestamp_files[0])
+                            logger.info(f"Found video file by timestamp: {video_path}")
+                
+                if not video_path:
+                    return jsonify({'error': 'Video file not found'}), 404
         
-        # Verify file exists
+        # Verify file exists and get file info
         if not video_path.exists():
+            logger.error(f"Video file does not exist at path: {video_path}")
             return jsonify({'error': 'Video file does not exist'}), 404
         
+        # Get file size and modification time for debugging
+        file_size = video_path.stat().st_size
+        file_mtime = video_path.stat().st_mtime
+        import datetime
+        file_modified = datetime.datetime.fromtimestamp(file_mtime)
+        
         logger.info(f"Serving video: {video_path}")
+        logger.info(f"File size: {file_size} bytes ({file_size / 1024 / 1024:.2f} MB)")
+        logger.info(f"File modified: {file_modified}")
+        
+        # Check if file is too small (might be corrupted)
+        if file_size < 1000:  # Less than 1KB
+            logger.warning(f"Video file appears to be corrupted (size: {file_size} bytes)")
+            return jsonify({'error': 'Video file appears to be corrupted or incomplete'}), 500
+        
         return send_file(
             video_path,
             mimetype='video/mp4',
             as_attachment=False,
-            download_name=f"session_{session_id}.mp4"
+            download_name=f"session_{session_id}.mp4",
+            conditional=True,  # Enable HTTP range requests for better streaming
+            max_age=300  # Cache for 5 minutes
         )
     except Exception as e:
         logger.error(f"Error serving video for session {session_id}: {e}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/events/<session_id>')
@@ -1179,6 +1224,46 @@ def delete_session(session_id):
             
     except Exception as e:
         logger.error(f"Error deleting session {session_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/session/<session_id>/rename', methods=['POST'])
+def rename_session(session_id):
+    """Rename a session's video title"""
+    try:
+        # Get session details first
+        session = db.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Get new title from request
+        data = request.get_json()
+        if not data or 'new_title' not in data:
+            return jsonify({'error': 'new_title is required in request body'}), 400
+        
+        new_title = data['new_title'].strip()
+        if not new_title:
+            return jsonify({'error': 'Title cannot be empty'}), 400
+        
+        # Validate title length
+        if len(new_title) > 200:
+            return jsonify({'error': 'Title must be 200 characters or less'}), 400
+        
+        # Update the session title in database
+        success = db.update_session_title(session_id, new_title)
+        
+        if success:
+            logger.info(f"📝 Renamed session {session_id} to: {new_title}")
+            return jsonify({
+                'success': True,
+                'message': 'Session renamed successfully',
+                'session_id': session_id,
+                'new_title': new_title
+            })
+        else:
+            return jsonify({'error': 'Failed to update session title in database'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error renaming session {session_id}: {e}")
         return jsonify({'error': str(e)}), 500
 
 # Reports API Endpoints
@@ -2254,20 +2339,47 @@ def camera_worker():
         recording_filename = f"session_{current_session_id}_{timestamp}.mp4"
         video_path = RECORDINGS_DIR / recording_filename
         
-        # Initialize video writer with actual camera resolution - using web-compatible codec
-        # Use 15 FPS for smooth video recording - this will be the target playback rate
+        # Initialize video writer with robust codec fallback system
         recording_fps = 15.0  # Target video playback FPS for smooth recorded video
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H.264 codec for better web compatibility
-        video_writer = cv2.VideoWriter(str(video_path), fourcc, recording_fps, (recording_width, recording_height))
         
-        # Fallback to mp4v if avc1 fails
-        if not video_writer.isOpened():
-            logger.warning("H.264 codec failed, trying mp4v")
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            video_writer = cv2.VideoWriter(str(video_path), fourcc, recording_fps, (recording_width, recording_height))
+        # Codec preference order: prioritize H.264 AVC1 for best web compatibility
+        codec_options = [
+            ('avc1', '.mp4', 'H.264 AVC1'),  # Best web compatibility, modern browsers prefer this
+            ('H264', '.mp4', 'H.264'),       # Alternative H.264 fourcc code
+            ('mp4v', '.mp4', 'MPEG-4'),      # Fallback for older systems
+            ('XVID', '.avi', 'Xvid'),        # Very reliable fallback
+            ('MJPG', '.avi', 'Motion JPEG'), # Always works but larger files
+        ]
         
-        if not video_writer.isOpened():
-            logger.error("Failed to initialize video writer")
+        video_writer = None
+        final_video_path = None
+        
+        for codec, ext, name in codec_options:
+            try:
+                # Update path extension based on codec
+                test_path = str(video_path).replace('.mp4', ext)
+                fourcc = cv2.VideoWriter_fourcc(*codec)
+                video_writer = cv2.VideoWriter(test_path, fourcc, recording_fps, (recording_width, recording_height))
+                
+                if video_writer.isOpened():
+                    final_video_path = Path(test_path)
+                    recording_filename = final_video_path.name  # Update global filename
+                    logger.info(f"✅ Video recording initialized with {name} codec: {final_video_path.name}")
+                    break
+                else:
+                    video_writer.release()
+                    video_writer = None
+                    
+            except Exception as e:
+                logger.warning(f"❌ {name} codec failed: {e}")
+                if video_writer:
+                    video_writer.release()
+                    video_writer = None
+                continue
+        
+        if not video_writer or not video_writer.isOpened():
+            logger.error("Failed to initialize video writer with any codec")
+            return jsonify({"success": False, "error": "Video recording initialization failed"})
             video_writer = None
         else:
             logger.info(f"🎬 Video recording started: {recording_filename} at {recording_width}x{recording_height}")

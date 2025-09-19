@@ -37,9 +37,9 @@ class RealTimeSyncRecorder:
         self.last_frame_time: Optional[float] = None
         self.expected_frame_interval = 1.0 / base_fps
         
-        # Video settings
+        # Video settings - prioritize H.264 AVC1 for best web compatibility
         # Use H.264 codec for better web browser compatibility
-        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')  # More compatible codec
+        self.fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H.264 AVC1 codec for web compatibility
         
         # Ensure videos directory exists
         self._ensure_videos_directory()

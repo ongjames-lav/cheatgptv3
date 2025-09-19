@@ -49,7 +49,7 @@ class SimpleTracker:
         self.disappeared = {}
         self.max_disappeared = max_disappeared
         self.max_objects = max_objects  # Maximum number of objects to track
-        self.assignment_threshold = 150  # Maximum distance for assignment (pixels)
+        self.assignment_threshold = 250  # Increased from 150 to 250 for better single-person tracking
     
     def register(self, bbox: List[float]) -> int:
         """Register a new object."""
@@ -123,13 +123,29 @@ class SimpleTracker:
                 used_detections.add(det_idx)
                 used_objects.add(obj_idx)
         
-        # Register unmatched detections as new objects (if under limit)
+        # Register unmatched detections as new objects (more conservative for single-person)
         for j, detection in enumerate(detections):
             if j not in used_detections and len(self.objects) < self.max_objects:
-                object_id = self.register(detection['bbox'])
-                tracked_obj = detection.copy()
-                tracked_obj['track_id'] = object_id
-                tracked_objects.append(tracked_obj)
+                # More conservative registration - only if no existing objects or very far from existing ones
+                should_register = True
+                if len(self.objects) > 0:
+                    # Check if this detection is far enough from existing objects
+                    det_centroid = self._get_centroid(detection['bbox'])
+                    min_distance = float('inf')
+                    for obj_id in self.objects:
+                        obj_centroid = self._get_centroid(self.objects[obj_id])
+                        distance = np.linalg.norm(np.array(det_centroid) - np.array(obj_centroid))
+                        min_distance = min(min_distance, distance)
+                    
+                    # Only register if far enough from existing objects (avoid duplicate IDs)
+                    if min_distance < self.assignment_threshold * 1.5:  # 375 pixels
+                        should_register = False
+                
+                if should_register:
+                    object_id = self.register(detection['bbox'])
+                    tracked_obj = detection.copy()
+                    tracked_obj['track_id'] = object_id
+                    tracked_objects.append(tracked_obj)
         
         # Mark unmatched objects as disappeared
         for i, object_id in enumerate(object_ids):
@@ -157,9 +173,9 @@ class ResearchBasedRuleEngine:
         # Sliding window configuration (40 frames ≈ 4s at 10 FPS detection - balanced timing)
         self.window_size = 40
         self.detection_fps = 10.0
-        self.confirmation_threshold = 6  # Increased from 3 to 6 for more stable detection
+        self.confirmation_threshold = 3  # Reduced from 6 to 3 for faster detection
         self.phone_confirmation_threshold = 1  # Instant phone detection - no temporal smoothing
-        self.hand_confirmation_threshold = 5  # Lowered from 7 to 5 for less sensitive hand detection
+        self.hand_confirmation_threshold = 2  # Reduced from 5 to 2 for more sensitive hand detection
         
         # Research-based thresholds for classroom behaviors (realistic settings)
         self.thresholds = {
@@ -168,13 +184,13 @@ class ResearchBasedRuleEngine:
             'phone_duration_threshold': 1.5,  # seconds - longer duration requirement
             
             # Looking Away Frequently: Head yaw >25° left/right, occurring ≥6 times in 4s or held >4s
-            'head_turn_angle_threshold': 25.0,  # degrees - less sensitive for normal movements
-            'head_turn_frequency_threshold': 6,  # occurrences in window - higher threshold
-            'head_turn_sustained_threshold': 4.0,  # seconds - longer sustained threshold
+            'head_turn_angle_threshold': 15.0,  # degrees - more sensitive for smaller movements (was 25.0)
+            'head_turn_frequency_threshold': 3,  # occurrences in window - lower threshold (was 6)
+            'head_turn_sustained_threshold': 2.0,  # seconds - shorter sustained threshold (was 4.0)
             
             # Looking Down Abnormally: Pitch >35° sustained ≥20 frames (~2.0s)
-            'head_pitch_threshold': 35.0,  # degrees - more realistic threshold
-            'head_pitch_frames_threshold': 20,  # frames - more realistic duration
+            'head_pitch_threshold': 20.0,  # degrees - more sensitive threshold (was 35.0)
+            'head_pitch_frames_threshold': 10,  # frames - shorter duration (was 20)
             
             # Hand Extended: ≥10 frames (~1.0s) - higher temporal smoothing to reduce sensitivity
             'hand_extended_frames_threshold': 10,  # frames - less sensitive for hand detection
@@ -183,7 +199,7 @@ class ResearchBasedRuleEngine:
             'out_of_frame_threshold': 15,  # frames - more realistic threshold
             
             # Normal behavior tolerances (not flagged)
-            'normal_head_tilt_threshold': 20.0,  # degrees - more generous tolerance
+            'normal_head_tilt_threshold': 12.0,  # degrees - tighter tolerance (was 20.0)
             'normal_look_down_duration': 4.0,  # seconds - more generous tolerance
             'normal_hand_adjustment_duration': 5.0,  # seconds - more generous tolerance
             
@@ -715,7 +731,7 @@ class EngineHybrid:
         self.logger.info("✅ Pose detector ready")
         
         # Simple Tracker with improved settings for single person tracking
-        self.tracker = SimpleTracker(max_disappeared=15)  # Increased from 10
+        self.tracker = SimpleTracker(max_disappeared=15, max_objects=2)  # Optimized for single-person scenarios
         self.logger.info("✅ Object tracker ready")
         
         # Research-based rule engine
@@ -779,9 +795,10 @@ class EngineHybrid:
                 self.last_tracks = self.tracker.update(persons)
                 
                 # Reset tracker if too many IDs accumulated (single person scenario)
-                if len(self.tracker.objects) > 3:
-                    self.logger.warning(f"🔄 Resetting tracker - too many IDs: {len(self.tracker.objects)}")
-                    self.tracker = SimpleTracker(max_disappeared=15)
+                # More aggressive reset for single-person scenarios
+                if len(self.tracker.objects) > 2:  # Reduced from 3 to 2
+                    self.logger.warning(f"🔄 Resetting tracker - too many IDs for single person: {len(self.tracker.objects)}")
+                    self.tracker = SimpleTracker(max_disappeared=15, max_objects=2)  # Limit to 2 objects max
                     # Re-track with clean tracker
                     self.last_tracks = self.tracker.update(persons)
                 
@@ -957,7 +974,7 @@ class EngineHybrid:
     
     def _create_overlay(self, frame: np.ndarray, detections: List[Dict], 
                        events: List[Dict]) -> np.ndarray:
-        """Create clean overlay with only bounding boxes and labels."""
+        """Create enhanced overlay with confidence-based coloring and false positive mitigation."""
         overlay_frame = frame.copy()
         
         # Simple label mapping for events
@@ -969,76 +986,142 @@ class EngineHybrid:
             'Normal': 'Normal'
         }
         
-        # Create event lookup
+        # Create event lookup for priority-based coloring with confidence tracking
         event_lookup = {}
+        event_confidence_map = {}
         for event in events:
             person_id = event['person_id']
-            if person_id not in event_lookup or event['severity'] == 'red':
+            confidence = event.get('confidence', 0.5)
+            
+            # Priority: red > orange > yellow, but also consider confidence
+            if person_id not in event_lookup:
                 event_lookup[person_id] = event
+                event_confidence_map[person_id] = confidence
+            else:
+                current_event = event_lookup[person_id]
+                current_confidence = event_confidence_map[person_id]
+                
+                # Replace if higher severity OR same severity with higher confidence
+                severity_priority = {'red': 3, 'orange': 2, 'yellow': 1}
+                current_priority = severity_priority.get(current_event.get('severity'), 0)
+                new_priority = severity_priority.get(event.get('severity'), 0)
+                
+                if (new_priority > current_priority or 
+                    (new_priority == current_priority and confidence > current_confidence)):
+                    event_lookup[person_id] = event
+                    event_confidence_map[person_id] = confidence
         
         # Separate person and phone detections
         person_detections = [d for d in detections if d.get('cls_name') != 'cell phone']
         phone_detections = [d for d in detections if d.get('cls_name') == 'cell phone']
         
-        # Draw person bounding boxes
+        # Draw person bounding boxes with enhanced confidence-based visualization
         for detection in person_detections:
             if 'bbox' not in detection:
                 continue
                 
             x1, y1, x2, y2 = [int(coord) for coord in detection['bbox']]
             person_id = detection.get('person_id', 'unknown')
+            detection_conf = detection.get('conf', 0.5)  # Base detection confidence
+            keypoint_quality = detection.get('keypoint_quality', 0.5)  # Pose quality from pose detector
             
-            # Determine color based on events
+            # Calculate overall confidence score
+            overall_confidence = (detection_conf + keypoint_quality) / 2
+            
+            # Determine color and visual style based on events and confidence
             color = (0, 255, 0)  # Default green (normal)
             status = "Normal"
+            thickness = 1
+            alpha = 0.4  # Default lower alpha for normal state
             
             if person_id in event_lookup:
                 event = event_lookup[person_id]
+                event_confidence = event_confidence_map[person_id]
                 severity = event['severity']
                 
-                if severity == 'red':
-                    color = (0, 0, 255)  # Red
-                elif severity == 'orange':
-                    color = (0, 165, 255)  # Orange
-                elif severity == 'yellow':
-                    color = (0, 255, 255)  # Yellow
+                # Confidence-based color intensity modulation
+                confidence_factor = min(1.0, max(0.3, event_confidence))  # Clamp between 30% and 100%
                 
-                # Use single-word label
-                status = event_labels.get(event['event_type'], event['event_type'])
+                if severity == 'red':
+                    # Red severity - high priority, full intensity at high confidence
+                    base_color = (0, 0, 255)
+                    color = tuple(int(c * confidence_factor) for c in base_color)
+                    thickness = 3 if event_confidence > 0.8 else 2
+                    alpha = 0.8 if event_confidence > 0.7 else 0.6
+                    
+                elif severity == 'orange':
+                    # Orange severity - medium priority
+                    base_color = (0, 165, 255)
+                    color = tuple(int(c * confidence_factor) for c in base_color)
+                    thickness = 2 if event_confidence > 0.7 else 1
+                    alpha = 0.7 if event_confidence > 0.6 else 0.5
+                    
+                elif severity == 'yellow':
+                    # Yellow severity - low priority, conservative visualization
+                    base_color = (0, 255, 255)
+                    color = tuple(int(c * confidence_factor) for c in base_color)
+                    thickness = 2 if event_confidence > 0.8 else 1
+                    alpha = 0.6 if event_confidence > 0.7 else 0.4
+                
+                # Enhanced status with confidence indicator
+                base_status = event_labels.get(event['event_type'], event['event_type'])
+                if event_confidence > 0.8:
+                    status = f"{base_status}!"  # High confidence indicator
+                elif event_confidence > 0.6:
+                    status = base_status
+                else:
+                    status = f"{base_status}?"  # Low confidence indicator
+            else:
+                # Normal state - modulate by detection quality
+                if overall_confidence < 0.4:
+                    # Low quality detection - make it more subtle
+                    color = (0, 180, 0)  # Darker green
+                    alpha = 0.3
+                    thickness = 1
+                elif overall_confidence > 0.8:
+                    # High quality detection - brighter
+                    color = (0, 255, 0)
+                    alpha = 0.5
+                    thickness = 1
             
-            # Draw thin transparent bounding box
-            thickness = 2 if person_id in event_lookup else 1  # Thinner lines
+            # False positive mitigation through visual cues
+            # If low overall confidence, add visual indicators
+            if overall_confidence < 0.5 and person_id in event_lookup:
+                # Draw dashed border for uncertain detections
+                self._draw_dashed_rectangle(overlay_frame, (x1, y1), (x2, y2), color, thickness)
+            else:
+                # Draw solid bounding box
+                overlay = overlay_frame.copy()
+                cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
+                cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
             
-            # Create overlay for transparency
-            overlay = overlay_frame.copy()
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
-            
-            # Apply transparency to bounding box (0.6 opacity)
-            alpha = 0.6
-            cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
-            
-            # Draw smaller transparent label
+            # Enhanced label with confidence visualization
             label = status
-            font_scale = 0.4  # Smaller font
-            font_thickness = 1  # Thinner font
+            font_scale = 0.4
+            font_thickness = 1
             label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
             
-            # Smaller label background
-            bg_height = 18  # Reduced height
-            bg_width = label_size[0] + 6  # Reduced padding
+            # Dynamic label background size based on confidence
+            bg_height = 18
+            bg_width = label_size[0] + 6
             
-            # Create transparent label background
+            # Create confidence-modulated label background
             label_overlay = overlay_frame.copy()
             cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), (0, 0, 0), -1)
             cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), color, 1)
             
-            # Apply transparency to label background (0.7 opacity)
-            label_alpha = 0.7
-            cv2.addWeighted(label_overlay, label_alpha, overlay_frame, 1 - label_alpha, 0, overlay_frame)
+            # Apply transparency to label background (matched to box alpha)
+            cv2.addWeighted(label_overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
             
-            # Smaller white text
+            # Enhanced text with confidence-based styling
+            text_color = (255, 255, 255)  # Default white
+            if person_id in event_lookup:
+                event_confidence = event_confidence_map[person_id]
+                if event_confidence < 0.5:
+                    text_color = (200, 200, 200)  # Dimmer for low confidence
+            
             cv2.putText(overlay_frame, label, (x1+3, y1-5), 
-                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness)
+                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
         
         # Draw phone bounding boxes
         for phone in phone_detections:
@@ -1190,7 +1273,7 @@ class EngineHybrid:
         self.event_timestamps = {}
         
         # Reset tracker
-        self.tracker = SimpleTracker(max_disappeared=10)
+        self.tracker = SimpleTracker(max_disappeared=10, max_objects=2)  # Optimized for single-person scenarios
         
         # Reset rule engine
         self.rule_engine = ResearchBasedRuleEngine()
@@ -1208,3 +1291,35 @@ class EngineHybrid:
     def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
         """Calculate Euclidean distance between two points."""
         return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+    
+    def _draw_dashed_rectangle(self, frame: np.ndarray, pt1: Tuple[int, int], 
+                              pt2: Tuple[int, int], color: Tuple[int, int, int], 
+                              thickness: int = 1, dash_length: int = 10):
+        """Draw a dashed rectangle to indicate uncertain detections."""
+        x1, y1 = pt1
+        x2, y2 = pt2
+        
+        # Draw dashed lines for each side of rectangle
+        def draw_dashed_line(start, end, is_horizontal=True):
+            if is_horizontal:
+                length = abs(end[0] - start[0])
+                step_x = dash_length if end[0] > start[0] else -dash_length
+                for i in range(0, length, dash_length * 2):
+                    line_start = (start[0] + i, start[1])
+                    line_end = (min(start[0] + i + dash_length, end[0]) if step_x > 0 
+                               else max(start[0] + i - dash_length, end[0]), start[1])
+                    cv2.line(frame, line_start, line_end, color, thickness)
+            else:
+                length = abs(end[1] - start[1])
+                step_y = dash_length if end[1] > start[1] else -dash_length
+                for i in range(0, length, dash_length * 2):
+                    line_start = (start[0], start[1] + i)
+                    line_end = (start[0], min(start[1] + i + dash_length, end[1]) if step_y > 0 
+                               else max(start[1] + i - dash_length, end[1]))
+                    cv2.line(frame, line_start, line_end, color, thickness)
+        
+        # Draw four dashed sides
+        draw_dashed_line((x1, y1), (x2, y1), True)   # Top
+        draw_dashed_line((x2, y1), (x2, y2), False)  # Right
+        draw_dashed_line((x2, y2), (x1, y2), True)   # Bottom
+        draw_dashed_line((x1, y2), (x1, y1), False)  # Left
