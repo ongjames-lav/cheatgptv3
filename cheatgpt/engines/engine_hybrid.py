@@ -175,7 +175,7 @@ class ResearchBasedRuleEngine:
         self.detection_fps = 10.0
         self.confirmation_threshold = 3  # Reduced from 6 to 3 for faster detection
         self.phone_confirmation_threshold = 1  # Instant phone detection - no temporal smoothing
-        self.hand_confirmation_threshold = 2  # Reduced from 5 to 2 for more sensitive hand detection
+        self.hand_confirmation_threshold = 1  # Reduced from 2 to 1 - single confirmation sufficient
         
         # Research-based thresholds for classroom behaviors (realistic settings)
         self.thresholds = {
@@ -186,14 +186,14 @@ class ResearchBasedRuleEngine:
             # Looking Away Frequently: Head yaw >25° left/right, occurring ≥6 times in 4s or held >4s
             'head_turn_angle_threshold': 15.0,  # degrees - more sensitive for smaller movements (was 25.0)
             'head_turn_frequency_threshold': 3,  # occurrences in window - lower threshold (was 6)
-            'head_turn_sustained_threshold': 2.0,  # seconds - shorter sustained threshold (was 4.0)
+            'head_turn_sustained_threshold': 1.0,  # seconds - optimal balance (was 0.8)
             
             # Looking Down Abnormally: Pitch >35° sustained ≥20 frames (~2.0s)
             'head_pitch_threshold': 20.0,  # degrees - more sensitive threshold (was 35.0)
             'head_pitch_frames_threshold': 10,  # frames - shorter duration (was 20)
             
-            # Hand Extended: ≥10 frames (~1.0s) - higher temporal smoothing to reduce sensitivity
-            'hand_extended_frames_threshold': 10,  # frames - less sensitive for hand detection
+            # Hand Extended: ≥8 frames (~0.8s) - balanced sensitivity and false positive prevention
+            'hand_extended_frames_threshold': 8,  # frames - reduced from 10 for faster response
             
             # Out of Frame / Hiding: ≥15 consecutive frames
             'out_of_frame_threshold': 15,  # frames - more realistic threshold
@@ -262,6 +262,7 @@ class ResearchBasedRuleEngine:
             gesture_reason = detection_data.get('gesture_reason', 'unknown')
             self.logger.info(f"🤚 GESTURE DETECTED for person {person_id}: {gesture_reason}")
             self.logger.debug(f"🤚 Full gesture data: {detection_data.get('gesture_details', {})}")
+            
         out_of_frame = detection_data.get('out_of_frame', False)
         
         # Check for normal posture
@@ -432,8 +433,11 @@ class ResearchBasedRuleEngine:
         # Count head turn events in window
         turn_count = sum(head_turn_events)
         
-        # Check for sustained head turning (consecutive frames at end)
+        # Check for sustained head turning (with tolerance for small gaps)
         consecutive_turns = 0
+        sustained_turns_flexible = False
+        
+        # First try strict consecutive at end
         for turn in reversed(head_turn_events):
             if turn:
                 consecutive_turns += 1
@@ -442,9 +446,49 @@ class ResearchBasedRuleEngine:
         
         sustained_duration = consecutive_turns / self.detection_fps
         
+        # If strict consecutive doesn't work, try flexible approach
+        # Look for sustained turning with small gaps allowed
+        if sustained_duration < self.thresholds['head_turn_sustained_threshold']:
+            # Check last 60% of window for sustained activity (more lenient)
+            window_size = len(head_turn_events)
+            last_portion_size = max(int(window_size * 0.6), window_size - 3)  # Last 60% or at least last 3 frames
+            last_portion = head_turn_events[-last_portion_size:] if last_portion_size > 0 else head_turn_events
+            
+            # Count turns in last portion, allowing more gaps
+            turns_in_last_portion = sum(last_portion)
+            total_frames_in_portion = len(last_portion)
+            
+            # If 70%+ of the last portion is turning, consider it sustained (more lenient)
+            if total_frames_in_portion > 0:
+                turn_ratio = turns_in_last_portion / total_frames_in_portion
+                sustained_turns_flexible = (turn_ratio >= 0.7 and 
+                                           total_frames_in_portion >= self.thresholds['head_turn_sustained_threshold'] * self.detection_fps)
+                
+            # ALSO check for high overall activity - if someone has been turning a lot, consider it sustained
+            if not sustained_turns_flexible and turn_count >= 15:  # High activity threshold
+                # Check if most recent activity shows sustained behavior
+                recent_half = head_turn_events[-max(5, len(head_turn_events)//2):]
+                recent_turns = sum(recent_half)
+                if len(recent_half) > 0 and (recent_turns / len(recent_half)) >= 0.6:
+                    sustained_turns_flexible = True
+        
         # Apply research rules
         frequent_turns = turn_count >= self.thresholds['head_turn_frequency_threshold']
-        sustained_turns = sustained_duration >= self.thresholds['head_turn_sustained_threshold']
+        sustained_turns = (sustained_duration >= self.thresholds['head_turn_sustained_threshold'] or 
+                          sustained_turns_flexible)
+        
+        # Debug logging for head turning analysis (limited to avoid spam)
+        if (frequent_turns or sustained_turns) and confirmations[event_type] == 1:  # Only log on first detection
+            self.logger.info(f"🔄 HEAD TURN ANALYSIS for person {person_id}:")
+            self.logger.info(f"   Turn count: {turn_count} (threshold: {self.thresholds['head_turn_frequency_threshold']})")
+            self.logger.info(f"   Consecutive at end: {consecutive_turns} frames = {sustained_duration:.1f}s")
+            self.logger.info(f"   Sustained threshold: {self.thresholds['head_turn_sustained_threshold']}s")
+            self.logger.info(f"   Strict sustained: {sustained_duration >= self.thresholds['head_turn_sustained_threshold']}")
+            self.logger.info(f"   Flexible sustained: {sustained_turns_flexible}")
+            self.logger.info(f"   Final sustained: {sustained_turns}")
+            if turn_count >= 15:
+                self.logger.info(f"   🔥 HIGH ACTIVITY: {turn_count} turns detected!")
+            self.logger.info(f"   Window events: {head_turn_events[-10:]}")  # Last 10 frames
         
         if frequent_turns or sustained_turns:
             event_type = 'head_turn_frequent'
@@ -477,6 +521,7 @@ class ResearchBasedRuleEngine:
                     severity = 'red'
                     event_name = 'Sustained Head Turning'
                     details = f'Head turning sustained for {sustained_duration:.1f}s (angle: {head_angle:.1f}°)'
+                    self.logger.info(f"🔴 SUSTAINED HEAD TURNING TRIGGERED for person {person_id}: {sustained_duration:.1f}s consecutive, flexible={sustained_turns_flexible}")
                 else:
                     severity = 'orange'
                     event_name = 'Frequent Head Turning'
@@ -598,7 +643,8 @@ class ResearchBasedRuleEngine:
                     'rule_triggered': 'hand_extended_duration',
                     'consecutive_frames': consecutive_hands,
                     'duration_seconds': duration,
-                    'gesture_type': gesture_reason
+                    'gesture_type': gesture_reason,
+                    'special_visual': True  # Flag for special visual treatment
                 })
         
         return events
@@ -688,6 +734,7 @@ class EngineHybrid:
         self.active_events = {}  # person_id -> latest event
         self.event_timestamps = {}  # person_id -> timestamp
         self.event_duration = 3.0  # Show events for 3 seconds
+        self.gesture_event_count = 0  # Track total gesture detections
         
         # Performance tracking
         self.processing_times = []
@@ -817,6 +864,13 @@ class EngineHybrid:
                             person_key = event['person_id']
                             self.active_events[person_key] = event
                             self.event_timestamps[person_key] = ts
+                            
+                            # Track gesture events for statistics
+                            if ('Suspicious Hand Activity' in event.get('event_type', '') or 
+                                'gesture_type' in event or 
+                                event.get('special_visual', False)):
+                                self.gesture_event_count += 1
+                                self.logger.info(f"🤚 GESTURE EVENT #{self.gesture_event_count}: {event.get('gesture_type', 'unknown')} detected!")
                 
                 # Update last detections for overlay (include phones)
                 self.last_detections = pose_results + phones
@@ -970,202 +1024,339 @@ class EngineHybrid:
     
     def _get_current_overlay_events(self) -> List[Dict]:
         """Get currently active events for overlay rendering."""
-        return list(self.active_events.values())
+        current_events = list(self.active_events.values())
+        
+        # Debug: Log gesture events for troubleshooting
+        gesture_events = [e for e in current_events if 'Suspicious Hand Activity' in e.get('event_type', '')]
+        if gesture_events:
+            self.logger.debug(f"🎨 Overlay has {len(gesture_events)} gesture events ready for magenta rendering")
+            
+        return current_events
     
     def _create_overlay(self, frame: np.ndarray, detections: List[Dict], 
                        events: List[Dict]) -> np.ndarray:
         """Create enhanced overlay with confidence-based coloring and false positive mitigation."""
-        overlay_frame = frame.copy()
-        
-        # Simple label mapping for events
-        event_labels = {
-            'Phone Usage Detected': 'Phone',
-            'Frequent Head Turning': 'Turning', 
-            'Abnormal Looking Down': 'Looking',
-            'Suspicious Hand Activity': 'Hands',
-            'Normal': 'Normal'
-        }
-        
-        # Create event lookup for priority-based coloring with confidence tracking
-        event_lookup = {}
-        event_confidence_map = {}
-        for event in events:
-            person_id = event['person_id']
-            confidence = event.get('confidence', 0.5)
+        try:
+            overlay_frame = frame.copy()
             
-            # Priority: red > orange > yellow, but also consider confidence
-            if person_id not in event_lookup:
-                event_lookup[person_id] = event
-                event_confidence_map[person_id] = confidence
+            # Simple label mapping for events
+            event_labels = {
+                'Phone Usage Detected': 'Phone',
+                'Frequent Head Turning': 'Turning', 
+                'Abnormal Looking Down': 'Looking',
+                'Suspicious Hand Activity': 'Arms',
+                'Normal': 'Normal'
+            }
+            
+            # Create event lookup for priority-based coloring with confidence tracking
+            event_lookup = {}
+            event_confidence_map = {}
+            
+            for event in events:
+                try:
+                    raw_person_id = event.get('person_id', 'unknown')
+                    confidence = event.get('confidence', 0.5)
+                    
+                    # Ensure consistent person_id formatting for event lookup
+                    if isinstance(raw_person_id, int):
+                        person_id = f"person_{raw_person_id:03d}"  # Convert 0 -> "person_000"
+                    else:
+                        person_id = raw_person_id  # Already formatted or 'unknown'
+                    
+                    # Priority: red > orange > yellow, but also consider confidence
+                    if person_id not in event_lookup:
+                        event_lookup[person_id] = event
+                        event_confidence_map[person_id] = confidence
+                    else:
+                        current_event = event_lookup[person_id]
+                        current_confidence = event_confidence_map[person_id]
+                        
+                        # Replace if higher severity OR same severity with higher confidence
+                        severity_priority = {'red': 3, 'orange': 2, 'yellow': 1}
+                        current_priority = severity_priority.get(current_event.get('severity'), 0)
+                        new_priority = severity_priority.get(event.get('severity'), 0)
+                        
+                        if (new_priority > current_priority or 
+                            (new_priority == current_priority and confidence > current_confidence)):
+                            event_lookup[person_id] = event
+                            event_confidence_map[person_id] = confidence
+                except Exception as e:
+                    self.logger.warning(f"Error processing event: {e}")
+                    continue
+        
+            # Separate person and phone detections
+            person_detections = [d for d in detections if d.get('cls_name') != 'cell phone']
+            phone_detections = [d for d in detections if d.get('cls_name') == 'cell phone']
+            
+            # Draw person bounding boxes with enhanced confidence-based visualization
+            for detection in person_detections:
+                try:
+                    if 'bbox' not in detection:
+                        continue
+                        
+                    x1, y1, x2, y2 = [int(coord) for coord in detection['bbox']]
+                    person_id = detection.get('person_id', 'unknown')
+                    detection_conf = detection.get('conf', 0.5)  # Base detection confidence
+                    keypoint_quality = detection.get('keypoint_quality', 0.5)  # Pose quality from pose detector
+                    
+                    # Calculate overall confidence score
+                    overall_confidence = (detection_conf + keypoint_quality) / 2
+                    
+                    # Determine color and visual style based on events and confidence
+                    color = (0, 255, 0)  # Default green (normal)
+                    status = "Normal"
+                    thickness = 1
+                    alpha = 0.4  # Default lower alpha for normal state
+                    
+                    self._draw_person_detection(overlay_frame, detection, event_lookup, 
+                                              event_confidence_map, event_labels, overall_confidence)
+                    
+                except Exception as e:
+                    self.logger.warning(f"Error drawing person detection: {e}")
+                    continue
+            
+            # Draw phone bounding boxes
+            for phone in phone_detections:
+                try:
+                    self._draw_phone_detection(overlay_frame, phone)
+                except Exception as e:
+                    self.logger.warning(f"Error drawing phone detection: {e}")
+                    continue
+            
+            return overlay_frame
+            
+        except Exception as e:
+            self.logger.error(f"Error creating overlay: {e}")
+            return frame
+    
+    def _draw_person_detection(self, overlay_frame, detection, event_lookup, event_confidence_map, event_labels, overall_confidence):
+        """Draw person detection with gesture-aware coloring."""
+        if 'bbox' not in detection:
+            return
+            
+        x1, y1, x2, y2 = [int(coord) for coord in detection['bbox']]
+        raw_person_id = detection.get('person_id', 'unknown')
+        detection_conf = detection.get('conf', 0.5)
+        
+        # Ensure consistent person_id formatting between events and detections
+        if isinstance(raw_person_id, int):
+            person_id = f"person_{raw_person_id:03d}"  # Convert 0 -> "person_000"
+        else:
+            person_id = raw_person_id  # Already formatted or 'unknown'
+        
+        # Debug: Check if person has active events
+        if person_id in event_lookup:
+            event = event_lookup[person_id]
+            self.logger.debug(f"🔍 Person {person_id} has event: {event.get('event_type', 'unknown')}")
+        else:
+            # Check what keys exist in event_lookup
+            available_keys = list(event_lookup.keys())
+            if available_keys:
+                self.logger.debug(f"🔍 Person {person_id} NOT in event_lookup. Available keys: {available_keys}")
+        
+        # Determine color and visual style based on events and confidence
+        color = (0, 255, 0)  # Default green (normal)
+        status = "Normal"
+        thickness = 1
+        alpha = 0.4  # Default lower alpha for normal state
+        
+        if person_id in event_lookup:
+            event = event_lookup[person_id]
+            event_confidence = event_confidence_map[person_id]
+            severity = event.get('severity', 'yellow')
+            event_type = event.get('event_type', '')
+            
+            # Check for special gesture detection - use distinctive color
+            is_gesture_event = ('Suspicious Hand Activity' in event_type or 
+                              'gesture_type' in event or 
+                              'Hand' in event_type or
+                              event.get('special_visual', False))
+            
+            # Debug: Log when gesture events are detected for color changes (limited)
+            if is_gesture_event and event.get('confidence', 0) == event.get('confidence', 0):  # Log once per event
+                if not hasattr(self, '_last_gesture_log') or time.time() - self._last_gesture_log > 1.0:  # Max once per second
+                    self.logger.info(f"🎨 MAGENTA COLOR TRIGGERED for person {person_id}: {event_type}")
+                    self._last_gesture_log = time.time()
+            
+            # Also check if this was a recent gesture event (within last 2 seconds)
+            is_recent_gesture = False
+            if not is_gesture_event:
+                current_time = time.time()
+                event_time = event.get('timestamp', current_time)
+                if current_time - event_time <= 2.0 and 'gesture' in str(event).lower():
+                    is_recent_gesture = True
+            
+            # Confidence-based color intensity modulation
+            confidence_factor = min(1.0, max(0.3, event_confidence))  # Clamp between 30% and 100%
+            
+            if is_gesture_event or is_recent_gesture:
+                # Optimized pulse calculation (cache time-based calculations)
+                current_time = time.time()
+                pulse_factor = 0.7 + 0.3 * abs(np.sin(current_time * 3))  # Slower pulse, reduced range
+                
+                if is_gesture_event:
+                    # Bright magenta for active gesture - lower opacity
+                    color = (255, 0, 255)  # Fixed bright magenta
+                    thickness = 4  # Extra thick for gestures
+                    alpha = 0.4  # Lower transparency for better visibility balance
+                else:
+                    # Dimmer magenta for recent gesture
+                    color = (180, 0, 180)  # Fixed dimmer magenta
+                    thickness = 3
+                    alpha = 0.25  # Much lower transparency for recent gestures
+                
+                # Apply confidence scaling only to final color
+                if confidence_factor < 1.0:
+                    color = tuple(int(c * confidence_factor) for c in color)
+                
+            elif severity == 'red':
+                # Red severity - high priority, full intensity at high confidence
+                base_color = (0, 0, 255)
+                color = tuple(int(c * confidence_factor) for c in base_color)
+                thickness = 3 if event_confidence > 0.8 else 2
+                alpha = 0.8 if event_confidence > 0.7 else 0.6
+                
+            elif severity == 'orange':
+                # Orange severity - medium priority
+                base_color = (0, 165, 255)
+                color = tuple(int(c * confidence_factor) for c in base_color)
+                thickness = 2 if event_confidence > 0.7 else 1
+                alpha = 0.7 if event_confidence > 0.6 else 0.5
+                
+            elif severity == 'yellow':
+                # Yellow severity - low priority, conservative visualization
+                base_color = (0, 255, 255)
+                color = tuple(int(c * confidence_factor) for c in base_color)
+                thickness = 2 if event_confidence > 0.8 else 1
+                alpha = 0.6 if event_confidence > 0.7 else 0.4
+            
+            # Enhanced status with confidence indicator
+            base_status = event_labels.get(event.get('event_type', ''), event.get('event_type', ''))
+            
+            # Special status formatting for gesture events
+            if is_gesture_event or is_recent_gesture:
+                # Use simple "Arms" label instead of complex gesture type
+                simple_label = base_status  # This will be "Arms" from event_labels mapping
+                if is_gesture_event:
+                    if event_confidence > 0.8:
+                        status = f"{simple_label}!"  # High confidence active gesture
+                    elif event_confidence > 0.6:
+                        status = f"{simple_label}"   # Normal confidence active gesture
+                    else:
+                        status = f"{simple_label}?"  # Low confidence active gesture
+                else:
+                    status = f"{simple_label}~"      # Recent gesture indicator
             else:
-                current_event = event_lookup[person_id]
-                current_confidence = event_confidence_map[person_id]
-                
-                # Replace if higher severity OR same severity with higher confidence
-                severity_priority = {'red': 3, 'orange': 2, 'yellow': 1}
-                current_priority = severity_priority.get(current_event.get('severity'), 0)
-                new_priority = severity_priority.get(event.get('severity'), 0)
-                
-                if (new_priority > current_priority or 
-                    (new_priority == current_priority and confidence > current_confidence)):
-                    event_lookup[person_id] = event
-                    event_confidence_map[person_id] = confidence
-        
-        # Separate person and phone detections
-        person_detections = [d for d in detections if d.get('cls_name') != 'cell phone']
-        phone_detections = [d for d in detections if d.get('cls_name') == 'cell phone']
-        
-        # Draw person bounding boxes with enhanced confidence-based visualization
-        for detection in person_detections:
-            if 'bbox' not in detection:
-                continue
-                
-            x1, y1, x2, y2 = [int(coord) for coord in detection['bbox']]
-            person_id = detection.get('person_id', 'unknown')
-            detection_conf = detection.get('conf', 0.5)  # Base detection confidence
-            keypoint_quality = detection.get('keypoint_quality', 0.5)  # Pose quality from pose detector
-            
-            # Calculate overall confidence score
-            overall_confidence = (detection_conf + keypoint_quality) / 2
-            
-            # Determine color and visual style based on events and confidence
-            color = (0, 255, 0)  # Default green (normal)
-            status = "Normal"
-            thickness = 1
-            alpha = 0.4  # Default lower alpha for normal state
-            
-            if person_id in event_lookup:
-                event = event_lookup[person_id]
-                event_confidence = event_confidence_map[person_id]
-                severity = event['severity']
-                
-                # Confidence-based color intensity modulation
-                confidence_factor = min(1.0, max(0.3, event_confidence))  # Clamp between 30% and 100%
-                
-                if severity == 'red':
-                    # Red severity - high priority, full intensity at high confidence
-                    base_color = (0, 0, 255)
-                    color = tuple(int(c * confidence_factor) for c in base_color)
-                    thickness = 3 if event_confidence > 0.8 else 2
-                    alpha = 0.8 if event_confidence > 0.7 else 0.6
-                    
-                elif severity == 'orange':
-                    # Orange severity - medium priority
-                    base_color = (0, 165, 255)
-                    color = tuple(int(c * confidence_factor) for c in base_color)
-                    thickness = 2 if event_confidence > 0.7 else 1
-                    alpha = 0.7 if event_confidence > 0.6 else 0.5
-                    
-                elif severity == 'yellow':
-                    # Yellow severity - low priority, conservative visualization
-                    base_color = (0, 255, 255)
-                    color = tuple(int(c * confidence_factor) for c in base_color)
-                    thickness = 2 if event_confidence > 0.8 else 1
-                    alpha = 0.6 if event_confidence > 0.7 else 0.4
-                
-                # Enhanced status with confidence indicator
-                base_status = event_labels.get(event['event_type'], event['event_type'])
+                # Normal status formatting
                 if event_confidence > 0.8:
                     status = f"{base_status}!"  # High confidence indicator
                 elif event_confidence > 0.6:
                     status = base_status
                 else:
                     status = f"{base_status}?"  # Low confidence indicator
-            else:
-                # Normal state - modulate by detection quality
-                if overall_confidence < 0.4:
-                    # Low quality detection - make it more subtle
-                    color = (0, 180, 0)  # Darker green
-                    alpha = 0.3
-                    thickness = 1
-                elif overall_confidence > 0.8:
-                    # High quality detection - brighter
-                    color = (0, 255, 0)
-                    alpha = 0.5
-                    thickness = 1
-            
-            # False positive mitigation through visual cues
-            # If low overall confidence, add visual indicators
-            if overall_confidence < 0.5 and person_id in event_lookup:
-                # Draw dashed border for uncertain detections
-                self._draw_dashed_rectangle(overlay_frame, (x1, y1), (x2, y2), color, thickness)
-            else:
-                # Draw solid bounding box
-                overlay = overlay_frame.copy()
-                cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
-                cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
-            
-            # Enhanced label with confidence visualization
-            label = status
-            font_scale = 0.4
-            font_thickness = 1
-            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
-            
-            # Dynamic label background size based on confidence
-            bg_height = 18
-            bg_width = label_size[0] + 6
-            
-            # Create confidence-modulated label background
-            label_overlay = overlay_frame.copy()
-            cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), (0, 0, 0), -1)
-            cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), color, 1)
-            
-            # Apply transparency to label background (matched to box alpha)
-            cv2.addWeighted(label_overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
-            
-            # Enhanced text with confidence-based styling
-            text_color = (255, 255, 255)  # Default white
-            if person_id in event_lookup:
-                event_confidence = event_confidence_map[person_id]
-                if event_confidence < 0.5:
-                    text_color = (200, 200, 200)  # Dimmer for low confidence
-            
-            cv2.putText(overlay_frame, label, (x1+3, y1-5), 
-                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
+        else:
+            # Normal state - modulate by detection quality
+            if overall_confidence < 0.4:
+                # Low quality detection - make it more subtle
+                color = (0, 180, 0)  # Darker green
+                alpha = 0.3
+                thickness = 1
+            elif overall_confidence > 0.8:
+                # High quality detection - brighter
+                color = (0, 255, 0)
+                alpha = 0.5
+                thickness = 1
         
-        # Draw phone bounding boxes
-        for phone in phone_detections:
-            if 'bbox' not in phone:
-                continue
-                
-            x1, y1, x2, y2 = [int(coord) for coord in phone['bbox']]
-            
-            # Phone detection - always red/critical
-            color = (0, 0, 255)  # Red for phone detection
-            thickness = 2
-            
-            # Create overlay for transparency
+        # Draw the bounding box
+        self._draw_bounding_box(overlay_frame, x1, y1, x2, y2, color, thickness, alpha, overall_confidence)
+        
+        # Draw the label
+        self._draw_detection_label(overlay_frame, x1, y1, status, color, alpha)
+    
+    def _draw_bounding_box(self, overlay_frame, x1, y1, x2, y2, color, thickness, alpha, overall_confidence):
+        """Draw bounding box with proper alpha blending."""
+        # False positive mitigation through visual cues
+        # If low overall confidence, add visual indicators
+        if overall_confidence < 0.5:
+            # Draw dashed border for uncertain detections
+            self._draw_dashed_rectangle(overlay_frame, (x1, y1), (x2, y2), color, thickness)
+        else:
+            # Draw solid bounding box
             overlay = overlay_frame.copy()
             cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
-            
-            # Apply transparency to bounding box (0.8 opacity - more visible)
-            alpha = 0.8
             cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
-            
-            # Draw phone label
-            label = "Phone"
-            font_scale = 0.4
-            font_thickness = 1
-            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
-            
-            # Phone label background
-            bg_height = 18
-            bg_width = label_size[0] + 6
-            
-            # Create transparent label background
-            label_overlay = overlay_frame.copy()
-            cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), (0, 0, 0), -1)
-            cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), color, 1)
-            
-            # Apply transparency to label background (0.8 opacity)
-            label_alpha = 0.8
-            cv2.addWeighted(label_overlay, label_alpha, overlay_frame, 1 - label_alpha, 0, overlay_frame)
-            
-            # White text for phone label
-            cv2.putText(overlay_frame, label, (x1+3, y1-5), 
-                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness)
+    
+    def _draw_detection_label(self, overlay_frame, x1, y1, status, color, alpha):
+        """Draw detection label with background."""
+        label = status
+        font_scale = 0.4
+        font_thickness = 1
+        label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
         
-        return overlay_frame
+        # Dynamic label background size
+        bg_height = 18
+        bg_width = label_size[0] + 6
+        
+        # Create confidence-modulated label background
+        label_overlay = overlay_frame.copy()
+        cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), (0, 0, 0), -1)
+        cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), color, 1)
+        
+        # Moderate transparency for gesture events (balanced visibility)
+        label_alpha = alpha
+        if ("Arms" in label and any(char in label for char in "!?~")):  # Gesture detection indicators
+            label_alpha = min(0.75, alpha + 0.15)  # Moderate opacity for gesture labels
+        
+        # Apply transparency to label background
+        cv2.addWeighted(label_overlay, label_alpha, overlay_frame, 1 - label_alpha, 0, overlay_frame)
+        
+        # Enhanced text with confidence-based styling
+        text_color = (255, 255, 255)  # White text
+        
+        cv2.putText(overlay_frame, label, (x1+3, y1-5), 
+                   cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
+    
+    def _draw_phone_detection(self, overlay_frame, phone):
+        """Draw phone detection bounding box."""
+        if 'bbox' not in phone:
+            return
+            
+        x1, y1, x2, y2 = [int(coord) for coord in phone['bbox']]
+        
+        # Phone detection - always red/critical
+        color = (0, 0, 255)  # Red for phone detection
+        thickness = 2
+        
+        # Create overlay for transparency
+        overlay = overlay_frame.copy()
+        cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
+        
+        # Apply transparency to bounding box (0.8 opacity - more visible)
+        alpha = 0.8
+        cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
+        
+        # Draw phone label
+        label = "Phone"
+        font_scale = 0.4
+        font_thickness = 1
+        label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
+        
+        # Phone label background
+        bg_height = 18
+        bg_width = label_size[0] + 6
+        
+        # Create transparent label background
+        label_overlay = overlay_frame.copy()
+        cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), (0, 0, 0), -1)
+        cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), color, 1)
+        
+        # Apply transparency to label background (0.8 opacity)
+        label_alpha = 0.8
+        cv2.addWeighted(label_overlay, label_alpha, overlay_frame, 1 - label_alpha, 0, overlay_frame)
+        
+        # White text for phone label
+        cv2.putText(overlay_frame, label, (x1+3, y1-5), 
+                   cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness)
     
     def start_session(self, cam_id: str = "webcam", frame_size: Optional[Tuple[int, int]] = None) -> str:
         """Start a new recording session."""
@@ -1247,7 +1438,8 @@ class EngineHybrid:
             'rule_engine': {
                 'window_size': self.rule_engine.window_size,
                 'confirmation_threshold': self.rule_engine.confirmation_threshold,
-                'active_persons': len(self.rule_engine.person_windows)
+                'active_persons': len(self.rule_engine.person_windows),
+                'gesture_events_detected': self.gesture_event_count
             },
             'thresholds': {
                 'person_confidence': self.person_conf_thresh,
@@ -1271,6 +1463,7 @@ class EngineHybrid:
         # Reset event tracking
         self.active_events = {}
         self.event_timestamps = {}
+        self.gesture_event_count = 0
         
         # Reset tracker
         self.tracker = SimpleTracker(max_disappeared=10, max_objects=2)  # Optimized for single-person scenarios

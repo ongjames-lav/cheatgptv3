@@ -205,7 +205,7 @@ overlay.colors['cheating'] = (0, 0, 255)  # Custom colors
 ```python
 recorder = OverlayVideoRecorder()
 recorder.fps = 30                   # Recording frame rate
-recorder.fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec
+recorder.fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H.264 AVC1 codec for web compatibility
 ```
 
 ## 🐛 Troubleshooting

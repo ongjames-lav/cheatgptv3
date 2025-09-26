@@ -99,6 +99,13 @@ Output: Annotated Frame + Events
 - 🟡 **Yellow**: Minor violations (Leaning, Looking)
 - 🟠 **Orange**: Phone use detected
 - 🔴 **Red**: Cheating behavior
+- 🟣 **Magenta (Pulsing)**: Hand gesture detection (NEW!)
+
+### Gesture Detection Visual Features
+- **Pulsing Magenta Bounding Box**: Active hand gesture detection
+- **Dimmer Magenta**: Recent gesture (within 2 seconds)
+- **Thick Border**: Enhanced visibility during gesture events
+- **Special Labels**: 🤚 emoji with gesture type (e.g., "🤚left_wrist_extended!")
 
 ### Visual Elements
 - **Bounding Boxes**: Color-coded by severity
