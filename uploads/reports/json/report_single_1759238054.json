@@ -1,0 +1,387 @@
+{
+  "session_info": {
+    "session_id": "single_1759238054",
+    "generated_at": "2025-09-30T21:14:27.659338",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "02e71c3c-6480-48f2-82e5-0ac7200a680d.mp4",
+    "width": 640,
+    "height": 368,
+    "fps": 9.979748823703398,
+    "frame_count": 460,
+    "duration": 46.09334444444445
+  },
+  "analysis_results": {
+    "total_events": 19,
+    "event_summary": {
+      "Frequent Head Turning": 14,
+      "Phone Usage Detected": 5
+    },
+    "events": [
+      {
+        "timestamp": 7.114407512077295,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 4 times in window (current angle: 9.0\u00b0)",
+        "bbox": [
+          134.25047302246094,
+          55.3238525390625,
+          638.830322265625,
+          363.2381591796875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "4",
+        "sustained_duration": 0.0,
+        "head_angle": 9.026459863203666
+      },
+      {
+        "timestamp": 9.218668888888889,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 4 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          85.29833984375,
+          26.5528564453125,
+          613.3504638671875,
+          362.83624267578125
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "4",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 11.322930265700483,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 4 times in window (current angle: 2.7\u00b0)",
+        "bbox": [
+          104.00187683105469,
+          60.265472412109375,
+          501.34136962890625,
+          363.9224853515625
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "4",
+        "sustained_duration": 0.0,
+        "head_angle": 2.72096788131549
+      },
+      {
+        "timestamp": 13.427191642512078,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 9 times in window (current angle: 37.8\u00b0)",
+        "bbox": [
+          104.35861206054688,
+          77.09207153320312,
+          493.2970886230469,
+          363.57293701171875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "9",
+        "sustained_duration": 0.5,
+        "head_angle": 37.83212561065207
+      },
+      {
+        "timestamp": 17.03449685990338,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 18 times in window (current angle: 9.6\u00b0)",
+        "bbox": [
+          119.25164794921875,
+          64.7261962890625,
+          513.3189086914062,
+          364.12225341796875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "18",
+        "sustained_duration": 0.0,
+        "head_angle": 9.616137233849601
+      },
+      {
+        "timestamp": 19.138758236714978,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 15 times in window (current angle: 5.8\u00b0)",
+        "bbox": [
+          107.26724243164062,
+          63.68109130859375,
+          511.2326354980469,
+          363.15234375
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "15",
+        "sustained_duration": 0.0,
+        "head_angle": 5.773299291290713
+      },
+      {
+        "timestamp": 21.24301961352657,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 15 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          89.94342041015625,
+          30.518463134765625,
+          523.6102294921875,
+          363.13958740234375
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "15",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 23.046672222222224,
+        "person_id": "person_001",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          91.85693359375,
+          39.807525634765625,
+          526.5718994140625,
+          363.35015869140625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 23.347280990338163,
+        "person_id": "person_001",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          92.02484130859375,
+          38.477752685546875,
+          527.338623046875,
+          363.4323425292969
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 23.647889758454106,
+        "person_id": "person_001",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          92.3856201171875,
+          37.943511962890625,
+          527.78466796875,
+          363.4080505371094
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 23.94849852657005,
+        "person_id": "person_001",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 11 consecutive frames (1.1s)",
+        "bbox": [
+          94.07197570800781,
+          36.6619873046875,
+          528.8544311523438,
+          363.4880676269531
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1
+      },
+      {
+        "timestamp": 24.24910729468599,
+        "person_id": "person_001",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 12 consecutive frames (1.2s)",
+        "bbox": [
+          93.09431457519531,
+          35.61761474609375,
+          527.9735717773438,
+          363.19989013671875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2
+      },
+      {
+        "timestamp": 25.150933599033817,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 11 times in window (current angle: 5.4\u00b0)",
+        "bbox": [
+          93.80230712890625,
+          39.00286865234375,
+          523.1055908203125,
+          363.2348937988281
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "11",
+        "sustained_duration": 0.0,
+        "head_angle": 5.364341398905301
+      },
+      {
+        "timestamp": 27.255194975845413,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 7 times in window (current angle: 28.1\u00b0)",
+        "bbox": [
+          98.31658935546875,
+          36.271209716796875,
+          517.3970947265625,
+          363.6632080078125
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "7",
+        "sustained_duration": 0.3,
+        "head_angle": 28.073661557628977
+      },
+      {
+        "timestamp": 30.26128265700483,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 10 times in window (current angle: 9.3\u00b0)",
+        "bbox": [
+          102.75599670410156,
+          35.069061279296875,
+          525.470703125,
+          363.43121337890625
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "10",
+        "sustained_duration": 0.0,
+        "head_angle": 9.300362135740682
+      },
+      {
+        "timestamp": 32.36554403381643,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 10 times in window (current angle: 4.9\u00b0)",
+        "bbox": [
+          103.41583251953125,
+          30.80804443359375,
+          528.1368408203125,
+          363.30029296875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "10",
+        "sustained_duration": 0.0,
+        "head_angle": 4.87850357301482
+      },
+      {
+        "timestamp": 34.46980541062802,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 10 times in window (current angle: 2.6\u00b0)",
+        "bbox": [
+          109.05833435058594,
+          36.19818115234375,
+          527.684326171875,
+          363.3659973144531
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "10",
+        "sustained_duration": 0.0,
+        "head_angle": 2.589293229823933
+      },
+      {
+        "timestamp": 36.57406678743961,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 10 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          1.20416259765625,
+          46.101470947265625,
+          636.6393432617188,
+          362.0245056152344
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "10",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 45.29172106280193,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 4 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          1.0404052734375,
+          20.65606689453125,
+          513.82861328125,
+          362.8096008300781
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "4",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 10.0,
+    "risk_level": "critical",
+    "recommendations": [
+      "Phone usage detected - implement stricter device policies"
+    ]
+  }
+}

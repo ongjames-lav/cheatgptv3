@@ -16,10 +16,12 @@ from io import BytesIO
 
 from flask import Flask, render_template, request, jsonify, send_file, Response, redirect, flash, url_for
 from flask_socketio import SocketIO, emit
+from werkzeug.utils import secure_filename
 import cv2
 import numpy as np
 import threading
 import queue
+import zipfile
 
 # For PDF generation
 try:
@@ -166,6 +168,49 @@ class SessionReportGenerator:
         
         return str(report_path)
 
+class ProcessingTask:
+    """Class to track video processing tasks"""
+    def __init__(self, session_id: str, file_path: str):
+        self.session_id = session_id
+        self.file_path = file_path
+        self.status = "initializing"
+        self.progress = 0
+        self.message = "Initializing..."
+        self.result = {}
+        self.error = None
+        self.start_time = time.time()
+
+def process_video_async(task: ProcessingTask):
+    """Process video in background thread"""
+    try:
+        task.status = "processing"
+        task.message = "Processing video..."
+        task.progress = 10
+        
+        # Process the video
+        result = video_processor.process_video(
+            input_path=task.file_path,
+            session_id=task.session_id
+        )
+        
+        task.progress = 90
+        task.message = "Generating reports..."
+        
+        # Update final results
+        task.result = result
+        task.status = "completed"
+        task.message = "Processing completed successfully"
+        task.progress = 100
+        
+        logger.info(f"✅ Video processing completed for session {task.session_id}")
+        
+    except Exception as e:
+        task.status = "error"
+        task.error = str(e)
+        task.message = f"Error: {str(e)}"
+        task.progress = 0
+        logger.error(f"❌ Video processing failed for session {task.session_id}: {e}")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -187,6 +232,17 @@ if 'werkzeug' in sys.modules:
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.disabled = True
 
+# Import CheatGPT video processing components
+try:
+    from cheatgpt.video_processor import VideoProcessor
+    from cheatgpt.upload_handler import UploadHandler
+    from cheatgpt.report_generator import ReportGenerator
+    VIDEO_PROCESSING_AVAILABLE = True
+    logger.info("✅ CheatGPT video processing components imported successfully")
+except ImportError as e:
+    logger.error(f"❌ Failed to import CheatGPT video processing components: {e}")
+    VIDEO_PROCESSING_AVAILABLE = False
+
 # Import CheatGPT detection engine
 try:
     import sys
@@ -206,11 +262,12 @@ except ImportError as e:
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cheatgpt_web_secret_key_2024'
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
 
 # Initialize SocketIO with CORS enabled and polling-only transport
 socketio = SocketIO(app, cors_allowed_origins="*", transports=['polling'])
 
-# Global state variables
+# Global state variables for live monitoring
 detection_engine = None
 current_session_id = None
 session_start_time = None
@@ -222,6 +279,26 @@ frame_queue = queue.Queue(maxsize=5)  # Reduced queue size to prevent lag buildu
 # Video recording variables
 video_writer = None
 recording_filename = None
+
+# Video processing global variables
+processing_status = {}
+upload_handler = None
+video_processor = None
+report_generator = None
+
+# Initialize video processing components
+if VIDEO_PROCESSING_AVAILABLE:
+    upload_handler = UploadHandler()
+    video_processor = VideoProcessor()
+    report_generator = ReportGenerator()
+
+# Configuration directories
+UPLOAD_FOLDER = "uploads"
+RESULTS_FOLDER = "results"
+
+# Ensure directories exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 # Shared frame buffer for video streaming
 latest_frame = None
@@ -618,6 +695,11 @@ def session_detail(session_id):
 def help_page():
     """Help and documentation page"""
     return render_template('help.html')
+
+@app.route('/upload')
+def video_upload():
+    """Video upload page"""
+    return render_template('video_upload.html')
 
 # API Routes
 
@@ -2531,6 +2613,202 @@ def camera_worker():
         camera_active = False
         logger.info("🎥 Camera worker stopped")
 
+# Video Processing API Routes
+@app.route('/api/upload', methods=['POST'])
+def api_upload_video():
+    """Upload video file for processing"""
+    try:
+        logger.info("📤 Video upload request received")
+        logger.info(f"VIDEO_PROCESSING_AVAILABLE: {VIDEO_PROCESSING_AVAILABLE}")
+        logger.info(f"upload_handler: {upload_handler}")
+        
+        if not VIDEO_PROCESSING_AVAILABLE:
+            logger.error("❌ Video processing not available")
+            return jsonify({'error': 'Video processing not available'}), 500
+        
+        if 'video' not in request.files:
+            logger.error("❌ No video file in request")
+            return jsonify({'error': 'No video file provided'}), 400
+        
+        file = request.files['video']
+        logger.info(f"📁 File received: {file.filename}")
+        
+        if file.filename == '':
+            logger.error("❌ Empty filename")
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Generate session ID
+        session_id = f"single_{int(time.time())}"
+        logger.info(f"🆔 Generated session ID: {session_id}")
+        
+        # Upload file
+        logger.info("📤 Starting file upload...")
+        result = upload_handler.upload_single_video(file, session_id)
+        logger.info(f"📤 Upload result: {result}")
+        
+        if 'error' in result:
+            logger.error(f"❌ Upload error: {result}")
+            return jsonify(result), 400
+        
+        logger.info("✅ Upload successful")
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'path': result['file_path'],
+            'file_path': result['file_path'],
+            'message': 'Upload successful'
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error uploading video: {e}")
+        logger.exception("Full error details:")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/process', methods=['POST'])
+def api_start_processing():
+    """Start video processing"""
+    try:
+        logger.info("🔄 Video processing request received")
+        
+        if not VIDEO_PROCESSING_AVAILABLE:
+            logger.error("❌ Video processing not available")
+            return jsonify({'success': False, 'error': 'Video processing not available'}), 500
+        
+        data = request.get_json()
+        logger.info(f"📋 Processing request data: {data}")
+        
+        # Handle both frontend (video_path) and backend (file_path, session_id) formats
+        video_path = data.get('video_path') or data.get('file_path')
+        session_id = data.get('session_id')
+        
+        # If no session_id provided, extract from video_path or generate one
+        if not session_id and video_path:
+            # Extract session_id from path like: uploads/single_123456/filename.mp4
+            import os
+            path_parts = os.path.normpath(video_path).split(os.sep)
+            if len(path_parts) >= 2 and path_parts[-2].startswith('single_'):
+                session_id = path_parts[-2]
+            else:
+                session_id = f"single_{int(time.time())}"
+        
+        if not video_path:
+            logger.error("❌ Missing video_path")
+            return jsonify({'success': False, 'error': 'Missing video_path'}), 400
+        
+        logger.info(f"🎬 Processing video: {video_path} for session: {session_id}")
+        
+        # Create processing task
+        task = ProcessingTask(session_id, video_path)
+        processing_status[session_id] = task
+        
+        # Start processing in background
+        thread = threading.Thread(target=process_video_async, args=(task,))
+        thread.daemon = True
+        thread.start()
+        
+        logger.info(f"✅ Processing started for session: {session_id}")
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'status': 'started',
+            'message': 'Processing started'
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error starting video processing: {e}")
+        logger.exception("Full error details:")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/status/<session_id>', methods=['GET'])
+def api_processing_status(session_id):
+    """Get processing status"""
+    try:
+        logger.info(f"📊 Status request for session: {session_id}")
+        
+        if session_id not in processing_status:
+            logger.error(f"❌ Session not found: {session_id}")
+            return jsonify({'success': False, 'error': 'Session not found'}), 404
+        
+        task = processing_status[session_id]
+        
+        # Determine if processing is completed
+        completed = task.status in ['completed', 'error']
+        
+        # Prepare result object for completed tasks
+        result = None
+        if completed:
+            if task.status == 'completed':
+                result = {'success': True, 'data': task.result}
+            else:
+                result = {'success': False, 'error': task.error}
+        
+        status_response = {
+            'success': True,
+            'session_id': session_id,
+            'status': {
+                'progress': task.progress,
+                'message': task.message,
+                'completed': completed,
+                'result': result,
+                'processing_time': time.time() - task.start_time
+            }
+        }
+        
+        logger.info(f"📊 Status response: {status_response}")
+        return jsonify(status_response)
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting processing status: {e}")
+        logger.exception("Full error details:")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/download/<file_type>/<session_id>', methods=['GET'])
+def api_download_file(file_type, session_id):
+    """Download processed files"""
+    try:
+        if session_id not in processing_status:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        task = processing_status[session_id]
+        
+        if task.status != 'completed':
+            return jsonify({'error': 'Processing not completed'}), 400
+        
+        result = task.result
+        
+        if file_type == 'video':
+            if 'output_paths' in result and 'processed_video' in result['output_paths']:
+                return send_file(result['output_paths']['processed_video'], as_attachment=True)
+        elif file_type == 'report':
+            if 'output_paths' in result and 'json_report' in result['output_paths']:
+                return send_file(result['output_paths']['json_report'], as_attachment=True)
+        elif file_type == 'visualization':
+            if 'output_paths' in result and 'visualizations' in result['output_paths']:
+                # Create a zip file with all visualizations
+                zip_buffer = BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    viz_paths = result['output_paths']['visualizations']
+                    for viz_name, viz_path in viz_paths.items():
+                        if os.path.exists(viz_path):
+                            zip_file.write(viz_path, f"{viz_name}.png")
+                
+                zip_buffer.seek(0)
+                
+                return send_file(
+                    BytesIO(zip_buffer.read()),
+                    as_attachment=True,
+                    download_name=f"visualizations_{session_id}.zip",
+                    mimetype='application/zip'
+                )
+        
+        return jsonify({'error': f'{file_type} not available'}), 404
+        
+    except Exception as e:
+        logger.error(f"Error downloading file: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# SocketIO Events
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection"""

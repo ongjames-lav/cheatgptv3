@@ -1,0 +1,10 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+3.4985181992337164,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 4 times in window (current angle: 10.1°),"[404.7886962890625, 174.0048828125, 1172.1983642578125, 709.88916015625]",head_turn_frequency
+5.597629118773947,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 7 times in window (current angle: 21.0°),"[402.18359375, 174.8267822265625, 1174.3931884765625, 711.6417236328125]",head_turn_frequency
+7.696740038314176,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 13 times in window (current angle: 34.4°),"[402.50244140625, 186.11260986328125, 1173.948974609375, 711.0526733398438]",head_turn_frequency
+9.795850957854405,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 14 times in window (current angle: 0.0°),"[385.2769775390625, 169.627197265625, 1150.5472412109375, 709.289306640625]",head_turn_frequency
+11.894961877394636,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 14 times in window (current angle: 0.0°),"[257.7037048339844, 162.80938720703125, 1156.7103271484375, 709.6444702148438]",head_turn_frequency
+13.994072796934866,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 14 times in window (current angle: 0.0°),"[423.5119323730469, 160.6331787109375, 1157.617919921875, 708.6083984375]",head_turn_frequency
+16.093183716475096,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 9 times in window (current angle: 0.0°),"[349.886474609375, 167.27996826171875, 1165.246337890625, 709.5675659179688]",head_turn_frequency
+18.192294636015326,person_000,Frequent Head Turning,orange,0.8,research_rules,Head turned 6 times in window (current angle: 0.0°),"[0.0, 158.119873046875, 1212.468505859375, 706.936279296875]",head_turn_frequency
+31.986452107279693,person_000,Suspicious Hand Activity,orange,0.7,research_rules,Hand gesture detected: right_wrist_extended_arm_absolute for 1.0s,"[229.73779296875, 168.210205078125, 1192.45703125, 708.2237548828125]",hand_extended_duration

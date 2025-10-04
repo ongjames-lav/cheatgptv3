@@ -1,0 +1,17 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+3.8,person_003,Frequent Head Turning,orange,0.8,research_rules,Head turned 3 times in window (current angle: 0.0°),"[158.4083251953125, 367.5858154296875, 364.9637145996094, 679.3789672851562]",head_turn_frequency
+4.7,person_003,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.2s (angle: 45.0°),"[142.40283203125, 375.9905090332031, 349.5301818847656, 694.8971557617188]",head_pitch_sustained
+4.8,person_003,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.3s (angle: 24.4°),"[144.16871643066406, 359.5146484375, 351.2675476074219, 679.208984375]",head_pitch_sustained
+4.9,person_003,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.4s (angle: 29.8°),"[147.77529907226562, 354.5223388671875, 354.0528564453125, 674.9035034179688]",head_pitch_sustained
+5.0,person_003,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.5s (angle: 32.5°),"[152.1145782470703, 370.2537536621094, 356.1921691894531, 680.1968383789062]",head_pitch_sustained
+5.1,person_003,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.6s (angle: 27.0°),"[157.17030334472656, 366.9683532714844, 354.64874267578125, 680.3848876953125]",head_pitch_sustained
+5.1,person_004,Frequent Head Turning,orange,0.8,research_rules,Head turned 3 times in window (current angle: 0.0°),"[32.71980667114258, 558.36767578125, 574.9662475585938, 1245.069580078125]",head_turn_frequency
+5.2,person_003,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.7s (angle: 22.6°),"[151.14663696289062, 355.6918640136719, 352.5671081542969, 676.2149047851562]",head_pitch_sustained
+5.8,person_003,Frequent Head Turning,orange,0.8,research_rules,Head turned 4 times in window (current angle: 0.0°),"[168.04766845703125, 292.8405456542969, 372.86572265625, 654.5015258789062]",head_turn_frequency
+12.7,person_006,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.2s (angle: 20.9°),"[72.00384521484375, 385.00262451171875, 550.73486328125, 1240.8382568359375]",head_pitch_sustained
+12.8,person_006,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.3s (angle: 21.5°),"[42.42392349243164, 325.3940124511719, 516.89697265625, 1241.9915771484375]",head_pitch_sustained
+12.9,person_006,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.4s (angle: 21.6°),"[80.3406753540039, 328.43359375, 551.6683959960938, 1234.0623779296875]",head_pitch_sustained
+13.0,person_006,Abnormal Looking Down,orange,0.75,research_rules,Looking down abnormally for 1.5s (angle: 20.1°),"[66.9272232055664, 289.1230773925781, 576.0, 1245.6329345703125]",head_pitch_sustained
+13.6,person_006,Frequent Head Turning,orange,0.8,research_rules,Head turned 3 times in window (current angle: 0.0°),"[258.3211364746094, 195.2040252685547, 575.16455078125, 958.260009765625]",head_turn_frequency
+15.6,person_006,Frequent Head Turning,orange,0.8,research_rules,Head turned 6 times in window (current angle: 27.5°),"[148.70106506347656, 372.5987548828125, 463.97900390625, 1138.6009521484375]",head_turn_frequency
+17.6,person_006,Frequent Head Turning,orange,0.8,research_rules,Head turned 5 times in window (current angle: 13.6°),"[1.024571180343628, 320.7792663574219, 573.9352416992188, 1244.3017578125]",head_turn_frequency

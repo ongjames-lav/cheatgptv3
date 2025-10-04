@@ -1,0 +1,26 @@
+=== CLASSROOM TRACKING SUMMARY ===
+Total People Tracked,8
+People in Assigned Areas,7
+People with Anomalous Movement,6
+Average Movement Score,0.640
+
+=== INDIVIDUAL STUDENT TRACKING ===
+Person ID,In Assigned Area,Movement Score,Total Detections,Frames Since Detection
+person_000,Yes,0.747,85,0
+person_001,No,0.721,85,0
+person_002,Yes,0.372,85,0
+person_003,Yes,0.863,85,0
+person_004,Yes,0.548,77,8
+person_005,Yes,0.401,83,0
+person_006,Yes,0.762,77,0
+person_007,Yes,0.702,44,0
+
+=== EVENT DETECTION SUMMARY ===
+Phone Usage Events,0
+Head Turning Events,0
+Looking Down Events,0
+Gesture Events,0
+Hiding Events,0
+
+=== DETAILED EVENT TIMELINE ===
+Timestamp,Frame,Event Type,Confidence,Person ID,Description

@@ -1,0 +1,57 @@
+=== CLASSROOM TRACKING SUMMARY ===
+Total People Tracked,5
+People in Assigned Areas,3
+People with Anomalous Movement,4
+Average Movement Score,0.782
+
+=== INDIVIDUAL STUDENT TRACKING ===
+Person ID,In Assigned Area,Movement Score,Total Detections,Frames Since Detection
+person_040,Yes,0.242,271,0
+person_043,No,1.000,206,0
+person_047,No,0.986,149,0
+person_049,Yes,0.741,48,0
+person_050,Yes,0.941,52,0
+
+=== EVENT DETECTION SUMMARY ===
+Phone Usage Events,0
+Head Turning Events,34
+Looking Down Events,0
+Gesture Events,0
+Hiding Events,0
+
+=== DETAILED EVENT TIMELINE ===
+Timestamp,Frame,Event Type,Confidence,Person ID,Description
+9.4,264,Abnormal Looking Down,0.75,person_000,
+9.6,270,Abnormal Looking Down,0.75,person_000,
+9.9,276,Abnormal Looking Down,0.75,person_000,
+37.1,1038,Frequent Head Turning,0.80,person_001,
+57.2,1602,Sustained Head Turning,0.80,person_000,
+59.3,1662,Sustained Head Turning,0.80,person_000,
+71.5,2004,Sustained Head Turning,0.80,person_001,
+73.7,2064,Frequent Head Turning,0.80,person_001,
+75.8,2124,Frequent Head Turning,0.80,person_001,
+76.5,2142,Sustained Head Turning,0.80,person_000,
+78.0,2184,Frequent Head Turning,0.80,person_001,
+78.6,2202,Sustained Head Turning,0.80,person_000,
+80.1,2244,Frequent Head Turning,0.80,person_001,
+80.7,2262,Frequent Head Turning,0.80,person_000,
+82.2,2304,Frequent Head Turning,0.80,person_001,
+82.9,2322,Frequent Head Turning,0.80,person_000,
+84.4,2364,Frequent Head Turning,0.80,person_001,
+85.5,2394,Frequent Head Turning,0.80,person_000,
+90.2,2526,Frequent Head Turning,0.80,person_001,
+92.3,2586,Frequent Head Turning,0.80,person_001,
+94.4,2646,Frequent Head Turning,0.80,person_001,
+96.6,2706,Sustained Head Turning,0.80,person_001,
+98.7,2766,Sustained Head Turning,0.80,person_001,
+100.9,2826,Frequent Head Turning,0.80,person_001,
+103.0,2886,Frequent Head Turning,0.80,person_001,
+105.2,2946,Frequent Head Turning,0.80,person_001,
+249.7,6996,Frequent Head Turning,0.80,person_003,
+252.9,7086,Frequent Head Turning,0.80,person_003,
+255.1,7146,Frequent Head Turning,0.80,person_003,
+257.2,7206,Frequent Head Turning,0.80,person_003,
+259.4,7266,Frequent Head Turning,0.80,person_003,
+283.1,7932,Frequent Head Turning,0.80,person_003,
+285.3,7992,Frequent Head Turning,0.80,person_003,
+287.4,8052,Frequent Head Turning,0.80,person_003,

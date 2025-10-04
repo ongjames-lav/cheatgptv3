@@ -1,0 +1,808 @@
+{
+  "video_metadata": {
+    "session_id": "video_20250928_192747_b7889f98",
+    "filename": "Teacher_Stock_Footage_-_Teachers_Free_Stock_Videos_-_Teacher_No_Copyright_Videos_1759058865.mp4",
+    "duration": 289.41638407995714,
+    "fps": 28.015,
+    "resolution": "640x338",
+    "frame_count": 8108,
+    "file_size": 16255720,
+    "processing_date": "2025-09-28T19:29:27.089531"
+  },
+  "detection_summary": {
+    "total_events": 34,
+    "phone_usage_count": 0,
+    "head_turning_count": 34,
+    "looking_down_count": 0,
+    "gesture_count": 0,
+    "hiding_count": 0,
+    "risk_score": 0.068
+  },
+  "classroom_tracking": {
+    "total_people": 5,
+    "people_in_assigned_areas": 3,
+    "people_with_anomalous_movement": 4,
+    "average_movement_scores": [
+      0.24247377559272232,
+      1.0,
+      0.9858196773002155,
+      0.7406646740887893,
+      0.9407956048538602
+    ],
+    "tracker_details": {
+      "person_040": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.24247377559272232,
+        "frames_since_detection": 0,
+        "total_detections": 271,
+        "assigned_area": [
+          195.6075439453125,
+          0,
+          353.069580078125,
+          311.37890625
+        ],
+        "current_bbox": [
+          226.66506958007812,
+          39.535789489746094,
+          407.7668762207031,
+          246.51693725585938
+        ]
+      },
+      "person_043": {
+        "in_assigned_area": false,
+        "movement_anomaly_score": 1.0,
+        "frames_since_detection": 0,
+        "total_detections": 206,
+        "assigned_area": [
+          292.67474365234375,
+          149.39907836914062,
+          405.1419677734375,
+          277.4216003417969
+        ],
+        "current_bbox": [
+          42.411460876464844,
+          83.50363159179688,
+          247.39590454101562,
+          291.0933837890625
+        ]
+      },
+      "person_047": {
+        "in_assigned_area": false,
+        "movement_anomaly_score": 0.9858196773002155,
+        "frames_since_detection": 0,
+        "total_detections": 149,
+        "assigned_area": [
+          554.484619140625,
+          107.9005126953125,
+          624.433837890625,
+          205.29452514648438
+        ],
+        "current_bbox": [
+          356.69171142578125,
+          1.455078125,
+          639.678955078125,
+          334.2174072265625
+        ]
+      },
+      "person_049": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.7406646740887893,
+        "frames_since_detection": 0,
+        "total_detections": 48,
+        "assigned_area": [
+          0,
+          0,
+          85.8014907836914,
+          321.4109802246094
+        ],
+        "current_bbox": [
+          0.2977752685546875,
+          116.31554412841797,
+          162.17660522460938,
+          335.516357421875
+        ]
+      },
+      "person_050": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.9407956048538602,
+        "frames_since_detection": 0,
+        "total_detections": 52,
+        "assigned_area": [
+          377.70550537109375,
+          32.498870849609375,
+          726.9539184570312,
+          408.0
+        ],
+        "current_bbox": [
+          475.4083251953125,
+          131.00717163085938,
+          527.8179931640625,
+          224.74200439453125
+        ]
+      }
+    },
+    "average_movement_score": 0.7819507463671176
+  },
+  "timeline_events": [
+    {
+      "timestamp": 9.42352311261824,
+      "person_id": "person_000",
+      "event_type": "Abnormal Looking Down",
+      "severity": "orange",
+      "confidence": 0.75,
+      "source": "research_rules",
+      "details": "Looking down abnormally for 1.2s (angle: 30.8\u00b0)",
+      "bbox": [
+        256.62139892578125,
+        84.61829376220703,
+        396.29669189453125,
+        306.159423828125
+      ],
+      "rule_triggered": "head_pitch_sustained",
+      "consecutive_frames": 12,
+      "duration_seconds": 1.2,
+      "pitch_angle": 30.792992787210327,
+      "frame_number": 264
+    },
+    {
+      "timestamp": 9.637694092450472,
+      "person_id": "person_000",
+      "event_type": "Abnormal Looking Down",
+      "severity": "orange",
+      "confidence": 0.75,
+      "source": "research_rules",
+      "details": "Looking down abnormally for 1.3s (angle: 31.7\u00b0)",
+      "bbox": [
+        254.84918212890625,
+        85.31439971923828,
+        397.59405517578125,
+        305.87939453125
+      ],
+      "rule_triggered": "head_pitch_sustained",
+      "consecutive_frames": 13,
+      "duration_seconds": 1.3,
+      "pitch_angle": 31.694924564077382,
+      "frame_number": 270
+    },
+    {
+      "timestamp": 9.851865072282706,
+      "person_id": "person_000",
+      "event_type": "Abnormal Looking Down",
+      "severity": "orange",
+      "confidence": 0.75,
+      "source": "research_rules",
+      "details": "Looking down abnormally for 1.4s (angle: 30.0\u00b0)",
+      "bbox": [
+        255.1502685546875,
+        85.184326171875,
+        398.52459716796875,
+        305.30621337890625
+      ],
+      "rule_triggered": "head_pitch_sustained",
+      "consecutive_frames": 14,
+      "duration_seconds": 1.4,
+      "pitch_angle": 30.002760279703292,
+      "frame_number": 276
+    },
+    {
+      "timestamp": 37.05157951097626,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 5 times in window (current angle: 35.0\u00b0)",
+      "bbox": [
+        15.065383911132812,
+        69.13238525390625,
+        218.243896484375,
+        302.3032531738281
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 5,
+      "sustained_duration": 0.5,
+      "head_angle": 35.0,
+      "frame_number": 1038
+    },
+    {
+      "timestamp": 57.18365161520614,
+      "person_id": "person_000",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 0.0s (angle: 0.0\u00b0)",
+      "bbox": [
+        285.884033203125,
+        106.0023193359375,
+        443.5809326171875,
+        267.98760986328125
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 38,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 1602
+    },
+    {
+      "timestamp": 59.32536141352846,
+      "person_id": "person_000",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 1.0s (angle: 35.0\u00b0)",
+      "bbox": [
+        321.109375,
+        105.37005615234375,
+        452.39996337890625,
+        265.82861328125
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 38,
+      "sustained_duration": 1.0,
+      "head_angle": 35.0,
+      "frame_number": 1662
+    },
+    {
+      "timestamp": 71.53310726396573,
+      "person_id": "person_001",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 0.0s (angle: 10.8\u00b0)",
+      "bbox": [
+        152.9705810546875,
+        23.721160888671875,
+        323.3134460449219,
+        269.94281005859375
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 38,
+      "sustained_duration": 0.0,
+      "head_angle": 10.79144877422779,
+      "frame_number": 2004
+    },
+    {
+      "timestamp": 73.67481706228806,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 28 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        145.013916015625,
+        31.24481201171875,
+        323.2384033203125,
+        269.9855651855469
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 28,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2064
+    },
+    {
+      "timestamp": 75.81652686061038,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 24 times in window (current angle: 35.0\u00b0)",
+      "bbox": [
+        148.1368408203125,
+        6.0155029296875,
+        325.05419921875,
+        280.3969421386719
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 24,
+      "sustained_duration": 0.6,
+      "head_angle": 35.0,
+      "frame_number": 2124
+    },
+    {
+      "timestamp": 76.45903980010708,
+      "person_id": "person_000",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 0.0s (angle: 0.0\u00b0)",
+      "bbox": [
+        426.17437744140625,
+        1.377197265625,
+        639.4353637695312,
+        332.4287109375
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 38,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2142
+    },
+    {
+      "timestamp": 77.95823665893272,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 16 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        163.23471069335938,
+        87.8236083984375,
+        228.69284057617188,
+        175.77157592773438
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 16,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2184
+    },
+    {
+      "timestamp": 78.60074959842942,
+      "person_id": "person_000",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 0.0s (angle: 0.0\u00b0)",
+      "bbox": [
+        438.28656005859375,
+        127.03079223632812,
+        526.6342163085938,
+        248.75418090820312
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 33,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2202
+    },
+    {
+      "timestamp": 80.09994645725504,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 7 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        154.885986328125,
+        87.83901977539062,
+        220.2884521484375,
+        177.22262573242188
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 7,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2244
+    },
+    {
+      "timestamp": 80.74245939675174,
+      "person_id": "person_000",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 23 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        372.4861145019531,
+        72.40071105957031,
+        432.9639587402344,
+        152.3362274169922
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 23,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2262
+    },
+    {
+      "timestamp": 82.24165625557737,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 7 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        535.0142822265625,
+        69.20977783203125,
+        639.7398681640625,
+        334.61517333984375
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 7,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2304
+    },
+    {
+      "timestamp": 82.88416919507407,
+      "person_id": "person_000",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        348.43768310546875,
+        70.77928161621094,
+        410.67315673828125,
+        149.4716796875
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 14,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2322
+    },
+    {
+      "timestamp": 84.38336605389969,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 5 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        545.943603515625,
+        71.82235717773438,
+        639.698974609375,
+        333.4019775390625
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 5,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2364
+    },
+    {
+      "timestamp": 85.45422095306085,
+      "person_id": "person_000",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 7 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        323.16534423828125,
+        67.42498779296875,
+        389.32342529296875,
+        146.00843811035156
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 7,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2394
+    },
+    {
+      "timestamp": 90.16598250936998,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 3 times in window (current angle: 35.0\u00b0)",
+      "bbox": [
+        300.2713623046875,
+        33.308929443359375,
+        499.77880859375,
+        333.7831115722656
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 3,
+      "sustained_duration": 0.3,
+      "head_angle": 35.0,
+      "frame_number": 2526
+    },
+    {
+      "timestamp": 92.3076923076923,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 5 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        279.71929931640625,
+        48.1002197265625,
+        439.85174560546875,
+        334.37506103515625
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 5,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2586
+    },
+    {
+      "timestamp": 94.44940210601463,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 6 times in window (current angle: 35.0\u00b0)",
+      "bbox": [
+        211.59889221191406,
+        39.1494140625,
+        408.2647705078125,
+        333.3038330078125
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 6,
+      "sustained_duration": 0.1,
+      "head_angle": 35.0,
+      "frame_number": 2646
+    },
+    {
+      "timestamp": 96.59111190433696,
+      "person_id": "person_001",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 1.1s (angle: 35.0\u00b0)",
+      "bbox": [
+        157.3251190185547,
+        15.3865966796875,
+        389.85504150390625,
+        334.7984619140625
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 16,
+      "sustained_duration": 1.1,
+      "head_angle": 35.0,
+      "frame_number": 2706
+    },
+    {
+      "timestamp": 98.7328217026593,
+      "person_id": "person_001",
+      "event_type": "Sustained Head Turning",
+      "severity": "red",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turning sustained for 0.0s (angle: 0.0\u00b0)",
+      "bbox": [
+        240.56976318359375,
+        0.916961669921875,
+        458.85589599609375,
+        333.0580749511719
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 17,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2766
+    },
+    {
+      "timestamp": 100.87453150098162,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 15 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        108.90164184570312,
+        4.879608154296875,
+        313.4000549316406,
+        333.2091979980469
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 15,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2826
+    },
+    {
+      "timestamp": 103.01624129930394,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        181.28463745117188,
+        9.88104248046875,
+        340.7766418457031,
+        334.90423583984375
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 14,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2886
+    },
+    {
+      "timestamp": 105.15795109762627,
+      "person_id": "person_001",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 4 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        256.1705322265625,
+        7.704833984375,
+        381.0718994140625,
+        321.794677734375
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 4,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 2946
+    },
+    {
+      "timestamp": 249.72336248438336,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 5 times in window (current angle: 35.0\u00b0)",
+      "bbox": [
+        47.728790283203125,
+        101.88409423828125,
+        359.6582336425781,
+        333.96978759765625
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 5,
+      "sustained_duration": 0.5,
+      "head_angle": 35.0,
+      "frame_number": 6996
+    },
+    {
+      "timestamp": 252.93592718186684,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 12 times in window (current angle: 20.0\u00b0)",
+      "bbox": [
+        33.866424560546875,
+        55.182403564453125,
+        266.422119140625,
+        333.9316101074219
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 12,
+      "sustained_duration": 0.3,
+      "head_angle": 19.996967683423623,
+      "frame_number": 7086
+    },
+    {
+      "timestamp": 255.07763698018917,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        52.28717041015625,
+        48.61956787109375,
+        262.621337890625,
+        333.66290283203125
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 14,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 7146
+    },
+    {
+      "timestamp": 257.2193467785115,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        69.3597183227539,
+        117.17118072509766,
+        261.0221862792969,
+        314.1841125488281
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 14,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 7206
+    },
+    {
+      "timestamp": 259.36105657683385,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 10 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        18.720794677734375,
+        120.44098663330078,
+        198.9892578125,
+        333.89129638671875
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 10,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 7266
+    },
+    {
+      "timestamp": 283.1340353382117,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 3 times in window (current angle: 35.0\u00b0)",
+      "bbox": [
+        207.2955322265625,
+        48.35399627685547,
+        385.83966064453125,
+        245.1949462890625
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 3,
+      "sustained_duration": 0.2,
+      "head_angle": 35.0,
+      "frame_number": 7932
+    },
+    {
+      "timestamp": 285.275745136534,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 10 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        26.2950439453125,
+        89.73358154296875,
+        233.78030395507812,
+        293.5414123535156
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 10,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 7992
+    },
+    {
+      "timestamp": 287.4174549348563,
+      "person_id": "person_003",
+      "event_type": "Frequent Head Turning",
+      "severity": "orange",
+      "confidence": 0.8,
+      "source": "research_rules",
+      "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+      "bbox": [
+        23.367828369140625,
+        80.50919342041016,
+        227.91993713378906,
+        287.9887390136719
+      ],
+      "rule_triggered": "head_turn_frequency",
+      "turn_count": 14,
+      "sustained_duration": 0.0,
+      "head_angle": 0.0,
+      "frame_number": 8052
+    }
+  ]
+}

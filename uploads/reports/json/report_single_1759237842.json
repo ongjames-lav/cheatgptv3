@@ -1,0 +1,202 @@
+{
+  "session_info": {
+    "session_id": "single_1759237842",
+    "generated_at": "2025-09-30T21:11:41.311269",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "WIN_20250930_21_09_55_Pro.mp4",
+    "width": 1280,
+    "height": 720,
+    "fps": 10.004235509669803,
+    "frame_count": 348,
+    "duration": 34.785266666666665
+  },
+  "analysis_results": {
+    "total_events": 9,
+    "event_summary": {
+      "Frequent Head Turning": 8,
+      "Suspicious Hand Activity": 1
+    },
+    "events": [
+      {
+        "timestamp": 3.4985181992337164,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 4 times in window (current angle: 10.1\u00b0)",
+        "bbox": [
+          404.7886962890625,
+          174.0048828125,
+          1172.1983642578125,
+          709.88916015625
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "4",
+        "sustained_duration": 0.0,
+        "head_angle": 10.071333093564997
+      },
+      {
+        "timestamp": 5.597629118773947,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 7 times in window (current angle: 21.0\u00b0)",
+        "bbox": [
+          402.18359375,
+          174.8267822265625,
+          1174.3931884765625,
+          711.6417236328125
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "7",
+        "sustained_duration": 0.1,
+        "head_angle": 20.95909956899512
+      },
+      {
+        "timestamp": 7.696740038314176,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 13 times in window (current angle: 34.4\u00b0)",
+        "bbox": [
+          402.50244140625,
+          186.11260986328125,
+          1173.948974609375,
+          711.0526733398438
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "13",
+        "sustained_duration": 0.6,
+        "head_angle": 34.37028995181528
+      },
+      {
+        "timestamp": 9.795850957854405,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          385.2769775390625,
+          169.627197265625,
+          1150.5472412109375,
+          709.289306640625
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "14",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 11.894961877394636,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          257.7037048339844,
+          162.80938720703125,
+          1156.7103271484375,
+          709.6444702148438
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "14",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 13.994072796934866,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 14 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          423.5119323730469,
+          160.6331787109375,
+          1157.617919921875,
+          708.6083984375
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "14",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 16.093183716475096,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 9 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          349.886474609375,
+          167.27996826171875,
+          1165.246337890625,
+          709.5675659179688
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "9",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 18.192294636015326,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 6 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          0.0,
+          158.119873046875,
+          1212.468505859375,
+          706.936279296875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "6",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 31.986452107279693,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.0s",
+        "bbox": [
+          229.73779296875,
+          168.210205078125,
+          1192.45703125,
+          708.2237548828125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 6.72486819132238,
+    "risk_level": "high",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

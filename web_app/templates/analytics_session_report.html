@@ -367,15 +367,6 @@
             background: #3a3a3a;
         }
 
-        .edit-title-btn {
-            opacity: 0.6;
-        }
-
-        .edit-title-btn:hover {
-            opacity: 1;
-            background: #3a3a3a;
-        }
-
         .save-btn {
             background: #00aa00;
         }
@@ -730,6 +721,10 @@
                     <i class="fas fa-chart-bar"></i>
                     <span class="tooltip">Reports</span>
                 </a>
+                <a href="/upload" class="nav-item">
+                    <i class="fas fa-upload"></i>
+                    <span class="tooltip">Upload</span>
+                </a>
             </nav>
         </div>
     </header>
@@ -778,11 +773,6 @@
                                 </button>
                             </div>
                         </div>
-                        <button class="btn-icon edit-title-btn" id="editTitleBtn" title="Rename Session">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                            </svg>
-                        </button>
                     </div>
                     <span class="session-status" id="sessionStatus">loading</span>
                 </div>
@@ -1003,7 +993,6 @@
                 document.getElementById('viewVideoBtn').addEventListener('click', () => this.viewVideo());
                 
                 // Title editing event listeners
-                document.getElementById('editTitleBtn').addEventListener('click', () => this.startEditingTitle());
                 document.getElementById('saveTitleBtn').addEventListener('click', () => this.saveTitle());
                 document.getElementById('cancelTitleBtn').addEventListener('click', () => this.cancelEditingTitle());
                 
@@ -1383,15 +1372,13 @@
             startEditingTitle() {
                 const titleElement = document.getElementById('sessionTitle');
                 const editContainer = document.getElementById('sessionTitleEdit');
-                const editButton = document.getElementById('editTitleBtn');
                 const titleInput = document.getElementById('sessionTitleInput');
                 
                 // Set input value to current title
                 titleInput.value = this.sessionData.video_title || `Session ${this.sessionData.session_id}`;
                 
-                // Show edit interface, hide title and edit button
+                // Show edit interface, hide title
                 titleElement.style.display = 'none';
-                editButton.style.display = 'none';
                 editContainer.style.display = 'flex';
                 
                 // Focus the input and select all text
@@ -1402,12 +1389,10 @@
             cancelEditingTitle() {
                 const titleElement = document.getElementById('sessionTitle');
                 const editContainer = document.getElementById('sessionTitleEdit');
-                const editButton = document.getElementById('editTitleBtn');
                 
-                // Hide edit interface, show title and edit button
+                // Hide edit interface, show title
                 editContainer.style.display = 'none';
                 titleElement.style.display = 'block';
-                editButton.style.display = 'flex';
             }
 
             async saveTitle() {

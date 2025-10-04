@@ -1,0 +1,203 @@
+{
+  "video_metadata": {
+    "session_id": "video_20250928_194612_c666df83",
+    "filename": "Teacher_Teaching_the_Students_Inside_a_Classroom_-_Free_Stock_Videos_1759052993.mp4",
+    "duration": 14.04,
+    "fps": 25.0,
+    "resolution": "640x360",
+    "frame_count": 351,
+    "file_size": 559954,
+    "processing_date": "2025-09-28T19:46:27.430526"
+  },
+  "detection_summary": {
+    "total_events": 0,
+    "phone_usage_count": 0,
+    "head_turning_count": 0,
+    "looking_down_count": 0,
+    "gesture_count": 0,
+    "hiding_count": 0,
+    "risk_score": 0.0
+  },
+  "classroom_tracking": {
+    "total_people": 9,
+    "people_in_assigned_areas": 9,
+    "people_with_anomalous_movement": 1,
+    "average_movement_scores": [
+      0.0865512313328771,
+      0.11821584233042129,
+      0.13610679985596444,
+      0.07700667524017193,
+      0.05775168355501191,
+      0.05831922963081159,
+      0.14253843282605108,
+      0.9084661373681864,
+      0.21110880496267614
+    ],
+    "tracker_details": {
+      "person_000": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.0865512313328771,
+        "frames_since_detection": 0,
+        "total_detections": 117,
+        "assigned_area": [
+          149.1175537109375,
+          146.31939697265625,
+          365.70849609375,
+          397.36871337890625
+        ],
+        "current_bbox": [
+          194.6358642578125,
+          183.32850646972656,
+          307.9814147949219,
+          336.151123046875
+        ]
+      },
+      "person_001": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.11821584233042129,
+        "frames_since_detection": 0,
+        "total_detections": 117,
+        "assigned_area": [
+          65.61738586425781,
+          121.523681640625,
+          243.23329162597656,
+          341.167236328125
+        ],
+        "current_bbox": [
+          125.8579330444336,
+          156.81292724609375,
+          206.15560913085938,
+          291.1451416015625
+        ]
+      },
+      "person_002": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.13610679985596444,
+        "frames_since_detection": 0,
+        "total_detections": 117,
+        "assigned_area": [
+          312.9603271484375,
+          53.528236389160156,
+          434.0775146484375,
+          327.8245544433594
+        ],
+        "current_bbox": [
+          354.8876953125,
+          99.86318969726562,
+          419.0294189453125,
+          270.95562744140625
+        ]
+      },
+      "person_003": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.07700667524017193,
+        "frames_since_detection": 0,
+        "total_detections": 117,
+        "assigned_area": [
+          360.97650146484375,
+          136.2528839111328,
+          501.49688720703125,
+          395.01214599609375
+        ],
+        "current_bbox": [
+          397.43450927734375,
+          177.512451171875,
+          472.47979736328125,
+          350.43426513671875
+        ]
+      },
+      "person_004": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.05775168355501191,
+        "frames_since_detection": 0,
+        "total_detections": 113,
+        "assigned_area": [
+          233.47146606445312,
+          127.16448974609375,
+          349.6236267089844,
+          343.04595947265625
+        ],
+        "current_bbox": [
+          261.44866943359375,
+          164.36334228515625,
+          329.9576416015625,
+          291.98480224609375
+        ]
+      },
+      "person_005": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.05831922963081159,
+        "frames_since_detection": 6,
+        "total_detections": 103,
+        "assigned_area": [
+          0,
+          138.878173828125,
+          157.28591918945312,
+          322.58392333984375
+        ],
+        "current_bbox": [
+          30,
+          171,
+          134,
+          280
+        ]
+      },
+      "person_006": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.14253843282605108,
+        "frames_since_detection": 7,
+        "total_detections": 60,
+        "assigned_area": [
+          242.39706420898438,
+          147.78912353515625,
+          331.9664611816406,
+          256.127685546875
+        ],
+        "current_bbox": [
+          267,
+          169,
+          320,
+          237
+        ]
+      },
+      "person_007": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.9084661373681864,
+        "frames_since_detection": 0,
+        "total_detections": 108,
+        "assigned_area": [
+          0,
+          121.3023681640625,
+          215.2001953125,
+          411.94146728515625
+        ],
+        "current_bbox": [
+          0.0,
+          180.20361328125,
+          33.43230438232422,
+          347.45428466796875
+        ]
+      },
+      "person_008": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.21110880496267614,
+        "frames_since_detection": 0,
+        "total_detections": 67,
+        "assigned_area": [
+          0,
+          121.14422607421875,
+          226.62359619140625,
+          411.32318115234375
+        ],
+        "current_bbox": [
+          29.81903076171875,
+          166.33096313476562,
+          152.23333740234375,
+          357.3003234863281
+        ]
+      }
+    },
+    "average_movement_score": 0.1995627596780191
+  },
+  "timeline_events": []
+}

@@ -1,0 +1,140 @@
+{
+  "session_info": {
+    "session_id": "single_1759540003",
+    "generated_at": "2025-10-04T09:07:03.288088",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "314add56-e79f-4e73-8ed8-e0eaf2bc1ca1.mp4",
+    "width": 640,
+    "height": 368,
+    "fps": 9.979748823703398,
+    "frame_count": 460,
+    "duration": 46.09334444444445
+  },
+  "analysis_results": {
+    "total_events": 6,
+    "event_summary": {
+      "Frequent Head Turning": 1,
+      "Phone Usage Detected": 5
+    },
+    "events": [
+      {
+        "timestamp": 12.825974106280194,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 35.0\u00b0)",
+        "bbox": [
+          102.95368957519531,
+          67.62777709960938,
+          495.43463134765625,
+          363.4901123046875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 35.0
+      },
+      {
+        "timestamp": 23.046672222222224,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          91.85693359375,
+          39.80755615234375,
+          526.5718994140625,
+          363.35015869140625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 23.347280990338163,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          92.02484130859375,
+          38.477752685546875,
+          527.338623046875,
+          363.4323425292969
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 23.647889758454106,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          92.3856201171875,
+          37.943511962890625,
+          527.78466796875,
+          363.4080505371094
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 23.94849852657005,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 11 consecutive frames (1.1s)",
+        "bbox": [
+          94.072021484375,
+          36.661956787109375,
+          528.8544921875,
+          363.4880676269531
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1
+      },
+      {
+        "timestamp": 24.24910729468599,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 12 consecutive frames (1.2s)",
+        "bbox": [
+          93.09431457519531,
+          35.61761474609375,
+          527.9735717773438,
+          363.19989013671875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 10.0,
+    "risk_level": "critical",
+    "recommendations": [
+      "Phone usage detected - implement stricter device policies"
+    ]
+  }
+}

@@ -1,0 +1,443 @@
+{
+  "video_metadata": {
+    "session_id": "video_20250928_181408_e1203161",
+    "filename": "Student_Sitting_in_the_Class___Royalty_Free_Video___No_Copyright_Video_1759054443.mp4",
+    "duration": 10.24,
+    "fps": 25.0,
+    "resolution": "640x360",
+    "frame_count": 256,
+    "file_size": 508326,
+    "processing_date": "2025-09-28T18:14:19.464950"
+  },
+  "detection_summary": {
+    "total_events": 20,
+    "phone_usage_count": 0,
+    "head_turning_count": 0,
+    "looking_down_count": 0,
+    "gesture_count": 20,
+    "hiding_count": 0,
+    "risk_score": 0.05
+  },
+  "timeline_events": [
+    {
+      "timestamp": 2.36,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: right_wrist_near_head for 0.8s",
+      "bbox": [
+        385.4141845703125,
+        76.8079605102539,
+        446.7059326171875,
+        162.52322387695312
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 8,
+      "duration_seconds": 0.8,
+      "gesture_type": "right_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 59
+    },
+    {
+      "timestamp": 4.16,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 0.8s",
+      "bbox": [
+        375.303955078125,
+        78.60749816894531,
+        434.314453125,
+        162.10008239746094
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 8,
+      "duration_seconds": 0.8,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 104
+    },
+    {
+      "timestamp": 4.28,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 0.9s",
+      "bbox": [
+        374.78594970703125,
+        78.05360412597656,
+        433.53289794921875,
+        161.81324768066406
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 9,
+      "duration_seconds": 0.9,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 107
+    },
+    {
+      "timestamp": 4.4,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.0s",
+      "bbox": [
+        373.8936767578125,
+        77.53543090820312,
+        432.92138671875,
+        161.885498046875
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 10,
+      "duration_seconds": 1.0,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 110
+    },
+    {
+      "timestamp": 4.52,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.1s",
+      "bbox": [
+        372.999755859375,
+        77.21311950683594,
+        431.2947998046875,
+        161.74977111816406
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 11,
+      "duration_seconds": 1.1,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 113
+    },
+    {
+      "timestamp": 4.64,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.2s",
+      "bbox": [
+        372.6358642578125,
+        76.93739318847656,
+        431.00665283203125,
+        161.7217559814453
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 12,
+      "duration_seconds": 1.2,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 116
+    },
+    {
+      "timestamp": 4.76,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.3s",
+      "bbox": [
+        371.9568786621094,
+        77.24893951416016,
+        430.9326477050781,
+        161.90005493164062
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 13,
+      "duration_seconds": 1.3,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 119
+    },
+    {
+      "timestamp": 4.88,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.4s",
+      "bbox": [
+        371.4359130859375,
+        76.9355697631836,
+        431.03125,
+        161.50778198242188
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 14,
+      "duration_seconds": 1.4,
+      "gesture_type": "left_wrist_extended_arm_absolute",
+      "special_visual": true,
+      "frame_number": 122
+    },
+    {
+      "timestamp": 5.0,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.5s",
+      "bbox": [
+        370.932373046875,
+        76.7813491821289,
+        430.5966796875,
+        161.38119506835938
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 15,
+      "duration_seconds": 1.5,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 125
+    },
+    {
+      "timestamp": 5.48,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.6s",
+      "bbox": [
+        365.3746337890625,
+        75.33441925048828,
+        426.7103271484375,
+        160.9786376953125
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 16,
+      "duration_seconds": 1.6,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 137
+    },
+    {
+      "timestamp": 5.6,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.7s",
+      "bbox": [
+        363.70111083984375,
+        74.78999328613281,
+        425.96917724609375,
+        160.51490783691406
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 17,
+      "duration_seconds": 1.7,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 140
+    },
+    {
+      "timestamp": 8.24,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 0.8s",
+      "bbox": [
+        330.11151123046875,
+        73.9051513671875,
+        394.03863525390625,
+        157.2867431640625
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 8,
+      "duration_seconds": 0.8,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 206
+    },
+    {
+      "timestamp": 8.36,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 0.9s",
+      "bbox": [
+        328.7203063964844,
+        73.64781188964844,
+        392.9990539550781,
+        156.9176483154297
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 9,
+      "duration_seconds": 0.9,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 209
+    },
+    {
+      "timestamp": 8.48,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.0s",
+      "bbox": [
+        327.60198974609375,
+        73.77116394042969,
+        392.338623046875,
+        156.68792724609375
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 10,
+      "duration_seconds": 1.0,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 212
+    },
+    {
+      "timestamp": 9.56,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 0.8s",
+      "bbox": [
+        322.70025634765625,
+        71.021240234375,
+        389.27996826171875,
+        154.5084686279297
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 8,
+      "duration_seconds": 0.8,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 239
+    },
+    {
+      "timestamp": 9.68,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 0.9s",
+      "bbox": [
+        322.8504943847656,
+        70.79777526855469,
+        389.2728576660156,
+        154.41773986816406
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 9,
+      "duration_seconds": 0.9,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 242
+    },
+    {
+      "timestamp": 9.8,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.0s",
+      "bbox": [
+        322.87054443359375,
+        70.13156127929688,
+        389.07415771484375,
+        154.1905517578125
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 10,
+      "duration_seconds": 1.0,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 245
+    },
+    {
+      "timestamp": 9.92,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.1s",
+      "bbox": [
+        322.45819091796875,
+        69.54945373535156,
+        389.1497802734375,
+        153.40919494628906
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 11,
+      "duration_seconds": 1.1,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 248
+    },
+    {
+      "timestamp": 10.04,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.2s",
+      "bbox": [
+        26.973724365234375,
+        121.88638305664062,
+        224.36080932617188,
+        267.8258361816406
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 12,
+      "duration_seconds": 1.2,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 251
+    },
+    {
+      "timestamp": 10.16,
+      "person_id": "person_000",
+      "event_type": "Suspicious Hand Activity",
+      "severity": "orange",
+      "confidence": 0.7,
+      "source": "research_rules",
+      "details": "Hand gesture detected: left_wrist_near_head for 1.3s",
+      "bbox": [
+        27.454437255859375,
+        121.76068115234375,
+        224.56051635742188,
+        267.54815673828125
+      ],
+      "rule_triggered": "hand_extended_duration",
+      "consecutive_frames": 13,
+      "duration_seconds": 1.3,
+      "gesture_type": "left_wrist_near_head",
+      "special_visual": true,
+      "frame_number": 254
+    }
+  ]
+}

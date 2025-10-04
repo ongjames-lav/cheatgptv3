@@ -1,0 +1,44 @@
+{
+  "session_info": {
+    "session_id": "video_20250929_005133_05e389c6",
+    "video_duration": 10.24,
+    "total_frames": 256,
+    "fps": 25.0
+  },
+  "event_statistics": {
+    "total_events": 0,
+    "events_by_type": {
+      "phone_usage": 0,
+      "head_turning": 0,
+      "looking_down": 0,
+      "gestures": 0,
+      "hiding": 0
+    },
+    "event_frequency": {
+      "events_per_second": 0.0,
+      "events_per_minute": 0.0,
+      "average_time_between_events": 10.24
+    },
+    "confidence_statistics": {
+      "mean": 0,
+      "median": 0,
+      "std": 0,
+      "min": 0,
+      "max": 0
+    },
+    "temporal_distribution": {}
+  },
+  "risk_assessment": {
+    "overall_risk_score": 0.0,
+    "risk_factors": [],
+    "time_segments": []
+  },
+  "behavioral_insights": {
+    "peak_activity_periods": [],
+    "pattern_consistency": {
+      "consistency_score": 0,
+      "analysis": "Insufficient data"
+    },
+    "anomaly_detection": []
+  }
+}

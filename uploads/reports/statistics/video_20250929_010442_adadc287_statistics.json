@@ -1,0 +1,142 @@
+{
+  "session_info": {
+    "session_id": "video_20250929_010442_adadc287",
+    "video_duration": 14.04,
+    "total_frames": 351,
+    "fps": 25.0
+  },
+  "event_statistics": {
+    "total_events": 14,
+    "events_by_type": {
+      "phone_usage": 0,
+      "head_turning": 14,
+      "looking_down": 0,
+      "gestures": 0,
+      "hiding": 0
+    },
+    "event_frequency": {
+      "events_per_second": 0.9971509971509972,
+      "events_per_minute": 59.82905982905983,
+      "average_time_between_events": 1.002857142857143
+    },
+    "confidence_statistics": {
+      "mean": 0.75,
+      "median": 0.75,
+      "std": 0.0,
+      "min": 0.75,
+      "max": 0.75,
+      "high_confidence_count": 0
+    },
+    "temporal_distribution": {
+      "first_quarter": 14,
+      "second_quarter": 0,
+      "third_quarter": 0,
+      "fourth_quarter": 0,
+      "most_active_quarter": 1
+    }
+  },
+  "risk_assessment": {
+    "overall_risk_score": 0.28,
+    "risk_factors": [
+      "Frequent head turning behavior",
+      "Multiple event clusters detected"
+    ],
+    "time_segments": [
+      {
+        "segment": 1,
+        "start_time": 0,
+        "end_time": 14.04,
+        "event_count": 14,
+        "risk_score": 1.0,
+        "risk_level": "critical"
+      }
+    ]
+  },
+  "behavioral_insights": {
+    "peak_activity_periods": [
+      {
+        "start_time": 0,
+        "end_time": 30,
+        "event_count": 14
+      }
+    ],
+    "pattern_consistency": {
+      "consistency_score": 0.9999999999999999,
+      "mean_interval": 0.12000000000000001,
+      "std_interval": 1.656861766424138e-16,
+      "analysis": "High consistency"
+    },
+    "anomaly_detection": [
+      {
+        "type": "event_burst",
+        "start_time": 1.44,
+        "end_time": 1.92,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 1.56,
+        "end_time": 2.04,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 1.68,
+        "end_time": 2.16,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 1.8,
+        "end_time": 2.28,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 1.92,
+        "end_time": 2.4,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 2.04,
+        "end_time": 2.52,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 2.16,
+        "end_time": 2.64,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 2.28,
+        "end_time": 2.76,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 2.4,
+        "end_time": 2.88,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      },
+      {
+        "type": "event_burst",
+        "start_time": 2.52,
+        "end_time": 3.0,
+        "event_count": 5,
+        "description": "Event burst: 5 events in 0.5 seconds"
+      }
+    ]
+  }
+}

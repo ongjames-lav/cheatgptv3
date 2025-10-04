@@ -1,0 +1,35 @@
+{
+  "report_metadata": {
+    "session_id": "video_20250929_005133_05e389c6",
+    "generated_at": "2025-09-29T00:52:06.143432",
+    "report_version": "1.0",
+    "generator": "CheatGPT3 Video Processor"
+  },
+  "video_metadata": {
+    "filename": "Student_Sitting_in_the_Class___Royalty_Free_Video___No_Copyright_Video_1759078290.mp4",
+    "file_size": 508326,
+    "duration": 10.24,
+    "fps": 25.0,
+    "resolution": "640x360",
+    "frame_count": 256,
+    "width": 640,
+    "height": 360
+  },
+  "detection_summary": {
+    "phone_usage": 0,
+    "head_turning": 0,
+    "looking_down": 0,
+    "gestures": 0,
+    "hiding": 0,
+    "risk_score": 0.0,
+    "risk_level": "low",
+    "total_events": 0,
+    "events_per_minute": 0.0
+  },
+  "behavioral_analysis": {},
+  "event_timeline": [],
+  "detailed_events": [],
+  "recommendations": [
+    "No immediate action required - behavior appears normal"
+  ]
+}

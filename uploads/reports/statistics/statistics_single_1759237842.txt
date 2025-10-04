@@ -1,0 +1,29 @@
+
+CHEATGPT3 DETAILED STATISTICS REPORT
+===================================
+
+Session: single_1759237842
+Generated: 2025-09-30T21:11:41.343730
+
+VIDEO STATISTICS
+---------------
+Duration: 34.79 seconds
+Total Frames: 348
+Processing Rate: 10.0 FPS
+
+EVENT STATISTICS
+---------------
+Total Events: 9
+Events per Minute: 15.52
+
+Event Type Distribution:
+  Frequent Head Turning.........     8 ( 88.9%)
+  Suspicious Hand Activity......     1 ( 11.1%)
+
+CONFIDENCE STATISTICS
+--------------------
+Mean Confidence: 0.789
+Median Confidence: 0.800
+Min Confidence: 0.700
+Max Confidence: 0.800
+Std Deviation: 0.031

@@ -1,0 +1,15 @@
+timestamp,frame_number,event_type,confidence,person_id,description,severity,duration
+1.44,36,Abnormal Looking Down,0.750,person_000,,orange,0.00
+1.56,39,Abnormal Looking Down,0.750,person_000,,orange,0.00
+1.68,42,Abnormal Looking Down,0.750,person_000,,orange,0.00
+1.80,45,Abnormal Looking Down,0.750,person_000,,orange,0.00
+1.92,48,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.04,51,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.16,54,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.28,57,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.40,60,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.52,63,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.64,66,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.76,69,Abnormal Looking Down,0.750,person_000,,orange,0.00
+2.88,72,Abnormal Looking Down,0.750,person_000,,orange,0.00
+3.00,75,Abnormal Looking Down,0.750,person_000,,orange,0.00

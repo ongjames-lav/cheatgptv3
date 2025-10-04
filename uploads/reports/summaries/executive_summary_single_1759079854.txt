@@ -1,0 +1,32 @@
+
+CHEATGPT3 VIDEO ANALYSIS EXECUTIVE SUMMARY
+==========================================
+
+Session ID: single_1759079854
+Analysis Date: 2025-09-29 01:20:25
+
+VIDEO INFORMATION
+-----------------
+File: Teacher_Stock_Footage_-_Teachers_Free_Stock_Videos_-_Teacher_No_Copyright_Videos.mp4
+Duration: 289.4 seconds
+Resolution: 640x338
+Frame Rate: 28.0 FPS
+
+DETECTION SUMMARY
+-----------------
+Total Events Detected: 552
+
+Event Breakdown:
+  • Suspicious Hand Activity: 510
+  • Abnormal Looking Down: 18
+  • Frequent Head Turning: 22
+  • Sustained Head Turning: 2
+
+RISK ASSESSMENT
+--------------
+Risk Score: 10.00/10.0
+Risk Level: CRITICAL
+
+RECOMMENDATIONS
+--------------
+  • No significant suspicious activity detected

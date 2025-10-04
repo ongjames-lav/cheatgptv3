@@ -1,0 +1,189 @@
+{
+  "video_metadata": {
+    "session_id": "video_20250928_195312_b8e240e9",
+    "filename": "Student_Sitting_in_the_Class___Royalty_Free_Video___No_Copyright_Video_1759054443.mp4",
+    "duration": 10.24,
+    "fps": 25.0,
+    "resolution": "640x360",
+    "frame_count": 256,
+    "file_size": 508326,
+    "processing_date": "2025-09-28T19:53:25.423071"
+  },
+  "detection_summary": {
+    "total_events": 0,
+    "phone_usage_count": 0,
+    "head_turning_count": 0,
+    "looking_down_count": 0,
+    "gesture_count": 0,
+    "hiding_count": 0,
+    "risk_score": 0.0
+  },
+  "classroom_tracking": {
+    "total_people": 8,
+    "people_in_assigned_areas": 7,
+    "people_with_anomalous_movement": 6,
+    "average_movement_scores": [
+      0.7471123049344516,
+      0.7210553013964275,
+      0.37241341987663895,
+      0.8632301504898927,
+      0.5483296262865797,
+      0.40052272344194384,
+      0.7618830464722728,
+      0.7018834383900294
+    ],
+    "tracker_details": {
+      "person_000": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.7471123049344516,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          320.89794921875,
+          0,
+          745.9290771484375,
+          458.43133544921875
+        ],
+        "current_bbox": [
+          567.916748046875,
+          50.71954345703125,
+          640.0,
+          353.5989990234375
+        ]
+      },
+      "person_001": {
+        "in_assigned_area": false,
+        "movement_anomaly_score": 0.7210553013964275,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          365.2611083984375,
+          50.983062744140625,
+          494.4207763671875,
+          181.640380859375
+        ],
+        "current_bbox": [
+          321.34075927734375,
+          69.07676696777344,
+          388.18133544921875,
+          153.70562744140625
+        ]
+      },
+      "person_002": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.37241341987663895,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          0,
+          58.09893798828125,
+          314.3698425292969,
+          426.340087890625
+        ],
+        "current_bbox": [
+          27.028915405273438,
+          121.0389404296875,
+          223.4678497314453,
+          358.7947998046875
+        ]
+      },
+      "person_003": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.8632301504898927,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          166.03591918945312,
+          30.828521728515625,
+          338.36004638671875,
+          299.92742919921875
+        ],
+        "current_bbox": [
+          143.53445434570312,
+          78.10774230957031,
+          214.45742797851562,
+          148.4375457763672
+        ]
+      },
+      "person_004": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.5483296262865797,
+        "frames_since_detection": 8,
+        "total_detections": 77,
+        "assigned_area": [
+          131.02938842773438,
+          63.80572509765625,
+          275.90625,
+          221.2705078125
+        ],
+        "current_bbox": [
+          105,
+          89,
+          181,
+          201
+        ]
+      },
+      "person_005": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.40052272344194384,
+        "frames_since_detection": 0,
+        "total_detections": 83,
+        "assigned_area": [
+          393.9242858886719,
+          59.3287353515625,
+          487.8470153808594,
+          301.92254638671875
+        ],
+        "current_bbox": [
+          396.24700927734375,
+          124.44186401367188,
+          576.9724731445312,
+          274.28961181640625
+        ]
+      },
+      "person_006": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.7618830464722728,
+        "frames_since_detection": 0,
+        "total_detections": 77,
+        "assigned_area": [
+          386.87554931640625,
+          102.69769287109375,
+          515.6011962890625,
+          300.98968505859375
+        ],
+        "current_bbox": [
+          360.182861328125,
+          90.73165893554688,
+          445.9375,
+          184.2451171875
+        ]
+      },
+      "person_007": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.7018834383900294,
+        "frames_since_detection": 0,
+        "total_detections": 44,
+        "assigned_area": [
+          365.401611328125,
+          56.9364013671875,
+          511.36871337890625,
+          309.414306640625
+        ],
+        "current_bbox": [
+          395.514404296875,
+          124.32794189453125,
+          576.2888793945312,
+          352.2398681640625
+        ]
+      }
+    },
+    "debug_info": {
+      "all_active_trackers": 8,
+      "stable_trackers": 8,
+      "filtered_out": 0
+    },
+    "average_movement_score": 0.6395537514110295
+  },
+  "timeline_events": []
+}

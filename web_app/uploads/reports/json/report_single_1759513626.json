@@ -1,0 +1,788 @@
+{
+  "session_info": {
+    "session_id": "single_1759513626",
+    "generated_at": "2025-10-04T01:47:47.486667",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "559187435_9911651455604153_2302964168995621335_n.mp4",
+    "width": 576,
+    "height": 1024,
+    "fps": 30.0,
+    "frame_count": 989,
+    "duration": 32.96666666666667
+  },
+  "analysis_results": {
+    "total_events": 40,
+    "event_summary": {
+      "Suspicious Hand Activity": 24,
+      "Abnormal Looking Down": 10,
+      "Phone Usage Detected": 5,
+      "Frequent Head Turning": 1
+    },
+    "events": [
+      {
+        "timestamp": 1.9666666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.1s",
+        "bbox": [
+          238.79360961914062,
+          45.82583236694336,
+          521.6781616210938,
+          344.71270751953125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 2.066666666666667,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 26.7\u00b0)",
+        "bbox": [
+          220.0447235107422,
+          49.095680236816406,
+          508.3021545410156,
+          358.0273132324219
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 26.65413197888795
+      },
+      {
+        "timestamp": 2.066666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.2s",
+        "bbox": [
+          220.0447235107422,
+          49.095680236816406,
+          508.3021545410156,
+          358.0273132324219
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 2.1666666666666665,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 28.9\u00b0)",
+        "bbox": [
+          202.9584503173828,
+          51.54256820678711,
+          495.71710205078125,
+          363.7367248535156
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 28.901038645816033
+      },
+      {
+        "timestamp": 2.1666666666666665,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.3s",
+        "bbox": [
+          202.9584503173828,
+          51.54256820678711,
+          495.71710205078125,
+          363.7367248535156
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 2.2666666666666666,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.4s (angle: 29.0\u00b0)",
+        "bbox": [
+          192.94493103027344,
+          45.224609375,
+          490.6372985839844,
+          373.516845703125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "pitch_angle": 29.02564111265831
+      },
+      {
+        "timestamp": 2.2666666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.4s",
+        "bbox": [
+          192.94493103027344,
+          45.224609375,
+          490.6372985839844,
+          373.516845703125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 2.3666666666666667,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.5s (angle: 27.9\u00b0)",
+        "bbox": [
+          177.45571899414062,
+          48.13555908203125,
+          484.7831115722656,
+          388.0588073730469
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "pitch_angle": 27.89219234267804
+      },
+      {
+        "timestamp": 2.3666666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.5s",
+        "bbox": [
+          177.45571899414062,
+          48.13555908203125,
+          484.7831115722656,
+          388.0588073730469
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 2.466666666666667,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.6s (angle: 27.3\u00b0)",
+        "bbox": [
+          160.33999633789062,
+          53.50918197631836,
+          476.6921081542969,
+          406.66705322265625
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "pitch_angle": 27.31944044434717
+      },
+      {
+        "timestamp": 2.466666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.6s",
+        "bbox": [
+          160.33999633789062,
+          53.50918197631836,
+          476.6921081542969,
+          406.66705322265625
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 2.566666666666667,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.7s (angle: 25.9\u00b0)",
+        "bbox": [
+          135.71484375,
+          58.153663635253906,
+          456.2815856933594,
+          419.3781433105469
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "pitch_angle": 25.89571981484435
+      },
+      {
+        "timestamp": 2.566666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.7s",
+        "bbox": [
+          135.71484375,
+          58.153663635253906,
+          456.2815856933594,
+          419.3781433105469
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 2.6666666666666665,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.8s (angle: 24.6\u00b0)",
+        "bbox": [
+          91.859130859375,
+          53.36849594116211,
+          424.6028747558594,
+          426.003173828125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8,
+        "pitch_angle": 24.62309397263504
+      },
+      {
+        "timestamp": 2.6666666666666665,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.8s",
+        "bbox": [
+          91.859130859375,
+          53.36849594116211,
+          424.6028747558594,
+          426.003173828125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 2.7666666666666666,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.9s (angle: 23.7\u00b0)",
+        "bbox": [
+          30.124011993408203,
+          56.8475456237793,
+          361.93634033203125,
+          436.625
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 19,
+        "duration_seconds": 1.9,
+        "pitch_angle": 23.65804129773429
+      },
+      {
+        "timestamp": 2.7666666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.9s",
+        "bbox": [
+          30.124011993408203,
+          56.8475456237793,
+          361.93634033203125,
+          436.625
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 19,
+        "duration_seconds": 1.9,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 2.8666666666666667,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.0s (angle: 21.6\u00b0)",
+        "bbox": [
+          0.13203124701976776,
+          47.61566162109375,
+          312.692626953125,
+          447.8979187011719
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 20,
+        "duration_seconds": 2.0,
+        "pitch_angle": 21.601830094632426
+      },
+      {
+        "timestamp": 2.8666666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 2.0s",
+        "bbox": [
+          0.13203124701976776,
+          47.61566162109375,
+          312.692626953125,
+          447.8979187011719
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 20,
+        "duration_seconds": 2.0,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 2.966666666666667,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.1s (angle: 21.2\u00b0)",
+        "bbox": [
+          1.2197265625,
+          49.40180587768555,
+          283.4156188964844,
+          464.6598815917969
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 21,
+        "duration_seconds": 2.1,
+        "pitch_angle": 21.168199751989185
+      },
+      {
+        "timestamp": 2.966666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 2.1s",
+        "bbox": [
+          1.2197265625,
+          49.40180587768555,
+          283.4156188964844,
+          464.6598815917969
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 21,
+        "duration_seconds": 2.1,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 3.066666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 2.2s",
+        "bbox": [
+          1.8793213367462158,
+          68.43047332763672,
+          266.8662414550781,
+          483.22509765625
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 22,
+        "duration_seconds": 2.2,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 3.1666666666666665,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 2.3s",
+        "bbox": [
+          1.294091820716858,
+          65.83989715576172,
+          261.71832275390625,
+          479.8261413574219
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 23,
+        "duration_seconds": 2.3,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 3.2666666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 2.4s",
+        "bbox": [
+          1.3629639148712158,
+          65.26441955566406,
+          258.8810729980469,
+          437.177978515625
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 24,
+        "duration_seconds": 2.4,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 4.366666666666666,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          1.3639404773712158,
+          63.93740463256836,
+          284.5066833496094,
+          529.1842651367188
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 4.466666666666667,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          0.14797364175319672,
+          66.3173828125,
+          273.4355163574219,
+          526.6179809570312
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 9.466666666666667,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          1.4494141340255737,
+          121.7939453125,
+          416.51470947265625,
+          563.39404296875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 9.566666666666666,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          0.14458008110523224,
+          131.4460906982422,
+          421.5043029785156,
+          574.5338134765625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 9.666666666666666,
+        "person_id": "person_000",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          1.731787085533142,
+          137.47158813476562,
+          426.229736328125,
+          578.8357543945312
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 29.766666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.0s",
+        "bbox": [
+          0.0,
+          86.2828140258789,
+          387.13275146484375,
+          759.4694213867188
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 29.866666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.1s",
+        "bbox": [
+          0.577880859375,
+          77.670166015625,
+          374.894287109375,
+          742.8446044921875
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 29.966666666666665,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.2s",
+        "bbox": [
+          0.0,
+          57.69414138793945,
+          354.6849670410156,
+          721.9833374023438
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.066666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.3s",
+        "bbox": [
+          0.10895996540784836,
+          45.186378479003906,
+          329.7142639160156,
+          744.3764038085938
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.166666666666668,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.4s",
+        "bbox": [
+          0.6561035513877869,
+          62.375953674316406,
+          277.3156433105469,
+          759.9496459960938
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.266666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.5s",
+        "bbox": [
+          0.927294909954071,
+          82.8768539428711,
+          252.06362915039062,
+          720.0369262695312
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.366666666666667,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.6s",
+        "bbox": [
+          0.615893542766571,
+          91.478271484375,
+          246.27468872070312,
+          708.1183471679688
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.466666666666665,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.7s",
+        "bbox": [
+          0.84326171875,
+          96.5565414428711,
+          250.78257751464844,
+          684.9088134765625
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.566666666666666,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.8s",
+        "bbox": [
+          0.3416992127895355,
+          115.82939910888672,
+          265.4007873535156,
+          700.8925170898438
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 30.666666666666668,
+        "person_id": "person_000",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_extended_arm_absolute for 1.9s",
+        "bbox": [
+          1.4482910633087158,
+          122.16423797607422,
+          285.72393798828125,
+          726.1818237304688
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 19,
+        "duration_seconds": 1.9,
+        "gesture_type": "left_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 31.466666666666665,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 29.9\u00b0)",
+        "bbox": [
+          0.5238281488418579,
+          60.72475814819336,
+          240.30039978027344,
+          574.1640014648438
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 29.90543657420897
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 10.0,
+    "risk_level": "critical",
+    "recommendations": [
+      "Phone usage detected - implement stricter device policies"
+    ]
+  }
+}

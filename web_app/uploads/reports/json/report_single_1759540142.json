@@ -1,0 +1,872 @@
+{
+  "session_info": {
+    "session_id": "single_1759540142",
+    "generated_at": "2025-10-04T09:09:57.478988",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "WIN_20251004_09_08_09_Pro.mp4",
+    "width": 1280,
+    "height": 720,
+    "fps": 29.63860846733246,
+    "frame_count": 1040,
+    "duration": 35.08936666666666
+  },
+  "analysis_results": {
+    "total_events": 46,
+    "event_summary": {
+      "Frequent Head Turning": 5,
+      "Phone Usage Detected": 34,
+      "Suspicious Hand Activity": 7
+    },
+    "events": [
+      {
+        "timestamp": 3.576416217948718,
+        "person_id": "person_002",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 15.8\u00b0)",
+        "bbox": [
+          321.56109619140625,
+          207.93927001953125,
+          636.945068359375,
+          712.4912719726562
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 15.761017307996797
+      },
+      {
+        "timestamp": 8.73860189102564,
+        "person_id": "person_002",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 17.7\u00b0)",
+        "bbox": [
+          299.6737060546875,
+          206.119140625,
+          633.268798828125,
+          711.7283935546875
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 17.695102885171796
+      },
+      {
+        "timestamp": 25.945887467948715,
+        "person_id": "person_004",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 12.3\u00b0)",
+        "bbox": [
+          243.82379150390625,
+          179.92620849609375,
+          717.4925537109375,
+          713.0186157226562
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 12.306922450982235
+      },
+      {
+        "timestamp": 27.970274006410254,
+        "person_id": "person_004",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 4 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          269.28759765625,
+          195.6177978515625,
+          695.228759765625,
+          712.6273193359375
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "4",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 29.994660544871792,
+        "person_id": "person_004",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 8.7\u00b0)",
+        "bbox": [
+          278.4974365234375,
+          257.6829833984375,
+          688.8670654296875,
+          713.5518798828125
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 8.708484932224135
+      },
+      {
+        "timestamp": 31.614169775641024,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          279.481201171875,
+          199.60357666015625,
+          654.1250610351562,
+          712.7235107421875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 31.7153891025641,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          285.08038330078125,
+          199.8399658203125,
+          656.5135498046875,
+          711.4208374023438
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 31.81660842948718,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          592.787841796875,
+          16.33807373046875,
+          1278.6326904296875,
+          710.8839111328125
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 31.81660842948718,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          279.260986328125,
+          199.5928955078125,
+          654.732666015625,
+          710.8724365234375
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 31.917827756410254,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          593.991943359375,
+          15.77728271484375,
+          1278.660400390625,
+          710.9027099609375
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 31.917827756410254,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 11 consecutive frames (1.1s)",
+        "bbox": [
+          278.57611083984375,
+          199.7633056640625,
+          656.2030639648438,
+          712.5462646484375
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1
+      },
+      {
+        "timestamp": 32.019047083333334,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 12 consecutive frames (1.2s)",
+        "bbox": [
+          279.90850830078125,
+          199.46339416503906,
+          654.1561889648438,
+          710.6824951171875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2
+      },
+      {
+        "timestamp": 32.019047083333334,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          596.04443359375,
+          17.30718994140625,
+          1278.70849609375,
+          710.8328857421875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 32.120266410256406,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 13 consecutive frames (1.3s)",
+        "bbox": [
+          281.05340576171875,
+          201.3729705810547,
+          665.539306640625,
+          707.9190063476562
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3
+      },
+      {
+        "timestamp": 33.0312403525641,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          542.069091796875,
+          18.147705078125,
+          1278.150146484375,
+          711.4000854492188
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 33.0312403525641,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 8 consecutive frames (0.8s)",
+        "bbox": [
+          276.52508544921875,
+          211.5862274169922,
+          656.6414184570312,
+          711.9409790039062
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 8,
+        "duration_seconds": 0.8
+      },
+      {
+        "timestamp": 33.13245967948718,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          544.5291748046875,
+          17.263916015625,
+          1278.3250732421875,
+          711.1875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 33.13245967948718,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 9 consecutive frames (0.9s)",
+        "bbox": [
+          276.15325927734375,
+          207.5896759033203,
+          653.60498046875,
+          710.5034790039062
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 9,
+        "duration_seconds": 0.9
+      },
+      {
+        "timestamp": 33.233679006410256,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          545.7032470703125,
+          17.646240234375,
+          1278.3170166015625,
+          711.1806640625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 33.233679006410256,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 10 consecutive frames (1.0s)",
+        "bbox": [
+          272.8057861328125,
+          207.61859130859375,
+          657.17724609375,
+          712.7802734375
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0
+      },
+      {
+        "timestamp": 33.334898333333335,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 11 consecutive frames (1.1s)",
+        "bbox": [
+          548.03125,
+          17.9154052734375,
+          1278.300537109375,
+          711.0389404296875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1
+      },
+      {
+        "timestamp": 33.334898333333335,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 11 consecutive frames (1.1s)",
+        "bbox": [
+          274.88568115234375,
+          207.02362060546875,
+          658.2706298828125,
+          712.2918701171875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1
+      },
+      {
+        "timestamp": 33.43611766025641,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 12 consecutive frames (1.2s)",
+        "bbox": [
+          549.02099609375,
+          18.11279296875,
+          1278.2344970703125,
+          711.138671875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2
+      },
+      {
+        "timestamp": 33.43611766025641,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 12 consecutive frames (1.2s)",
+        "bbox": [
+          271.415771484375,
+          206.47454833984375,
+          660.8134155273438,
+          711.5400390625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2
+      },
+      {
+        "timestamp": 33.537336987179486,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 13 consecutive frames (1.3s)",
+        "bbox": [
+          549.0447998046875,
+          15.45831298828125,
+          1278.3323974609375,
+          711.2177124023438
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3
+      },
+      {
+        "timestamp": 33.537336987179486,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 13 consecutive frames (1.3s)",
+        "bbox": [
+          274.1654052734375,
+          208.10935974121094,
+          658.24755859375,
+          712.6002197265625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3
+      },
+      {
+        "timestamp": 33.537336987179486,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.1s",
+        "bbox": [
+          274.1654052734375,
+          208.10935974121094,
+          658.24755859375,
+          712.6002197265625
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 33.638556314102566,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 14 consecutive frames (1.4s)",
+        "bbox": [
+          548.8365478515625,
+          16.407470703125,
+          1278.2298583984375,
+          711.234619140625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4
+      },
+      {
+        "timestamp": 33.638556314102566,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 14 consecutive frames (1.4s)",
+        "bbox": [
+          273.36346435546875,
+          208.8902130126953,
+          657.9401245117188,
+          711.1380004882812
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4
+      },
+      {
+        "timestamp": 33.638556314102566,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.2s",
+        "bbox": [
+          273.36346435546875,
+          208.8902130126953,
+          657.9401245117188,
+          711.1380004882812
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 33.73977564102564,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 15 consecutive frames (1.5s)",
+        "bbox": [
+          551.5133056640625,
+          17.56829833984375,
+          1278.302978515625,
+          711.179443359375
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5
+      },
+      {
+        "timestamp": 33.73977564102564,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 15 consecutive frames (1.5s)",
+        "bbox": [
+          277.18585205078125,
+          207.955810546875,
+          659.0160522460938,
+          710.8563232421875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5
+      },
+      {
+        "timestamp": 33.73977564102564,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.3s",
+        "bbox": [
+          277.18585205078125,
+          207.955810546875,
+          659.0160522460938,
+          710.8563232421875
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 33.84099496794872,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 16 consecutive frames (1.6s)",
+        "bbox": [
+          552.419921875,
+          17.7530517578125,
+          1278.267333984375,
+          711.2449951171875
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6
+      },
+      {
+        "timestamp": 33.84099496794872,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 16 consecutive frames (1.6s)",
+        "bbox": [
+          278.0152587890625,
+          208.76441955566406,
+          664.6878662109375,
+          712.37158203125
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6
+      },
+      {
+        "timestamp": 33.84099496794872,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.4s",
+        "bbox": [
+          278.0152587890625,
+          208.76441955566406,
+          664.6878662109375,
+          712.37158203125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 33.942214294871796,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 17 consecutive frames (1.7s)",
+        "bbox": [
+          549.8443603515625,
+          14.11993408203125,
+          1278.2100830078125,
+          711.3328247070312
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7
+      },
+      {
+        "timestamp": 33.942214294871796,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 17 consecutive frames (1.7s)",
+        "bbox": [
+          277.35809326171875,
+          208.28961181640625,
+          660.078857421875,
+          713.9774780273438
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7
+      },
+      {
+        "timestamp": 33.942214294871796,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.5s",
+        "bbox": [
+          277.35809326171875,
+          208.28961181640625,
+          660.078857421875,
+          713.9774780273438
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 34.04343362179487,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 18 consecutive frames (1.8s)",
+        "bbox": [
+          274.585205078125,
+          208.02447509765625,
+          662.4668579101562,
+          713.1979370117188
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8
+      },
+      {
+        "timestamp": 34.04343362179487,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.6s",
+        "bbox": [
+          274.585205078125,
+          208.02447509765625,
+          662.4668579101562,
+          713.1979370117188
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 34.04343362179487,
+        "person_id": "person_003",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 18 consecutive frames (1.8s)",
+        "bbox": [
+          544.79638671875,
+          15.867919921875,
+          1278.334228515625,
+          711.3726806640625
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8
+      },
+      {
+        "timestamp": 34.14465294871795,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 19 consecutive frames (1.9s)",
+        "bbox": [
+          276.86492919921875,
+          207.34918212890625,
+          656.0828247070312,
+          711.9835815429688
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 19,
+        "duration_seconds": 1.9
+      },
+      {
+        "timestamp": 34.14465294871795,
+        "person_id": "person_004",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: right_wrist_extended_arm_absolute for 1.7s",
+        "bbox": [
+          276.86492919921875,
+          207.34918212890625,
+          656.0828247070312,
+          711.9835815429688
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "gesture_type": "right_wrist_extended_arm_absolute"
+      },
+      {
+        "timestamp": 34.24587227564103,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 20 consecutive frames (2.0s)",
+        "bbox": [
+          282.67822265625,
+          206.9756622314453,
+          708.8873291015625,
+          711.5619506835938
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 20,
+        "duration_seconds": 2.0
+      },
+      {
+        "timestamp": 34.3470916025641,
+        "person_id": "person_004",
+        "event_type": "Phone Usage Detected",
+        "severity": "red",
+        "confidence": 0.95,
+        "source": "research_rules",
+        "details": "Phone detected for 21 consecutive frames (2.1s)",
+        "bbox": [
+          285.2093505859375,
+          208.64202880859375,
+          705.619384765625,
+          711.57568359375
+        ],
+        "rule_triggered": "phone_consecutive_frames",
+        "consecutive_frames": 21,
+        "duration_seconds": 2.1
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 10.0,
+    "risk_level": "critical",
+    "recommendations": [
+      "Phone usage detected - implement stricter device policies"
+    ]
+  }
+}

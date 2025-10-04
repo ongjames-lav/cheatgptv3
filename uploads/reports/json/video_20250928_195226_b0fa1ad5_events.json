@@ -1,0 +1,151 @@
+{
+  "video_metadata": {
+    "session_id": "video_20250928_195226_b0fa1ad5",
+    "filename": "Student_Sitting_in_the_Class___Royalty_Free_Video___No_Copyright_Video_1759054443.mp4",
+    "duration": 10.24,
+    "fps": 25.0,
+    "resolution": "640x360",
+    "frame_count": 256,
+    "file_size": 508326,
+    "processing_date": "2025-09-28T19:52:39.259441"
+  },
+  "detection_summary": {
+    "total_events": 0,
+    "phone_usage_count": 0,
+    "head_turning_count": 0,
+    "looking_down_count": 0,
+    "gesture_count": 0,
+    "hiding_count": 0,
+    "risk_score": 0.0
+  },
+  "classroom_tracking": {
+    "total_people": 6,
+    "people_in_assigned_areas": 5,
+    "people_with_anomalous_movement": 5,
+    "average_movement_scores": [
+      0.7471123296004789,
+      0.7210553016312832,
+      0.37241326186790397,
+      0.8632299505585901,
+      0.5483297902831015,
+      0.5030709277886386
+    ],
+    "tracker_details": {
+      "person_000": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.7471123296004789,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          320.89794921875,
+          0,
+          745.9290771484375,
+          458.43133544921875
+        ],
+        "current_bbox": [
+          567.916748046875,
+          50.719573974609375,
+          640.0,
+          353.5989685058594
+        ]
+      },
+      "person_001": {
+        "in_assigned_area": false,
+        "movement_anomaly_score": 0.7210553016312832,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          365.2611083984375,
+          50.983062744140625,
+          494.4207763671875,
+          181.640380859375
+        ],
+        "current_bbox": [
+          321.34075927734375,
+          69.07676696777344,
+          388.18133544921875,
+          153.70562744140625
+        ]
+      },
+      "person_002": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.37241326186790397,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          0,
+          58.09893798828125,
+          314.36981201171875,
+          426.340087890625
+        ],
+        "current_bbox": [
+          27.028915405273438,
+          121.0389404296875,
+          223.46788024902344,
+          358.7948303222656
+        ]
+      },
+      "person_003": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.8632299505585901,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          166.03591918945312,
+          30.82849884033203,
+          338.3600158691406,
+          299.92742919921875
+        ],
+        "current_bbox": [
+          143.5344696044922,
+          78.10774230957031,
+          214.4574432373047,
+          148.4375457763672
+        ]
+      },
+      "person_004": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.5483297902831015,
+        "frames_since_detection": 8,
+        "total_detections": 77,
+        "assigned_area": [
+          131.02938842773438,
+          63.80574035644531,
+          275.9062805175781,
+          221.27049255371094
+        ],
+        "current_bbox": [
+          105,
+          89,
+          181,
+          201
+        ]
+      },
+      "person_005": {
+        "in_assigned_area": true,
+        "movement_anomaly_score": 0.5030709277886386,
+        "frames_since_detection": 0,
+        "total_detections": 85,
+        "assigned_area": [
+          393.92425537109375,
+          59.328765869140625,
+          487.84698486328125,
+          301.92254638671875
+        ],
+        "current_bbox": [
+          360.182861328125,
+          90.73165893554688,
+          445.9375,
+          184.2451171875
+        ]
+      }
+    },
+    "debug_info": {
+      "all_active_trackers": 6,
+      "stable_trackers": 6,
+      "filtered_out": 0
+    },
+    "average_movement_score": 0.625868593621666
+  },
+  "timeline_events": []
+}
