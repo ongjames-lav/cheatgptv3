@@ -112,8 +112,9 @@ class YOLO11Detector:
                             # Get confidence score
                             conf = float(boxes.conf[i].cpu().numpy())
                             
-                            # Apply additional confidence filtering
-                            min_conf = 0.4 if cls_name == 'person' else 0.3  # Higher threshold for persons
+                            # Apply classroom-optimized confidence filtering
+                            # Lower thresholds for better detection at farther angles
+                            min_conf = 0.35 if cls_name == 'person' else 0.15  # Much lower for phone detection in classrooms
                             if conf >= min_conf:
                                 detection = {
                                     'bbox': bbox,  # [x1, y1, x2, y2]

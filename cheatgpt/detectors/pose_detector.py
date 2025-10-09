@@ -46,15 +46,15 @@ class PoseDetector:
         self.weights_path = weights_path or os.getenv('POSE_MODEL_PATH', 'weights/yolo11m-pose.pt')
         self.force_cpu = os.getenv('FORCE_CPU', 'false').lower() == 'true'
         
-        # OPTIMIZATION 1: Enhanced threshold configuration with adaptive sensitivity
+        # OPTIMIZATION 1: Enhanced threshold configuration for classroom settings (slightly more sensitive)
         self.lean_angle_thresh = float(os.getenv('LEAN_ANGLE_THRESH', '8.0'))    # More sensitive (was 12.0)
-        self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '25.0'))     # Matched with rule engine threshold  
-        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.08'))     # Optimized sensitivity
+        self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '35.0'))     # Enhanced sensitivity - 35° for more responsive detection
+        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.005'))    # Ultra-sensitive phone detection
         
         # OPTIMIZATION 2: Performance-oriented thresholds
         self.confidence_thresh = float(os.getenv('POSE_CONFIDENCE_THRESH', '0.3'))
         self.min_keypoint_conf = float(os.getenv('MIN_KEYPOINT_CONF', '0.4'))    # Higher for reliability
-        self.debug_mode = os.getenv('DEBUG_POSE', 'false').lower() == 'true'
+        self.debug_mode = os.getenv('DEBUG_POSE', 'true').lower() == 'true'  # Enable debug by default
         
         # OPTIMIZATION 3: Temporal smoothing parameters
         self.enable_temporal_smoothing = os.getenv('ENABLE_TEMPORAL_SMOOTHING', 'true').lower() == 'true'
@@ -225,49 +225,77 @@ class PoseDetector:
                         if self.enable_temporal_smoothing:
                             person_keypoints = self._smooth_keypoints(person_id, person_keypoints, keypoint_confs)
                         
-                        # OPTIMIZATION 6: Efficient keypoint extraction with validation
+                        # ESSENTIAL KEYPOINTS ONLY - For 3 detection parameters
+                        # PARAMETER 1: Head turning - need head keypoints (nose, eyes)
                         head_points = self._extract_head_keypoints(person_keypoints, keypoint_confs)
-                        shoulder_points = self._extract_shoulder_keypoints(person_keypoints, keypoint_confs)
-                        hip_points = self._extract_hip_keypoints(person_keypoints, keypoint_confs)
-                        arm_points = self._extract_arm_keypoints(person_keypoints, keypoint_confs)
                         
-                        # OPTIMIZATION 7: Skip processing if insufficient keypoints
-                        min_keypoints_required = 3
-                        total_keypoints = len(head_points) + len(shoulder_points) + len(hip_points)
+                        # PARAMETER 2: Hand extension - need shoulders and wrists only
+                        essential_arm_points = self._extract_essential_arm_keypoints(person_keypoints, keypoint_confs)
+                        
+                        # PARAMETER 3: Phone usage - handled separately by YOLO object detection
+                        # No additional pose keypoints needed
+                        
+                        # Skip processing if insufficient ESSENTIAL keypoints
+                        min_keypoints_required = 2  # At least head + some arm points
+                        total_keypoints = len(head_points) + len(essential_arm_points)
                         if total_keypoints < min_keypoints_required:
+                            if self.debug_mode:
+                                logger.debug(f"⚠️ Insufficient keypoints: {total_keypoints} < {min_keypoints_required}")
                             continue
                         
-                        # OPTIMIZATION 8: Optimized feature computation
+                        # SIMPLIFIED DETECTION - ONLY 3 PARAMETERS
+                        # Calculate only the essential features for the 3 detection rules
                         yaw, pitch = self._compute_head_angles(head_points)
-                        lean_flag = self._compute_leaning(shoulder_points, hip_points)
+                        
+                        # PARAMETER 1: Head turning left/right (for head turn detection)
                         look_flag = self._compute_looking_around(yaw)
+                        
+                        # PARAMETER 2: Hand extension (for gesture detection) - DEBUG ENABLED
+                        if self.debug_mode:
+                            logger.debug(f"🔍 CALLING GESTURE DETECTION - Essential arm points: {essential_arm_points}, Head points: {head_points}")
+                        
+                        gesture_result = self._compute_suspicious_gesture(essential_arm_points, head_points)
+                        
+                        if self.debug_mode:
+                            logger.debug(f"🔍 GESTURE RESULT: {gesture_result}")
+                        
+                        # PARAMETER 3: Phone detection (handled separately in engine)
                         phone_flag = self._compute_phone_near(bbox, phone_detections)
-                        gesture_result = self._compute_suspicious_gesture(arm_points, head_points)
+                        
+                        # DISABLED PARAMETERS FOR SIMPLIFIED SYSTEM:
+                        # - lean_flag (looking down detection) - REMOVED
+                        # - Complex body posture analysis - REMOVED
                         
                         # Extract gesture flag and reason
                         if isinstance(gesture_result, tuple):
                             gesture_flag, gesture_reason = gesture_result
+                            if self.debug_mode and gesture_flag:
+                                logger.debug(f"🔍 GESTURE DETECTED: {gesture_reason}")
                         else:
                             gesture_flag = gesture_result
                             gesture_reason = 'unknown_gesture' if gesture_flag else None
                         
-                        # OPTIMIZATION 9: Enhanced pose estimate with additional metadata
+                        # SIMPLIFIED POSE ESTIMATE - ONLY 3 PARAMETERS
                         pose_estimate = {
                             'track_id': person_id,
                             'bbox': bbox,
                             'yaw': yaw,
                             'pitch': pitch,
-                            'lean_flag': lean_flag,
-                            'look_flag': look_flag,
-                            'phone_flag': phone_flag,
-                            'gesture_flag': gesture_flag,
+                            # ACTIVE PARAMETERS (3 detection rules):
+                            'look_flag': look_flag,          # Head turning left/right
+                            'phone_flag': phone_flag,        # Phone detection
+                            'gesture_flag': gesture_flag,    # Hand extension
                             'gesture_reason': gesture_reason,
-                            'lean_angle': abs(self._calculate_lean_angle(shoulder_points, hip_points)),
-                            'head_turn_angle': abs(yaw),
+                            # ESSENTIAL ANGLES:
+                            'head_turn_angle': abs(yaw),     # For head turn detection
+                            # METADATA:
                             'confidence': conf,
-                            'keypoint_quality': self._assess_keypoint_quality(head_points, shoulder_points, hip_points),
+                            'keypoint_quality': self._assess_essential_keypoint_quality(head_points, essential_arm_points),
                             'total_keypoints': total_keypoints,
-                            'frame_timestamp': self._frame_count
+                            'frame_timestamp': self._frame_count,
+                            # DISABLED PARAMETERS (removed from simplified system):
+                            # 'lean_flag': False,           # DISABLED - no looking down detection
+                            # 'lean_angle': 0.0,           # DISABLED - no lean angle detection
                         }
                         
                         pose_estimates.append(pose_estimate)
@@ -350,52 +378,64 @@ class PoseDetector:
         
         return head_points
     
-    def _extract_shoulder_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
-        """Extract shoulder keypoints with optimized confidence filtering."""
-        shoulder_points = {}
-        
-        for name, idx in [('left_shoulder', self.KEYPOINTS['left_shoulder']), 
-                         ('right_shoulder', self.KEYPOINTS['right_shoulder'])]:
-            if idx < len(keypoints):
-                x, y = keypoints[idx]
-                # Use optimized confidence threshold
-                if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
-                    if x > 0 and y > 0:  # Valid keypoint
-                        shoulder_points[name] = (float(x), float(y))
-        
-        return shoulder_points
+    # REMOVED: _extract_shoulder_keypoints - Not needed for 3-parameter detection
+    # Shoulders are now included in _extract_essential_arm_keypoints
     
-    def _extract_hip_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
-        """Extract hip keypoints with optimized confidence filtering."""
-        hip_points = {}
-        
-        for name, idx in [('left_hip', self.KEYPOINTS['left_hip']), 
-                         ('right_hip', self.KEYPOINTS['right_hip'])]:
-            if idx < len(keypoints):
-                x, y = keypoints[idx]
-                # Use optimized confidence threshold
-                if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
-                    if x > 0 and y > 0:  # Valid keypoint
-                        hip_points[name] = (float(x), float(y))
-        
-        return hip_points
+    # REMOVED: _extract_hip_keypoints - Not needed for 3-parameter detection
+    # Hip detection was used for body leaning which is disabled
     
-    def _extract_arm_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
-        """Extract arm keypoints (elbows and wrists) from pose data."""
-        arm_points = {}
+    def _extract_essential_arm_keypoints(self, keypoints: np.ndarray, confs: Optional[np.ndarray] = None) -> Dict[str, Tuple[float, float]]:
+        """Extract ONLY essential arm keypoints for hand extension detection."""
+        essential_arm_points = {}
         
-        for name, idx in [('left_elbow', self.KEYPOINTS['left_elbow']),
-                         ('right_elbow', self.KEYPOINTS['right_elbow']),
-                         ('left_wrist', self.KEYPOINTS['left_wrist']),
-                         ('right_wrist', self.KEYPOINTS['right_wrist'])]:
+        # ONLY extract what we need for hand extension detection:
+        # - Shoulders (reference points for extension distance)
+        # - Wrists (the hands we're tracking)
+        essential_keypoints = [
+            ('left_shoulder', self.KEYPOINTS['left_shoulder']),
+            ('right_shoulder', self.KEYPOINTS['right_shoulder']),
+            ('left_wrist', self.KEYPOINTS['left_wrist']),
+            ('right_wrist', self.KEYPOINTS['right_wrist'])
+        ]
+        
+        for name, idx in essential_keypoints:
             if idx < len(keypoints):
                 x, y = keypoints[idx]
                 # Use optimized confidence threshold
                 if confs is None or (idx < len(confs) and confs[idx] > self.min_keypoint_conf):
                     if x > 0 and y > 0:  # Valid keypoint
-                        arm_points[name] = (float(x), float(y))
+                        essential_arm_points[name] = (float(x), float(y))
+                        if self.debug_mode and 'wrist' in name:
+                            logger.debug(f"🔍 ESSENTIAL KEYPOINT: {name} at ({x:.1f}, {y:.1f})")
         
-        return arm_points
+        if self.debug_mode:
+            logger.debug(f"🔍 ESSENTIAL ARM POINTS: {len(essential_arm_points)} - {list(essential_arm_points.keys())}")
+        
+        return essential_arm_points
+    
+    def _assess_essential_keypoint_quality(self, head_points: Dict, arm_points: Dict) -> float:
+        """Assess quality of essential keypoints only."""
+        try:
+            # Essential keypoints: nose/eyes (2-3) + shoulders + wrists (4)
+            total_possible = 7  # 3 head + 4 arm
+            detected = len(head_points) + len(arm_points)
+            
+            quality_score = detected / total_possible
+            
+            # Bonus for having both shoulders (critical for extension detection)
+            shoulders = [k for k in arm_points.keys() if 'shoulder' in k]
+            if len(shoulders) >= 2:
+                quality_score += 0.15
+            
+            # Bonus for having wrists (critical for hand detection)
+            wrists = [k for k in arm_points.keys() if 'wrist' in k]
+            if len(wrists) >= 1:
+                quality_score += 0.1
+            
+            return min(1.0, quality_score)
+            
+        except Exception:
+            return 0.0
     
     def _compute_head_angles(self, head_points: Dict[str, Tuple[float, float]]) -> Tuple[float, float]:
         """Optimized head angle computation with multi-method validation and temporal smoothing."""
@@ -424,20 +464,20 @@ class PoseDetector:
                     baseline_separation = 65.0
                     perspective_factor = eye_separation / baseline_separation
                     
-                    # Yaw estimation using geometric perspective - MORE SENSITIVE
-                    if perspective_factor < 0.95:  # More sensitive - detect even smaller turns (was 0.90)
+                    # Yaw estimation using geometric perspective - BALANCED for 40-45° detection
+                    if perspective_factor < 0.85:  # Balanced sensitivity for practical monitoring (was 0.90)
                         # Calculate turn magnitude using perspective distortion
-                        yaw_magnitude = (0.95 - perspective_factor) * 70.0  # Increased scaling for more sensitivity (was 65.0)
+                        yaw_magnitude = (0.85 - perspective_factor) * 65.0  # Balanced scaling for 40-45° detection (was 60.0)
                         
-                        # Direction determination using eye center offset - MORE SENSITIVE
-                        if abs(eye_dx) > 2:  # More sensitive minimum offset (was 3)
+                        # Direction determination using eye center offset - BALANCED SENSITIVITY
+                        if abs(eye_dx) > 8:  # Balanced sensitivity for detection (was 6)
                             direction_factor = eye_dx / eye_separation
-                            if direction_factor < -0.03:  # More sensitive - detect smaller turns (was -0.05)
-                                yaw = -min(yaw_magnitude, 35.0)
-                                confidence_score = 0.8
-                            elif direction_factor > 0.03:  # More sensitive - detect smaller turns (was 0.05)
-                                yaw = min(yaw_magnitude, 35.0)
-                                confidence_score = 0.8
+                            if direction_factor < -0.20:  # Balanced for 40-45° turns (was -0.15)
+                                yaw = -min(yaw_magnitude, 60.0)  # Balanced detection range
+                                confidence_score = 0.85
+                            elif direction_factor > 0.20:  # Balanced for 40-45° turns (was 0.15)
+                                yaw = min(yaw_magnitude, 60.0)  # Balanced detection range
+                                confidence_score = 0.85
                         
                         # Additional validation using eye vertical alignment
                         if abs(eye_dy) < eye_separation * 0.2:  # Eyes reasonably aligned
@@ -486,12 +526,12 @@ class PoseDetector:
             if abs(ear_yaw) > abs(yaw) * 1.5:
                 yaw = ear_yaw
             
-            # METHOD 4: Temporal Smoothing and Noise Reduction - MORE SENSITIVE
-            # Apply temporal smoothing to reduce jitter (more sensitive thresholds)
-            if abs(yaw) < 1.5:  # Reduced from 3 to 1.5 - detect smaller movements
+            # METHOD 4: Temporal Smoothing and Noise Reduction - BALANCED SETTINGS
+            # Apply balanced temporal smoothing
+            if abs(yaw) < 8.0:  # Ignore small normal movements (was 5.0)
                 yaw = 0.0
-            elif abs(yaw) < 4:  # Reduced from 8 to 4 - less dampening for small movements
-                yaw *= 0.85  # Reduced dampening from 0.7 to 0.85
+            elif abs(yaw) < 25:  # Light dampening for small-medium turns (was 20)
+                yaw *= 0.75  # Balanced dampening for practical detection (was 0.8)
             
             # METHOD 5: Enhanced Pitch Calculation
             if nose and (left_eye or right_eye):
@@ -867,9 +907,20 @@ class PoseDetector:
             person_width = x2 - x1
             person_height = y2 - y1
             
-            # Expand detection area around person (more lenient)
-            margin_x = person_width * 0.3   # 30% margin on sides
-            margin_y = person_height * 0.2   # 20% margin on top/bottom
+            # Get classroom distance compensation factor (assume 720p for calculation)
+            distance_factor = self._get_classroom_distance_factor(person_bbox, 720)
+            
+            # Calculate overlap threshold based on distance compensation
+            overlap_threshold = 0.05 / distance_factor  # Lower threshold for distant subjects
+            
+            # Expand detection area around person (classroom optimized)
+            # Larger margins for farther angles and classroom monitoring
+            base_margin_x = person_width * 0.5   # Base 50% margin on sides
+            base_margin_y = person_height * 0.4   # Base 40% margin on top/bottom
+            
+            # Apply distance compensation
+            margin_x = base_margin_x * distance_factor
+            margin_y = base_margin_y * distance_factor
             
             expanded_x1 = x1 - margin_x
             expanded_y1 = y1 - margin_y
@@ -888,9 +939,15 @@ class PoseDetector:
                     overlap = self._calculate_overlap_ratio(person_bbox, phone_bbox)
                     
                     if self.debug_mode:
-                        logger.debug(f"Phone detection: IoU={iou:.3f}, overlap={overlap:.3f}, thresh={self.phone_iou_thresh}")
+                        logger.debug(f"📱 Phone detection analysis:")
+                        logger.debug(f"   Distance factor: {distance_factor:.2f}")
+                        logger.debug(f"   IoU: {iou:.4f} (thresh: {self.phone_iou_thresh})")
+                        logger.debug(f"   Overlap: {overlap:.4f} (thresh: {overlap_threshold:.4f})")
+                        logger.debug(f"   Margins: {margin_x:.1f}x{margin_y:.1f} (base: {base_margin_x:.1f}x{base_margin_y:.1f})")
                     
-                    if iou > self.phone_iou_thresh or overlap > 0.1:
+                    # Classroom-optimized detection thresholds with distance compensation
+                    # More lenient for farther angles and varying desk heights
+                    if iou > self.phone_iou_thresh or overlap > overlap_threshold:
                         if self.debug_mode:
                             logger.debug(f"Phone detected near person: IoU={iou:.3f}, overlap={overlap:.3f}")
                         return True
@@ -899,6 +956,27 @@ class PoseDetector:
             logger.debug(f"Error computing phone near: {e}")
         
         return False
+    
+    def _get_classroom_distance_factor(self, person_bbox: List[float], frame_height: int) -> float:
+        """Calculate distance compensation factor for classroom monitoring."""
+        try:
+            _, y1, _, y2 = person_bbox
+            person_height = y2 - y1
+            
+            # Estimate distance based on person size relative to frame
+            # Smaller person = farther away = need more sensitivity
+            relative_size = person_height / frame_height
+            
+            # Scale factor: smaller people get higher sensitivity multiplier
+            if relative_size < 0.15:  # Very far (small person)
+                return 2.0  # Double the detection area
+            elif relative_size < 0.25:  # Medium distance
+                return 1.5  # 50% larger detection area
+            else:  # Close range
+                return 1.0  # Normal detection area
+                
+        except Exception:
+            return 1.0  # Default factor
     
     def _calculate_overlap_ratio(self, bbox1: List[float], bbox2: List[float]) -> float:
         """Calculate overlap ratio (intersection over smaller bbox)."""
@@ -978,199 +1056,103 @@ class PoseDetector:
     def _compute_suspicious_gesture(self, arm_points: Dict[str, Tuple[float, float]], 
                                    head_points: Dict[str, Tuple[float, float]]) -> bool:
         """
-        Detect suspicious gestures like hands near face, touching head, or gesturing.
+        Detect suspicious sideward hand extensions for classroom cheating detection.
+        Focus: Only detect hands extended sideways (passing notes, signaling)
+        Exclude: Hands covering face/head (normal behavior)
         """
         try:
             # Debug logging
-            logger.debug(f"🤚 Gesture analysis - Arm points: {len(arm_points)} detected: {list(arm_points.keys())}")
-            logger.debug(f"🤚 Gesture analysis - Head points: {len(head_points)} detected: {list(head_points.keys())}")
+            logger.debug(f"🤚 Sideward gesture analysis - Arm points: {len(arm_points)} detected: {list(arm_points.keys())}")
+            logger.debug(f"🤚 Sideward gesture analysis - Head points: {len(head_points)} detected: {list(head_points.keys())}")
             
-            if not arm_points or not head_points:
-                logger.debug("🤚 No arm or head points for gesture analysis")
-                return False
+            if not arm_points:
+                logger.debug("🤚 No arm points for sideward gesture analysis")
+                return False, None
             
-            # Get hand/wrist positions
+            # Get hand/wrist and shoulder positions
             left_wrist = arm_points.get('left_wrist')
             right_wrist = arm_points.get('right_wrist')
+            left_shoulder = arm_points.get('left_shoulder')
+            right_shoulder = arm_points.get('right_shoulder')
             
-            logger.debug(f"🤚 Wrist positions - Left: {left_wrist}, Right: {right_wrist}")
-            
-            # Get head region (use nose as center, or estimate from available points)
-            head_center = None
-            if 'nose' in head_points:
-                head_center = head_points['nose']
-                logger.debug(f"🤚 Using nose as head center: {head_center}")
-            elif 'left_eye' in head_points and 'right_eye' in head_points:
-                # Estimate head center from eyes
-                left_eye = head_points['left_eye']
-                right_eye = head_points['right_eye']
-                head_center = ((left_eye[0] + right_eye[0]) / 2, (left_eye[1] + right_eye[1]) / 2)
-                logger.debug(f"🤚 Estimated head center from eyes: {head_center}")
-            
-            if not head_center:
-                logger.debug("🤚 No head center available for gesture analysis")
-                return False
+            logger.debug(f"🤚 SIDEWARD DETECTION - Wrists: L={left_wrist}, R={right_wrist}")
+            logger.debug(f"🤚 SIDEWARD DETECTION - Shoulders: L={left_shoulder}, R={right_shoulder}")
             
             gesture_detected = False
             detection_reason = ""
             
-            # Calculate person/head scale for adaptive thresholds
-            if 'left_eye' in head_points and 'right_eye' in head_points:
-                eye_distance = abs(head_points['left_eye'][0] - head_points['right_eye'][0])
-                # Use eye distance to estimate head size and create adaptive threshold - MORE SENSITIVE
-                # More sensitive threshold for realistic cheating detection
-                head_radius = max(eye_distance * 2.5, 120)  # Increased detection zone (was 2.2 and 100)
-                logger.debug(f"🤚 Adaptive gesture detection using eye_distance: {eye_distance:.1f}px, head_radius: {head_radius:.1f}px")
-            else:
-                head_radius = 140  # Better default radius for hand detection
-                logger.debug(f"🤚 Default gesture detection using head_radius: {head_radius}px")
-            
-            # ADVANCED GESTURE DETECTION - Multiple pattern checking
-            
-            # Pattern 1: Extended arms (hands far from body center) - PRIORITY DETECTION
-            # Get shoulder positions for better body center estimation
-            left_shoulder = arm_points.get('left_shoulder')
-            right_shoulder = arm_points.get('right_shoulder')
-            
-            if self.debug_mode:
-                logger.debug(f"🤚 Extended arm check - Left shoulder: {left_shoulder}, Right shoulder: {right_shoulder}")
-            
-            # METHOD 1: Full shoulder-based detection (most accurate)
-            if left_shoulder and right_shoulder:
-                # Calculate body center from shoulders
-                body_center_x = (left_shoulder[0] + right_shoulder[0]) / 2
-                body_center_y = (left_shoulder[1] + right_shoulder[1]) / 2
+            # SIDEWARD EXTENSION DETECTION - LEFT HAND
+            if left_wrist and left_shoulder:
+                horizontal_distance = abs(left_wrist[0] - left_shoulder[0])
+                vertical_diff = abs(left_wrist[1] - left_shoulder[1])
                 
-                # Calculate shoulder width for dynamic threshold - MORE SENSITIVE
-                shoulder_width = abs(right_shoulder[0] - left_shoulder[0])
-                extension_threshold = shoulder_width * 0.15  # ULTRA sensitive - 15% of shoulder width (was 25%)
+                # Check if hand is extended sideways (not up towards head)
+                is_sideward = left_wrist[1] > left_shoulder[1] - 30  # Not raised above shoulder level
+                is_extended = horizontal_distance > 100  # Increased from 75 - require more extension
+                is_not_covering_face = vertical_diff < 60  # Not reaching up to cover face
+                is_fully_extended = horizontal_distance > 120  # Additional check for full extension
                 
-                if self.debug_mode:
-                    logger.debug(f"🤚 Body center: ({body_center_x:.1f}, {body_center_y:.1f}), shoulder_width: {shoulder_width:.1f}, threshold: {extension_threshold:.1f}")
+                logger.debug(f"🤚 LEFT ANALYSIS - H_dist: {horizontal_distance:.1f}, V_diff: {vertical_diff:.1f}")
+                logger.debug(f"🤚 LEFT CHECKS - Sideward: {is_sideward}, Extended: {is_extended}, Fully extended: {is_fully_extended}, Not covering: {is_not_covering_face}")
                 
-                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
-                    if wrist_pos:
-                        # Calculate horizontal distance from body center
-                        horizontal_distance = abs(wrist_pos[0] - body_center_x)
-                        vertical_distance = abs(wrist_pos[1] - body_center_y)
-                        
-                        if self.debug_mode:
-                            logger.debug(f"🤚 {wrist_name} - H dist: {horizontal_distance:.1f}, V dist: {vertical_distance:.1f}")
-                        
-                        # Check if hand is extended far from body (horizontally)
-                        if horizontal_distance > extension_threshold:
-                            # More generous vertical range
-                            if vertical_distance < shoulder_width * 3.0:  
-                                gesture_detected = True
-                                detection_reason = f"{wrist_name}_extended_arm"
-                                logger.debug(f"🤚 SUSPICIOUS GESTURE: {wrist_name} extended arm (h:{horizontal_distance:.1f}px > {extension_threshold:.1f}px)")
-                                break
-                            elif self.debug_mode:
-                                logger.debug(f"🤚 {wrist_name} extended but too far vertically: {vertical_distance:.1f} > {shoulder_width * 3.0:.1f}")
-                        elif self.debug_mode:
-                            logger.debug(f"🤚 {wrist_name} not extended enough: {horizontal_distance:.1f} <= {extension_threshold:.1f}")
+                # Require FULL extension for detection
+                if is_sideward and is_fully_extended and is_not_covering_face:
+                    gesture_detected = True
+                    detection_reason = "left_hand_sideward_extension"
+                    logger.debug(f"🤚 ✅ LEFT SIDEWARD EXTENSION DETECTED! Distance: {horizontal_distance:.1f}px")
             
-            # METHOD 2: Single shoulder fallback (if only one shoulder detected)
-            elif not gesture_detected and (left_shoulder or right_shoulder):
-                available_shoulder = left_shoulder if left_shoulder else right_shoulder
-                shoulder_name = "left" if left_shoulder else "right"
+            # SIDEWARD EXTENSION DETECTION - RIGHT HAND
+            if not gesture_detected and right_wrist and right_shoulder:
+                horizontal_distance = abs(right_wrist[0] - right_shoulder[0])
+                vertical_diff = abs(right_wrist[1] - right_shoulder[1])
                 
-                if self.debug_mode:
-                    logger.debug(f"🤚 Using single shoulder fallback: {shoulder_name} shoulder at {available_shoulder}")
+                # Check if hand is extended sideways (not up towards head)
+                is_sideward = right_wrist[1] > right_shoulder[1] - 30  # Not raised above shoulder level
+                is_extended = horizontal_distance > 100  # Increased from 75 - require more extension
+                is_not_covering_face = vertical_diff < 60  # Not reaching up to cover face
+                is_fully_extended = horizontal_distance > 120  # Additional check for full extension
                 
-                # Use shoulder as reference point
-                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
-                    if wrist_pos:
-                        # Calculate distance from wrist to available shoulder
-                        shoulder_to_wrist_distance = abs(wrist_pos[0] - available_shoulder[0])
-                        vertical_distance = abs(wrist_pos[1] - available_shoulder[1])
-                        
-                        # Assume shoulder width ~120 pixels and use more aggressive threshold
-                        estimated_shoulder_width = 120
-                        extension_threshold = estimated_shoulder_width * 0.2  # 20% threshold (was 30%)
-                        
-                        if self.debug_mode:
-                            logger.debug(f"🤚 Single shoulder - {wrist_name} H dist: {shoulder_to_wrist_distance:.1f}, threshold: {extension_threshold:.1f}")
-                        
-                        if shoulder_to_wrist_distance > extension_threshold:
-                            if vertical_distance < estimated_shoulder_width * 2.5:  # Generous vertical range
-                                gesture_detected = True
-                                detection_reason = f"{wrist_name}_extended_arm_single_shoulder"
-                                logger.debug(f"🤚 SUSPICIOUS GESTURE: {wrist_name} extended arm via single shoulder (dist:{shoulder_to_wrist_distance:.1f}px)")
-                                break
-            
-            # METHOD 3: Absolute position fallback (no shoulders needed)
-            elif not gesture_detected:
-                if self.debug_mode:
-                    logger.debug("🤚 Using absolute position fallback for extended arm detection")
+                logger.debug(f"🤚 RIGHT ANALYSIS - H_dist: {horizontal_distance:.1f}, V_diff: {vertical_diff:.1f}")
+                logger.debug(f"🤚 RIGHT CHECKS - Sideward: {is_sideward}, Extended: {is_extended}, Fully extended: {is_fully_extended}, Not covering: {is_not_covering_face}")
                 
-                # Use head center as rough body reference
-                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
-                    if wrist_pos and head_center:
-                        # Calculate horizontal distance from head center (rough body center estimate)
-                        horizontal_distance = abs(wrist_pos[0] - head_center[0])
-                        vertical_distance = abs(wrist_pos[1] - head_center[1])
-                        
-                        # Ultra sensitive threshold - detect any significant horizontal extension
-                        absolute_extension_threshold = 60  # 60 pixels from head center (was 80)
-                        
-                        if self.debug_mode:
-                            logger.debug(f"🤚 Absolute position - {wrist_name} H dist: {horizontal_distance:.1f}, threshold: {absolute_extension_threshold}")
-                        
-                        if horizontal_distance > absolute_extension_threshold:
-                            # Ensure it's not just raised hands (check if horizontally extended)
-                            if vertical_distance < 200:  # Very generous vertical range
-                                gesture_detected = True
-                                detection_reason = f"{wrist_name}_extended_arm_absolute"
-                                logger.debug(f"🤚 SUSPICIOUS GESTURE: {wrist_name} extended arm via absolute position (dist:{horizontal_distance:.1f}px)")
-                                break
+                # Require FULL extension for detection
+                if is_sideward and is_fully_extended and is_not_covering_face:
+                    gesture_detected = True
+                    detection_reason = "right_hand_sideward_extension"
+                    logger.debug(f"🤚 ✅ RIGHT SIDEWARD EXTENSION DETECTED! Distance: {horizontal_distance:.1f}px")
             
-            if not gesture_detected and self.debug_mode:
-                logger.debug(f"🤚 Extended arm detection skipped - no suitable reference points or insufficient extension")
-            
-            # Pattern 2: Hand near face/head (classic cheating gesture)
+            # ADDITIONAL CHECK: Detect extreme sideward extensions (reaching across desk)
             if not gesture_detected:
-                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
-                    if wrist_pos:
-                        # Calculate distance from wrist to head center
-                        distance = math.sqrt((wrist_pos[0] - head_center[0])**2 + 
-                                           (wrist_pos[1] - head_center[1])**2)
+                for wrist_name, wrist_pos, shoulder_pos in [
+                    ('left_wrist', left_wrist, left_shoulder),
+                    ('right_wrist', right_wrist, right_shoulder)
+                ]:
+                    if wrist_pos and shoulder_pos:
+                        # Check for extreme horizontal extension (reaching toward other students)
+                        horizontal_reach = abs(wrist_pos[0] - shoulder_pos[0])
                         
-                        logger.debug(f"🤚 Distance check: {wrist_name} distance to head: {distance:.1f}px (threshold: {head_radius}px)")
+                        # Hand must be at or below shoulder level (not raised to face)
+                        is_at_desk_level = wrist_pos[1] >= shoulder_pos[1] - 20
                         
-                        if distance < head_radius:
+                        # Extreme sideward reach (passing notes, signaling) - increased threshold
+                        is_extreme_reach = horizontal_reach > 150  # Increased from 120 for more extreme detection
+                        
+                        # Additional check: ensure significant sideward movement
+                        is_significantly_sideward = horizontal_reach > 130
+                        
+                        if is_at_desk_level and is_extreme_reach and is_significantly_sideward:
                             gesture_detected = True
-                            detection_reason = f"{wrist_name}_near_head"
-                            logger.debug(f"🤚 SUSPICIOUS GESTURE: {wrist_name} near head (distance: {distance:.1f}px)")
+                            detection_reason = f"{wrist_name}_extreme_sideward_reach"
+                            logger.debug(f"🤚 ✅ EXTREME SIDEWARD REACH DETECTED: {wrist_name} reach: {horizontal_reach:.1f}px")
                             break
             
-            # Pattern 3: Hand in suspicious face region (conservative detection)
-            if not gesture_detected:
-                for wrist_name, wrist_pos in [('left_wrist', left_wrist), ('right_wrist', right_wrist)]:
-                    if wrist_pos and head_center:
-                        # Check if hand is in face region (conservative area)
-                        horizontal_distance = abs(wrist_pos[0] - head_center[0])
-                        vertical_distance = abs(wrist_pos[1] - head_center[1])
-                        
-                        # Create more sensitive cheating gesture detection zone
-                        face_width = head_radius * 1.4   # More sensitive horizontal area (was 1.2)
-                        face_height = head_radius * 1.8  # More sensitive vertical area (was 1.5)
-                        
-                        if horizontal_distance < face_width and vertical_distance < face_height:
-                            # More generous check: hand should be in expanded head region
-                            if wrist_pos[1] >= head_center[1] - 50 and wrist_pos[1] <= head_center[1] + 120:  # Expanded range (was -30 to +100)
-                                gesture_detected = True
-                                detection_reason = f"{wrist_name}_in_face_region"
-                                logger.debug(f"🤚 SUSPICIOUS GESTURE: {wrist_name} in face region (h:{horizontal_distance:.1f}, v:{vertical_distance:.1f})")
-                                break
-            
             if gesture_detected:
-                logger.debug(f"🤚 SUSPICIOUS GESTURE DETECTED: {detection_reason}")
+                logger.debug(f"🤚 SIDEWARD GESTURE DETECTED (CLASSROOM MODE): {detection_reason}")
                 return True, detection_reason
             else:
-                logger.debug(f"🤚 No suspicious gestures detected")
+                logger.debug(f"🤚 No sideward gestures detected (hands may be covering face - ignored)")
                 return False, None
             
         except Exception as e:
-            logger.debug(f"Error in gesture detection: {e}")
+            logger.debug(f"Error in sideward gesture detection: {e}")
             return False, None

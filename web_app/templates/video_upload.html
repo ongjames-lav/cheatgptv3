@@ -215,6 +215,12 @@
                         <h4 class="progress-title">
                             <i class="fas fa-cog fa-spin"></i> Processing Video
                         </h4>
+                        <div class="session-info" id="session-info" style="display: none;">
+                            <p class="session-details">
+                                <span class="session-id">Session: <span id="current-session-id"></span></span>
+                                <span class="session-time">Elapsed: <span id="elapsed-time">0:00</span></span>
+                            </p>
+                        </div>
                         <div class="progress-bar">
                             <div class="progress-fill progress-animated" id="processProgressFill"></div>
                         </div>
@@ -239,6 +245,11 @@
                             </button>
                             <button class="result-btn tertiary" onclick="downloadFile('visualization')">
                                 <i class="fas fa-chart-bar"></i> Download Visualization
+                            </button>
+                        </div>
+                        <div class="results-new-upload" style="margin-top: 24px;">
+                            <button class="result-btn new-upload" onclick="startNewUpload()">
+                                <i class="fas fa-plus"></i> Process Another Video
                             </button>
                         </div>
                     </div>
@@ -448,6 +459,29 @@
             backdrop-filter: blur(10px);
         }
 
+        .session-info {
+            margin: 16px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .session-details {
+            color: #ffffff;
+            font-size: 14px;
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .session-id, .session-time {
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+
         /* Results Section */
         .results-section {
             text-align: center;
@@ -519,6 +553,18 @@
 
         .result-btn.tertiary:hover {
             background: #0c4ba6;
+            transform: translateY(-2px);
+        }
+
+        .result-btn.new-upload {
+            background: #10b981;
+            color: #ffffff;
+            border: 2px solid #10b981;
+        }
+
+        .result-btn.new-upload:hover {
+            background: #059669;
+            border-color: #059669;
             transform: translateY(-2px);
         }
 
@@ -606,7 +652,105 @@
     </style>
 
     <script>
+        // State persistence and recovery
         let currentSessionId = null;
+        let elapsedTimer = null;
+        let processingState = {
+            sessionId: null,
+            status: 'idle', // 'uploading', 'processing', 'completed', 'error'
+            progress: 0,
+            message: '',
+            startTime: null,
+            result: null
+        };
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('cheatgpt_processing_state', JSON.stringify(processingState));
+        }
+
+        // Load state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('cheatgpt_processing_state');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    // Only restore if session is recent (within 6 hours)
+                    if (state.startTime && (Date.now() - state.startTime) < 6 * 60 * 60 * 1000) {
+                        processingState = state;
+                        currentSessionId = state.sessionId;
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Failed to load state:', e);
+                }
+            }
+            clearState();
+            return false;
+        }
+
+        // Clear state from localStorage
+        function clearState() {
+            localStorage.removeItem('cheatgpt_processing_state');
+            processingState = {
+                sessionId: null,
+                status: 'idle',
+                progress: 0,
+                message: '',
+                startTime: null,
+                result: null
+            };
+            currentSessionId = null;
+        }
+
+        // Update state and persist
+        function updateState(updates) {
+            Object.assign(processingState, updates);
+            saveState();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (loadState()) {
+                // Restore UI based on saved state
+                restoreUIFromState();
+                
+                // If processing was in progress, continue polling
+                if (processingState.status === 'processing' && processingState.sessionId) {
+                    showProcessingStatus();
+                    pollProcessingStatus();
+                } else if (processingState.status === 'completed' && processingState.result) {
+                    showResults();
+                }
+            }
+        });
+
+        // Restore UI based on current state
+        function restoreUIFromState() {
+            switch (processingState.status) {
+                case 'uploading':
+                    showUploadProgress();
+                    updateUploadProgress(processingState.progress);
+                    break;
+                case 'processing':
+                    showProcessingStatus();
+                    updateProcessingProgress(processingState.progress, processingState.message);
+                    break;
+                case 'completed':
+                    showResults();
+                    stopElapsedTimer(); // Stop timer when completed
+                    break;
+                case 'error':
+                    showError(processingState.message);
+                    stopElapsedTimer(); // Stop timer on error
+                    break;
+                default:
+                    // Show upload form
+                    hideAll();
+                    document.getElementById('upload-area').style.display = 'block';
+                    stopElapsedTimer();
+            }
+        }
         
         // File upload handling
         document.getElementById('video-input').addEventListener('change', handleFileSelect);
@@ -656,6 +800,14 @@
             const formData = new FormData();
             formData.append('video', file);
             
+            // Initialize upload state
+            updateState({
+                status: 'uploading',
+                progress: 0,
+                message: 'Starting upload...',
+                startTime: Date.now()
+            });
+            
             showUploadProgress();
             
             // Create XMLHttpRequest for upload progress tracking
@@ -665,6 +817,7 @@
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
                     const percentComplete = (e.loaded / e.total) * 100;
+                    updateState({ progress: percentComplete });
                     updateUploadProgress(percentComplete);
                 }
             });
@@ -676,22 +829,47 @@
                         const data = JSON.parse(xhr.responseText);
                         if (data.success) {
                             updateUploadProgress(100);
+                            updateState({
+                                status: 'processing',
+                                sessionId: data.session_id,
+                                progress: 0,
+                                message: 'Upload complete, starting processing...'
+                            });
+                            currentSessionId = data.session_id;
+                            
                             setTimeout(() => {
-                                startProcessing(data.path);
+                                showProcessingStatus();
+                                pollProcessingStatus();
                             }, 500);
                         } else {
+                            updateState({
+                                status: 'error',
+                                message: data.error || 'Upload failed'
+                            });
                             showError(data.error);
                         }
                     } catch (e) {
+                        updateState({
+                            status: 'error',
+                            message: 'Invalid response from server'
+                        });
                         showError('Invalid response from server');
                     }
                 } else {
+                    updateState({
+                        status: 'error',
+                        message: `Upload failed with status: ${xhr.status}`
+                    });
                     showError(`Upload failed with status: ${xhr.status}`);
                 }
             });
             
             // Handle errors
             xhr.addEventListener('error', () => {
+                updateState({
+                    status: 'error',
+                    message: 'Upload failed: Network error'
+                });
                 showError('Upload failed: Network error');
             });
             
@@ -733,29 +911,53 @@
             .then(data => {
                 if (data.success) {
                     const status = data.status;
+                    
+                    // Update state with current progress
+                    updateState({
+                        progress: status.progress,
+                        message: status.message
+                    });
+                    
                     updateProcessingProgress(status.progress, status.message);
                     
                     if (status.completed) {
                         if (status.result && status.result.success) {
+                            // Update state to completed
+                            updateState({
+                                status: 'completed',
+                                progress: 100,
+                                message: 'Processing completed successfully',
+                                result: status.result
+                            });
+                            
                             // Ensure progress reaches 100% before showing results
                             updateProcessingProgress(100, 'Processing completed successfully');
                             setTimeout(() => {
                                 showResults();
                             }, 800);
                         } else {
-                            showError(status.result ? status.result.error : 'Processing failed');
+                            const errorMsg = status.result ? status.result.error : 'Processing failed';
+                            updateState({
+                                status: 'error',
+                                message: errorMsg
+                            });
+                            showError(errorMsg);
                         }
                     } else {
-                        // Poll more frequently for better responsiveness
+                        // Continue polling if not completed
                         setTimeout(pollProcessingStatus, 500);
                     }
                 } else {
+                    updateState({
+                        status: 'error',
+                        message: data.error || 'Status check failed'
+                    });
                     showError(data.error);
                 }
             })
             .catch(error => {
                 console.error('Status check error:', error);
-                // Retry after longer delay on error
+                // Don't update state to error for network issues - keep retrying
                 setTimeout(pollProcessingStatus, 2000);
             });
         }
@@ -785,6 +987,14 @@
         function showProcessingStatus() {
             hideAll();
             document.getElementById('processing-status').style.display = 'block';
+            
+            // Show session info if we have a session ID
+            if (currentSessionId) {
+                document.getElementById('session-info').style.display = 'block';
+                document.getElementById('current-session-id').textContent = currentSessionId;
+                startElapsedTimer();
+            }
+            
             // Start processing with 0% progress
             updateProcessingProgress(0, 'Initializing processing...');
         }
@@ -830,6 +1040,48 @@
             document.getElementById('processing-status').style.display = 'none';
             document.getElementById('results').style.display = 'none';
             document.getElementById('error-message').style.display = 'none';
+        }
+
+        function startNewUpload() {
+            // Clear the processing state
+            clearState();
+            
+            // Stop any running timer
+            stopElapsedTimer();
+            
+            // Reset UI to initial state
+            hideAll();
+            document.getElementById('upload-area').style.display = 'block';
+            
+            // Reset file input
+            const fileInput = document.getElementById('video-input');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+
+        function startElapsedTimer() {
+            stopElapsedTimer(); // Clear any existing timer
+            
+            const startTime = processingState.startTime || Date.now();
+            elapsedTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                const elapsedElement = document.getElementById('elapsed-time');
+                if (elapsedElement) {
+                    elapsedElement.textContent = timeStr;
+                }
+            }, 1000);
+        }
+
+        function stopElapsedTimer() {
+            if (elapsedTimer) {
+                clearInterval(elapsedTimer);
+                elapsedTimer = null;
+            }
         }
     </script>
 </body>

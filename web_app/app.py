@@ -39,7 +39,12 @@ except ImportError:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from web_app.db_manager import db
+from web_app.db_manager import DatabaseManager as WebAppDB
+from cheatgpt.db.db_manager import DBManager as MainDB
+
+# Initialize both database managers
+db = WebAppDB()  # For web app specific data (recorded sessions)
+main_db = MainDB()  # For uploaded videos and main processing
 
 # SessionReportGenerator class for PDF export
 class SessionReportGenerator:
@@ -187,14 +192,38 @@ def process_video_async(task: ProcessingTask):
         task.message = "Processing video..."
         task.progress = 10
         
-        # Process the video
+        # Create database session for uploaded video
+        main_db.create_uploaded_video_session(
+            session_id=task.session_id,
+            original_filename=os.path.basename(task.file_path),
+            video_path=task.file_path
+        )
+        
+        # Define progress callback to update task progress
+        def progress_callback(progress, message):
+            task.progress = min(progress, 90)  # Cap at 90% until completion
+            task.message = message
+        
+        # Process the video with progress callback
         result = video_processor.process_video(
             input_path=task.file_path,
-            session_id=task.session_id
+            session_id=task.session_id,
+            progress_callback=progress_callback
         )
         
         task.progress = 90
-        task.message = "Generating reports..."
+        task.message = "Saving to database..."
+        
+        # Store processing results in database
+        main_db.update_processed_video_results(task.session_id, result)
+        
+        # Store events in database if they exist
+        if 'events' in result:
+            main_db.store_uploaded_video_events(task.session_id, result['events'])
+        
+        # Store hotspots if they exist
+        if 'hotspots' in result:
+            main_db.store_uploaded_video_hotspots(task.session_id, result['hotspots'])
         
         # Update final results
         task.result = result
@@ -203,8 +232,17 @@ def process_video_async(task: ProcessingTask):
         task.progress = 100
         
         logger.info(f"✅ Video processing completed for session {task.session_id}")
+        logger.info(f"   - Total events: {result.get('total_events', 0)}")
+        logger.info(f"   - Results saved to database")
         
     except Exception as e:
+        # Update session status to error
+        try:
+            # Add a method to update session status
+            pass
+        except:
+            pass
+            
         task.status = "error"
         task.error = str(e)
         task.message = f"Error: {str(e)}"
@@ -881,57 +919,118 @@ def sessions_list():
         logger.error(f"Error fetching sessions list: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/playback/processed/<session_id>/<filename>')
+def playback_processed_video(session_id, filename):
+    """Stream processed video file with bounding boxes for playback"""
+    try:
+        # Construct path to processed video in results directory
+        video_path = os.path.join("results", session_id, filename)
+        
+        # Verify file exists and is within the results directory for security
+        if not os.path.exists(video_path):
+            logger.error(f"Processed video file not found: {video_path}")
+            return jsonify({'error': 'Video file not found'}), 404
+        
+        # Security check: ensure the file is within the results directory
+        results_abs_path = os.path.abspath("results")
+        video_abs_path = os.path.abspath(video_path)
+        if not video_abs_path.startswith(results_abs_path):
+            logger.error(f"Security violation: attempted access to file outside results directory")
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Get file info
+        file_size = os.path.getsize(video_path)
+        file_modified = os.path.getmtime(video_path)
+        
+        logger.info(f"Serving processed video: {video_path}")
+        logger.info(f"File size: {file_size} bytes")
+        logger.info(f"File modified: {file_modified}")
+        
+        # Check if file is too small (might be corrupted)
+        if file_size < 1000:  # Less than 1KB
+            logger.warning(f"Video file appears to be corrupted (size: {file_size} bytes)")
+            return jsonify({'error': 'Video file appears to be corrupted or incomplete'}), 500
+        
+        return send_file(
+            video_path,
+            mimetype='video/mp4',
+            as_attachment=False,
+            download_name=filename,
+            conditional=True,  # Enable HTTP range requests for better streaming
+            max_age=300  # Cache for 5 minutes
+        )
+    except Exception as e:
+        logger.error(f"Error serving processed video {session_id}/{filename}: {e}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/playback/<session_id>')
 def playback_video(session_id):
-    """Stream recorded video file for playback"""
+    """Stream recorded or processed video file for playback"""
     try:
-        # Get session details including video path
+        # Get session details including video path - check both databases
         session = db.get_session(session_id)
         if not session:
-            logger.error(f"Session not found in database: {session_id}")
+            # Try the main database for uploaded videos
+            session = main_db.get_session_info(session_id)
+            logger.info(f"Checking main database for session: {session_id}")
+        
+        if not session:
+            logger.error(f"Session not found in any database: {session_id}")
             return jsonify({'error': 'Session not found'}), 404
         
         video_path = None
         
-        # Try to find video file by session_id pattern matching
-        import glob
-        
-        # Pattern 1: Look for files containing the session_id
-        pattern1 = str(RECORDINGS_DIR / f"*{session_id}*.mp4")
-        matching_files = glob.glob(pattern1)
-        
-        logger.info(f"Searching for video files with session_id: {session_id}")
-        logger.info(f"Pattern 1: {pattern1}")
-        logger.info(f"Matching files: {matching_files}")
-        
-        if matching_files:
-            video_path = Path(matching_files[0])
-            logger.info(f"Found video file: {video_path}")
+        # Check for uploaded/processed video path first
+        if session.get('processed_video_path'):
+            video_path = Path(session['processed_video_path'])
+            logger.info(f"Using processed video path from database: {video_path}")
+        # Check if this is a processed video (has results directory path)
+        elif session.get('video_path') and 'results/' in session.get('video_path', ''):
+            # This is a processed video - use the path from database
+            video_path = Path(session['video_path'])
+            logger.info(f"Using processed video path from database: {video_path}")
         else:
-            # Pattern 2: Try alternative patterns
-            # Remove 'session_' prefix if present
-            clean_session_id = session_id.replace('session_', '')
-            pattern2 = str(RECORDINGS_DIR / f"*{clean_session_id}*.mp4")
-            matching_files = glob.glob(pattern2)
+            # Try to find recorded video file by session_id pattern matching
+            import glob
             
-            logger.info(f"Pattern 2 (clean ID): {pattern2}")
-            logger.info(f"Clean session ID: {clean_session_id}")
-            logger.info(f"Matching files with clean ID: {matching_files}")
+            # Pattern 1: Look for files containing the session_id
+            pattern1 = str(RECORDINGS_DIR / f"*{session_id}*.mp4")
+            matching_files = glob.glob(pattern1)
+            
+            logger.info(f"Searching for recorded video files with session_id: {session_id}")
+            logger.info(f"Pattern 1: {pattern1}")
+            logger.info(f"Matching files: {matching_files}")
             
             if matching_files:
                 video_path = Path(matching_files[0])
-                logger.info(f"Found video file with clean ID: {video_path}")
+                logger.info(f"Found recorded video file: {video_path}")
             else:
-                logger.error(f"No video files found for session {session_id}")
-                logger.info(f"Searched in: {RECORDINGS_DIR}")
-                all_mp4_files = list(RECORDINGS_DIR.glob('*.mp4'))
-                logger.info(f"Available MP4 files: {all_mp4_files}")
+                # Pattern 2: Try alternative patterns
+                # Remove 'session_' prefix if present
+                clean_session_id = session_id.replace('session_', '')
+                pattern2 = str(RECORDINGS_DIR / f"*{clean_session_id}*.mp4")
+                matching_files = glob.glob(pattern2)
                 
-                # Try to find by timestamp pattern if session_id contains timestamp
-                if '_' in session_id:
-                    parts = session_id.split('_')
-                    if len(parts) >= 3:  # session_YYYYMMDD_HHMMSS_hash format
-                        timestamp_part = f"{parts[1]}_{parts[2]}"
+                logger.info(f"Pattern 2 (clean ID): {pattern2}")
+                logger.info(f"Clean session ID: {clean_session_id}")
+                logger.info(f"Matching files with clean ID: {matching_files}")
+                
+                if matching_files:
+                    video_path = Path(matching_files[0])
+                    logger.info(f"Found recorded video file with clean ID: {video_path}")
+                else:
+                    logger.error(f"No video files found for session {session_id}")
+                    logger.info(f"Searched in: {RECORDINGS_DIR}")
+                    all_mp4_files = list(RECORDINGS_DIR.glob('*.mp4'))
+                    logger.info(f"Available MP4 files: {all_mp4_files}")
+                    
+                    # Try to find by timestamp pattern if session_id contains timestamp
+                    if '_' in session_id:
+                        parts = session_id.split('_')
+                        if len(parts) >= 3:  # session_YYYYMMDD_HHMMSS_hash format
+                            timestamp_part = f"{parts[1]}_{parts[2]}"
                         pattern3 = str(RECORDINGS_DIR / f"*{timestamp_part}*.mp4")
                         timestamp_files = glob.glob(pattern3)
                         logger.info(f"Pattern 3 (timestamp): {pattern3}")
@@ -982,8 +1081,11 @@ def playback_video(session_id):
 def session_events(session_id):
     """Get suspicious events for a session with timestamps"""
     try:
-        # Get events from database for this session
+        # Get events from database for this session - check both databases
         events = db.get_session_events(session_id)
+        if not events:
+            # Try main database for uploaded videos
+            events = main_db.get_session_events(session_id)
         
         # Event type mapping to readable descriptions
         event_descriptions = {
@@ -1041,9 +1143,28 @@ def get_session_thumbnail(session_id):
         from io import BytesIO
         from PIL import Image
         
-        # Find the video file for this session
-        video_files = list(RECORDINGS_DIR.glob(f"*{session_id}*.mp4"))
-        if not video_files:
+        # Find the video file for this session - check both databases
+        session = db.get_session(session_id)
+        if not session:
+            # Try main database for uploaded videos
+            session = main_db.get_session_info(session_id)
+        
+        video_path = None
+        
+        if session:
+            # Check for uploaded/processed video path first
+            if session.get('processed_video_path'):
+                video_path = Path(session['processed_video_path'])
+            elif session.get('video_path'):
+                video_path = Path(session['video_path'])
+        
+        # Fallback to file system search for recorded videos
+        if not video_path or not video_path.exists():
+            video_files = list(RECORDINGS_DIR.glob(f"*{session_id}*.mp4"))
+            if video_files:
+                video_path = video_files[0]
+        
+        if not video_path or not video_path.exists():
             logger.warning(f"No video file found for session {session_id}")
             # Return a placeholder image
             placeholder = Image.new('RGB', (160, 90), color=(48, 48, 48))
@@ -1052,7 +1173,7 @@ def get_session_thumbnail(session_id):
             img_buffer.seek(0)
             return send_file(img_buffer, mimetype='image/jpeg')
         
-        video_path = video_files[0]
+        video_path = video_path
         logger.info(f"Generating thumbnail for video: {video_path}")
         
         # Extract first frame using OpenCV
@@ -1095,6 +1216,48 @@ def get_session_thumbnail(session_id):
         except:
             return '', 404
 
+@app.route('/api/sessions/uploaded')
+def api_uploaded_videos():
+    """Get list of uploaded video sessions from database"""
+    try:
+        # Import the uploaded video database manager
+        from cheatgpt.db.db_manager import DBManager
+        upload_db = DBManager()
+        
+        # Get uploaded video sessions
+        sessions = upload_db.get_uploaded_video_sessions(limit=100)
+        
+        # Format sessions for frontend compatibility
+        formatted_sessions = []
+        for session in sessions:
+            formatted_session = {
+                'session_id': session['session_id'],
+                'video_title': session.get('original_filename', session['session_id']),
+                'filename': session.get('original_filename', ''),
+                'processing_time': session.get('created_at', session.get('start_timestamp', 0)),
+                'start_time': session.get('start_timestamp', 0),
+                'end_time': session.get('end_timestamp', 0),
+                'duration': session.get('end_timestamp', 0) - session.get('start_timestamp', 0) if session.get('end_timestamp') and session.get('start_timestamp') else 0,
+                'status': session.get('status', 'unknown'),
+                'hotspot_count': session.get('total_events', 0),
+                'event_count': session.get('total_events', 0),
+                'video_path': session.get('processed_video_path', session.get('video_path', '')),
+                'session_type': 'uploaded',
+                'frame_count': session.get('frame_count', 0),
+                'video_metadata': session.get('video_metadata', '{}')
+            }
+            formatted_sessions.append(formatted_session)
+        
+        return jsonify({
+            'success': True,
+            'videos': formatted_sessions,
+            'total_count': len(formatted_sessions)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching uploaded videos: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/sessions/list')
 def api_sessions_list():
     """Enhanced API route for sessions list with detailed metadata"""
@@ -1117,16 +1280,25 @@ def api_sessions_list():
             warning_events = len([e for e in events if e.get('severity') == 'orange'])
             notice_events = len([e for e in events if e.get('severity') == 'yellow'])
             
-            # Check if session is currently active
-            is_active = session.get('end_time') is None
+            # Determine session type and status
+            session_type = session.get('session_type', 'recorded')
+            if session_type == 'uploaded':
+                status = 'uploaded'
+                video_title = session.get('video_title', 'Uploaded Video')
+            else:
+                is_active = session.get('end_time') is None
+                status = 'active' if is_active else 'completed'
+                video_title = session.get('video_title', f"Session {session['session_id']}")
             
             enhanced_session = {
                 'session_id': session['session_id'],
-                'start_time': session['start_time'],
-                'end_time': session.get('end_time'),
+                'video_title': video_title,
+                'start_time': session.get('start_time') or session.get('start_ts'),
+                'end_time': session.get('end_time') or session.get('end_ts'),
                 'duration': session.get('duration', 0),
                 'hotspot_count': len(events),
-                'status': 'active' if is_active else 'completed',
+                'status': status,
+                'session_type': session_type,
                 'phone_events': phone_events,
                 'looking_events': looking_events,
                 'leaning_events': leaning_events,
@@ -2650,13 +2822,51 @@ def api_upload_video():
             logger.error(f"❌ Upload error: {result}")
             return jsonify(result), 400
         
-        logger.info("✅ Upload successful")
+        # Create database session for uploaded video
+        main_db.create_uploaded_video_session(
+            session_id=session_id,
+            original_filename=file.filename,
+            video_path=result['file_path']
+        )
+        
+        # Start video processing automatically
+        logger.info("🎬 Starting automatic video processing...")
+        try:
+            # Create processing task
+            task = ProcessingTask(
+                session_id=session_id,
+                file_path=result['file_path']
+            )
+            
+            # Add to processing status dictionary
+            processing_status[session_id] = task
+            
+            # Start processing in background
+            import threading
+            thread = threading.Thread(target=process_video_async, args=(task,))
+            thread.daemon = True
+            thread.start()
+            
+            logger.info(f"✅ Upload successful and processing started for session {session_id}")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to start processing: {e}")
+            # Still return success for upload, but note processing failed to start
+            return jsonify({
+                'success': True,
+                'session_id': session_id,
+                'path': result['file_path'],
+                'file_path': result['file_path'],
+                'message': 'Upload successful, but processing failed to start automatically',
+                'processing_error': str(e)
+            })
+        
         return jsonify({
             'success': True,
             'session_id': session_id,
             'path': result['file_path'],
             'file_path': result['file_path'],
-            'message': 'Upload successful'
+            'message': 'Upload successful, processing started'
         })
         
     except Exception as e:

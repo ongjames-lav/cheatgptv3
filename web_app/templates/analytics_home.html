@@ -473,6 +473,44 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .video-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: #353535;
+            border-color: #555555;
+        }
+
+        .tab-btn.active {
+            background: #007acc;
+            border-color: #007acc;
+            color: #ffffff;
+        }
+
+        .tab-btn i {
+            font-size: 16px;
         }
 
         .view-controls {
@@ -1153,6 +1191,65 @@
             padding: 16px 24px 20px;
             justify-content: flex-end;
         }
+
+        /* Processed Video Specific Styles */
+        .processed-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: linear-gradient(135deg, #1a2e1a 0%, #2a4a2a 100%);
+            position: relative;
+        }
+
+        .bounding-box-indicator {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(76, 175, 80, 0.9);
+            color: #ffffff;
+            padding: 4px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .processed-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .video-card[data-type="processed"] .video-title {
+            color: #4CAF50;
+        }
+
+        .video-card[data-type="processed"] .video-duration {
+            background: rgba(76, 175, 80, 0.9);
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .processed-video-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: 1px solid #4CAF50;
+            color: #ffffff;
+        }
+
+        .processed-video-btn:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            border-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -1213,7 +1310,10 @@
             <!-- Recent Sessions Section -->
             <section class="recent-section">
                 <div class="content-header">
-                    <h2 class="section-title">Recent Sessions</h2>
+                    <h2 class="section-title">Video Sessions</h2>
+                    
+                    <!-- Removed video type tabs - showing all videos directly -->
+                    
                     <div class="view-controls">
                         <div class="selection-controls" id="selectionControls" style="display: none;">
                             <span class="selected-count" id="selectedCount">0 selected</span>
@@ -1343,9 +1443,11 @@
         class AnalyticsHome {
             constructor() {
                 this.sessions = [];
+                this.processedVideos = [];
                 this.filteredSessions = [];
                 this.selectedSessions = new Set();
                 this.selectionMode = false;
+                this.currentTab = 'recorded'; // 'recorded' or 'processed'
                 this.currentSort = 'date_desc';
                 this.activeFilters = {
                     search: ''
@@ -1354,6 +1456,7 @@
                 this.initializeElements();
                 this.setupEventListeners();
                 this.loadSessions();
+                this.loadProcessedVideos(); // Pre-load processed videos
             }
 
             initializeElements() {
@@ -1363,6 +1466,10 @@
                 this.gridView = document.getElementById('gridView');
                 this.listView = document.getElementById('listView');
                 this.tooltip = document.getElementById('tooltip');
+                
+                // Tab elements - removed
+                // this.recordedTab = document.getElementById('recordedTab');
+                // this.processedTab = document.getElementById('processedTab');
                 
                 // Selection controls
                 this.selectModeBtn = document.getElementById('selectModeBtn');
@@ -1381,6 +1488,10 @@
             }
 
             setupEventListeners() {
+                // Tab switching - removed
+                // this.recordedTab.addEventListener('click', () => this.switchTab('recorded'));
+                // this.processedTab.addEventListener('click', () => this.switchTab('processed'));
+                
                 // Search
                 this.searchInput.addEventListener('input', (e) => {
                     this.activeFilters.search = e.target.value.toLowerCase();
@@ -1442,6 +1553,42 @@
                 } catch (error) {
                     console.error('Error loading sessions:', error);
                     this.showError(`Failed to load sessions: ${error.message}`);
+                }
+            }
+
+            async loadProcessedVideos() {
+                try {
+                    console.log('Loading processed videos...');
+                    const response = await fetch('/api/sessions/uploaded');
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Raw processed videos response:', data);
+                    
+                    this.processedVideos = Array.isArray(data.videos) ? data.videos : [];
+                    console.log('Processed videos loaded:', this.processedVideos);
+                    
+                    if (this.currentTab === 'processed') {
+                        this.applyFilters();
+                    }
+                } catch (error) {
+                    console.error('Error loading processed videos:', error);
+                    this.showError(`Failed to load processed videos: ${error.message}`);
+                }
+            }
+
+            // Remove switchTab - show all videos directly
+            showAllVideos() {
+                console.log('Showing all videos together');
+                // Simply apply filters to show all loaded videos
+                this.applyFilters();
+                
+                // Clear selection mode 
+                if (this.selectionMode) {
+                    this.exitSelectionMode();
                 }
             }
 
@@ -1566,33 +1713,53 @@
             }
 
             applyFilters() {
-                let filtered = [...this.sessions];
+                // Combine all videos from both sources
+                let allVideos = [];
+                
+                // Add recorded sessions
+                this.sessions.forEach(session => {
+                    allVideos.push({
+                        ...session,
+                        type: 'recorded',
+                        display_title: session.session_id,
+                        sort_date: session.start_time
+                    });
+                });
+                
+                // Add processed videos (currently empty as per API change)
+                this.processedVideos.forEach(video => {
+                    allVideos.push({
+                        ...video,
+                        type: 'processed',
+                        display_title: video.video_title || video.filename,
+                        sort_date: video.processing_time || video.start_time
+                    });
+                });
+
+                let filtered = [...allVideos];
 
                 // Search filter
                 if (this.activeFilters.search) {
-                    filtered = filtered.filter(session => 
-                        session.session_id.toLowerCase().includes(this.activeFilters.search) ||
-                        new Date(session.start_time * 1000).toLocaleDateString().includes(this.activeFilters.search)
-                    );
+                    filtered = filtered.filter(item => {
+                        return item.display_title.toLowerCase().includes(this.activeFilters.search) ||
+                               item.session_id.toLowerCase().includes(this.activeFilters.search) ||
+                               new Date((item.sort_date || 0) * 1000).toLocaleDateString().includes(this.activeFilters.search);
+                    });
                 }
 
-                // Sort
+                // Sort by date (newest first by default)
                 filtered.sort((a, b) => {
                     switch (this.currentSort) {
                         case 'date_desc':
-                            return b.start_time - a.start_time;
+                            return (b.sort_date || 0) - (a.sort_date || 0);
                         case 'date_asc':
-                            return a.start_time - b.start_time;
+                            return (a.sort_date || 0) - (b.sort_date || 0);
                         case 'events_desc':
-                            return (b.hotspot_count || 0) - (a.hotspot_count || 0);
+                            return (b.hotspot_count || b.event_count || 0) - (a.hotspot_count || a.event_count || 0);
                         case 'events_asc':
-                            return (a.hotspot_count || 0) - (b.hotspot_count || 0);
-                        case 'duration_desc':
-                            return (b.duration || 0) - (a.duration || 0);
-                        case 'duration_asc':
-                            return (a.duration || 0) - (b.duration || 0);
+                            return (a.hotspot_count || a.event_count || 0) - (b.hotspot_count || b.event_count || 0);
                         default:
-                            return 0;
+                            return (b.sort_date || 0) - (a.sort_date || 0);
                     }
                 });
 
@@ -1604,14 +1771,27 @@
                 console.log('Rendering sessions:', this.filteredSessions.length);
                 
                 if (this.filteredSessions.length === 0) {
-                    this.videoGrid.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1 / -1;">
-                            <div class="empty-icon">No Videos</div>
-                            <div class="empty-title">No sessions found</div>
-                            <div class="empty-subtitle">Try adjusting your filters or start a new recording session</div>
-                            <a href="/" class="empty-action">Start Live Monitoring</a>
-                        </div>
-                    `;
+                    let emptyStateContent;
+                    if (this.currentTab === 'processed') {
+                        emptyStateContent = `
+                            <div class="empty-state" style="grid-column: 1 / -1;">
+                                <div class="empty-icon">🎬</div>
+                                <div class="empty-title">No processed videos found</div>
+                                <div class="empty-subtitle">Process uploaded videos to see them here with bounding boxes and analysis</div>
+                                <a href="/upload" class="empty-action">Upload & Process Videos</a>
+                            </div>
+                        `;
+                    } else {
+                        emptyStateContent = `
+                            <div class="empty-state" style="grid-column: 1 / -1;">
+                                <div class="empty-icon">No Videos</div>
+                                <div class="empty-title">No recorded sessions found</div>
+                                <div class="empty-subtitle">Try adjusting your filters or start a new recording session</div>
+                                <a href="/" class="empty-action">Start Live Monitoring</a>
+                            </div>
+                        `;
+                    }
+                    this.videoGrid.innerHTML = emptyStateContent;
                     return;
                 }
 
@@ -1643,8 +1823,20 @@
                         });
                     } else {
                         card.addEventListener('click', () => {
-                            console.log('Navigating to player for session:', sessionId);
-                            window.location.href = `/analytics/player?session=${sessionId}`;
+                            const videoType = card.dataset.type;
+                            const filename = card.dataset.filename;
+                            
+                            console.log('Card clicked for session:', sessionId, 'type:', videoType);
+                            
+                            if (videoType === 'processed') {
+                                // For processed videos, just show details without playback
+                                console.log('Processed video details for session:', sessionId);
+                                // You can add a details modal or info display here if needed
+                                return;
+                            } else {
+                                // For recorded sessions, use the analytics player
+                                window.location.href = `/analytics/player?session=${sessionId}`;
+                            }
                         });
                     }
                 });
@@ -1652,8 +1844,18 @@
                 console.log('Session rendering complete');
             }
 
-            createSessionCard(session) {
-                console.log('Creating session card for:', session);
+            createSessionCard(item) {
+                console.log('Creating card for:', item);
+                
+                if (this.currentTab === 'recorded') {
+                    return this.createRecordedSessionCard(item);
+                } else {
+                    return this.createProcessedVideoCard(item);
+                }
+            }
+
+            createRecordedSessionCard(session) {
+                console.log('Creating recorded session card for:', session);
                 
                 // Handle different timestamp formats
                 let timestamp = session.start_time || session.timestamp || session.created_at;
@@ -1677,10 +1879,10 @@
                                    session.video_path?.replace('.mp4', '.jpg') ||
                                    `/api/thumbnail/${sessionId}`;
 
-                console.log('Session card data:', { sessionId, date, duration, eventCount, thumbnailSrc });
+                console.log('Recorded session card data:', { sessionId, date, duration, eventCount, thumbnailSrc });
 
                 return `
-                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${sessionId}" tabindex="0">
+                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${sessionId}" data-type="recorded" tabindex="0">
                         <div class="video-thumbnail">
                             <div class="selection-checkbox ${isSelected ? 'checked' : ''}"></div>
                             <img src="${thumbnailSrc}" 
@@ -1703,12 +1905,61 @@
                                     <span class="event-count ${eventCountClass}">${eventCount} events</span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            createProcessedVideoCard(video) {
+                console.log('Creating processed video card for:', video);
+                
+                const date = new Date(video.processing_time * 1000);
+                const sizeInMB = (video.size / (1024 * 1024)).toFixed(1);
+                const duration = this.formatTime(video.duration || 0);
+                const eventCount = video.hotspot_count || 0;
+                const isSelected = this.selectedSessions.has(video.session_id);
+
+                let eventCountClass = 'low';
+                if (eventCount > 50) eventCountClass = 'high';
+                else if (eventCount > 25) eventCountClass = 'medium';
+
+                return `
+                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${video.session_id}" data-filename="${video.filename}" data-type="processed" tabindex="0">
+                        <div class="video-thumbnail">
+                            <div class="selection-checkbox ${isSelected ? 'checked' : ''}"></div>
+                            <div class="processed-preview">
+                                <i class="fas fa-file-video" style="font-size: 48px; color: #4CAF50;"></i>
+                                <div class="bounding-box-indicator">
+                                    <i class="fas fa-vector-square" style="font-size: 16px;"></i>
+                                </div>
+                            </div>
+                            <div class="video-duration">${duration}</div>
+                            <div class="processed-badge">PROCESSED</div>
+                            <div class="video-overlay">
+                                <span class="overlay-text">View Details</span>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">${video.video_title}</div>
+                            <div class="video-metadata">
+                                <div class="video-date">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
+                            </div>
+                            <div class="video-stats">
+                                <div class="stat-item">
+                                    <span class="stat-icon">Events:</span>
+                                    <span class="event-count ${eventCountClass}">${eventCount} events</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon">Size:</span>
+                                    <span class="file-size">${sizeInMB} MB</span>
+                                </div>
+                            </div>
                             <div class="video-actions">
-                                <button class="action-btn view-report-btn" data-session-id="${sessionId}" onclick="event.stopPropagation(); window.location.href='/analytics/reports/${sessionId}'">
+                                <button class="action-btn processed-video-btn" data-session-id="${video.session_id}" data-filename="${video.filename}" onclick="event.stopPropagation(); window.open('/playback/${video.session_id}', '_blank')">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
                                     </svg>
-                                    View Report
+                                    Play Processed Video
                                 </button>
                             </div>
                         </div>

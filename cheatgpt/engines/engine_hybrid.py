@@ -49,7 +49,7 @@ class SimpleTracker:
         self.disappeared = {}
         self.max_disappeared = max_disappeared
         self.max_objects = max_objects  # Maximum number of objects to track
-        self.assignment_threshold = 250  # Increased from 150 to 250 for better single-person tracking
+        self.assignment_threshold = 150  # Reduced from 250 to 150 for better multi-person tracking in classroom
     
     def register(self, bbox: List[float]) -> int:
         """Register a new object."""
@@ -183,10 +183,10 @@ class ResearchBasedRuleEngine:
             'phone_consecutive_frames': 8,
             'phone_duration_threshold': 1.5,  # seconds - longer duration requirement
             
-            # Looking Away Frequently: Head yaw >25° left/right, occurring ≥6 times in 4s or held >4s
-            'head_turn_angle_threshold': 15.0,  # degrees - more sensitive for smaller movements (was 25.0)
-            'head_turn_frequency_threshold': 3,  # occurrences in window - lower threshold (was 6)
-            'head_turn_sustained_threshold': 2.0,  # seconds - shorter sustained threshold (was 4.0)
+            # Looking Away Frequently: Head yaw >40° left/right, occurring ≥2 times in 4s or held >2s  
+            'head_turn_angle_threshold': 40.0,  # degrees - increased threshold for more deliberate turns
+            'head_turn_frequency_threshold': 2,  # occurrences in window - sensitive to repeated looking 
+            'head_turn_sustained_threshold': 2.0,  # seconds - quick detection of sustained looking
             
             # Looking Down Abnormally: Pitch >35° sustained ≥20 frames (~2.0s)
             'head_pitch_threshold': 20.0,  # degrees - more sensitive threshold (was 35.0)
@@ -213,7 +213,7 @@ class ResearchBasedRuleEngine:
         self.last_normal_posture: Dict[int, float] = {}
         self.active_cheating_events: Dict[int, Dict[str, Dict]] = {}
         self.last_event_time: Dict[int, Dict[str, float]] = {}  # Prevent event spam
-        self.previous_head_turn_state: Dict[int, bool] = {}  # Track previous head turn state for transitions
+        self.previous_head_turn_state: Dict[int, bool] = {}  # REMOVED - now using instant detection like hand extensions
         
         # Cleanup old person data periodically for classroom environment
         self.last_cleanup_time = 0
@@ -248,9 +248,7 @@ class ResearchBasedRuleEngine:
             self.confirmation_counts[person_id] = {}
             self.last_normal_posture[person_id] = timestamp
             self.active_cheating_events[person_id] = {}
-            # Track previous head turn state for transition detection
-            self.previous_head_turn_state = getattr(self, 'previous_head_turn_state', {})
-            self.previous_head_turn_state[person_id] = False
+            # REMOVED head turn state tracking - now using instant detection like hand extensions
         
         # Update sliding window
         windows = self.person_windows[person_id]
@@ -260,12 +258,23 @@ class ResearchBasedRuleEngine:
         phone_detected = detection_data.get('phone_flag', False)
         head_turn_angle = abs(detection_data.get('head_turn_angle', 0.0))
         head_pitch_angle = abs(detection_data.get('lean_angle', 0.0))  # Using lean_angle as pitch proxy
-        # Track gesture flag for debugging
+        # Track gesture flag for debugging - FOCUS ON SIDEWARD EXTENSIONS ONLY
         hand_extended = detection_data.get('gesture_flag', False)
+        gesture_reason = detection_data.get('gesture_reason', 'unknown')
+        
+        # Only flag sideward hand extensions (not face covering)
+        is_sideward_gesture = hand_extended and (
+            'sideward' in gesture_reason.lower() or 
+            'reach' in gesture_reason.lower()
+        )
+        
         if hand_extended:
-            gesture_reason = detection_data.get('gesture_reason', 'unknown')
-            self.logger.info(f"🤚 GESTURE DETECTED for person {person_id}: {gesture_reason}")
-            self.logger.debug(f"🤚 Full gesture data: {detection_data.get('gesture_details', {})}")
+            if is_sideward_gesture:
+                self.logger.info(f"🤚 SIDEWARD GESTURE DETECTED for person {person_id}: {gesture_reason}")
+                self.logger.debug(f"🤚 Full sideward gesture data: {detection_data.get('gesture_details', {})}")
+            else:
+                self.logger.debug(f"🤚 Ignoring non-sideward gesture for person {person_id}: {gesture_reason} (likely face covering)")
+                hand_extended = False  # Override - don't count face covering as suspicious
         out_of_frame = detection_data.get('out_of_frame', False)
         
         # Check for normal posture
@@ -280,16 +289,16 @@ class ResearchBasedRuleEngine:
         # Update behavior windows
         windows['phone_detections'].append(phone_detected)
         
-        # Head turn event detection - only count transitions, not continuous states
-        current_head_turn = head_turn_angle > self.thresholds['head_turn_angle_threshold']
-        previous_head_turn = self.previous_head_turn_state.get(person_id, False)
+        # Head turn event detection - INSTANT DETECTION like hand extensions
+        current_head_turn = head_turn_angle >= self.thresholds['head_turn_angle_threshold']
         
-        # Only count as head turn event if transitioning from straight to turned
-        head_turn_transition = current_head_turn and not previous_head_turn
-        windows['head_turn_events'].append(head_turn_transition)
+        # Log head turn detection for debugging
+        if current_head_turn:
+            direction = "RIGHT" if detection_data.get('head_turn_angle', 0.0) > 0 else "LEFT"
+            self.logger.info(f"🔄 HEAD TURN DETECTED for person {person_id}: {direction} turn ({head_turn_angle:.1f}°)")
         
-        # Update previous state
-        self.previous_head_turn_state[person_id] = current_head_turn
+        # Add instant head turn detection to windows (like hand extensions)
+        windows['head_turn_events'].append(current_head_turn)
         
         windows['head_pitch_events'].append(head_pitch_angle > self.thresholds['head_pitch_threshold'])
         windows['hand_extended_events'].append(hand_extended)
@@ -355,31 +364,29 @@ class ResearchBasedRuleEngine:
     
     
     def _evaluate_research_rules(self, person_id: int, detection_data: Dict[str, Any], timestamp: float) -> List[Dict[str, Any]]:
-        """Evaluate research-based rules for cheating detection."""
+        """Evaluate research-based rules for cheating detection - SIMPLIFIED TO 3 PARAMETERS ONLY."""
         events = []
         windows = self.person_windows[person_id]
         confirmations = self.confirmation_counts[person_id]
         active_events = self.active_cheating_events[person_id]
         
+        # ONLY 3 DETECTION RULES:
+        
         # Rule 1: Phone Usage Detection
         phone_events = self._check_phone_usage(windows, confirmations, active_events, person_id, detection_data, timestamp)
         events.extend(phone_events)
         
-        # Rule 2: Frequent Head Turning
+        # Rule 2: Head Turning Left and Right
         head_turn_events = self._check_frequent_head_turning(windows, confirmations, active_events, person_id, detection_data, timestamp)
         events.extend(head_turn_events)
         
-        # Rule 3: Sustained Abnormal Head Pitch (Looking Down)
-        head_pitch_events = self._check_sustained_head_pitch(windows, confirmations, active_events, person_id, detection_data, timestamp)
-        events.extend(head_pitch_events)
-        
-        # Rule 4: Extended Hand Gestures
+        # Rule 3: Hand Extension
         hand_events = self._check_extended_hand_gestures(windows, confirmations, active_events, person_id, detection_data, timestamp)
         events.extend(hand_events)
         
-        # Rule 5: Out of Frame Detection
-        frame_events = self._check_out_of_frame(windows, confirmations, active_events, person_id, detection_data, timestamp)
-        events.extend(frame_events)
+        # REMOVED RULES:
+        # - Sustained Abnormal Head Pitch (Looking Down) - DISABLED
+        # - Out of Frame Detection - DISABLED
         
         return events
     
@@ -421,7 +428,7 @@ class ResearchBasedRuleEngine:
                 events.append({
                     'timestamp': timestamp,
                     'person_id': f"person_{person_id:03d}",
-                    'event_type': 'Phone Usage Detected',
+                    'event_type': 'Phone Usage',  # Simple label for bounding box
                     'severity': 'red',
                     'confidence': 0.95,
                     'source': 'research_rules',
@@ -436,7 +443,7 @@ class ResearchBasedRuleEngine:
     
     def _check_frequent_head_turning(self, windows: Dict, confirmations: Dict, active_events: Dict,
                                    person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
-        """Check for frequent head turning (≥3 times in window or sustained >2s)."""
+        """Check for INSTANT head turning detection - no waiting for multiple instances."""
         events = []
         head_turn_events = list(windows['head_turn_events'])
         timestamps = list(windows['timestamps'])
@@ -444,73 +451,50 @@ class ResearchBasedRuleEngine:
         if not head_turn_events or not timestamps:
             return events
         
-        # Count head turn events in window
-        turn_count = sum(head_turn_events)
+        # INSTANT DETECTION: Check if current frame has head turning based on angle
+        head_angle = abs(detection_data.get('head_turn_angle', 0.0))
+        raw_head_angle = detection_data.get('head_turn_angle', 0.0)  # Keep sign for direction
         
-        # Check for sustained head turning (consecutive frames at end)
-        consecutive_turns = 0
-        for turn in reversed(head_turn_events):
-            if turn:
-                consecutive_turns += 1
-            else:
-                break
-        
-        sustained_duration = consecutive_turns / self.detection_fps
-        
-        # Apply research rules
-        frequent_turns = turn_count >= self.thresholds['head_turn_frequency_threshold']
-        sustained_turns = sustained_duration >= self.thresholds['head_turn_sustained_threshold']
-        
-        if frequent_turns or sustained_turns:
-            event_type = 'head_turn_frequent'
+        # INSTANT HEAD TURN DETECTION - enhanced sensitivity for classroom monitoring
+        if head_angle >= 30.0:  # 30+ degree turn for enhanced sensitivity (inclusive)
+            event_type = 'head_turn_instant'
             
-            # Increment confirmation count
-            confirmations[event_type] = confirmations.get(event_type, 0) + 1
+            # Check debounce timing to avoid spam
+            if person_id not in self.last_event_time:
+                self.last_event_time[person_id] = {}
             
-            # Generate confirmed event if threshold met and not recently reported
-            if confirmations[event_type] >= self.confirmation_threshold:
-                # Check debounce timing
-                if person_id not in self.last_event_time:
-                    self.last_event_time[person_id] = {}
-                
-                last_reported = self.last_event_time[person_id].get(event_type, 0)
-                if timestamp - last_reported < self.event_debounce_interval:
-                    return events  # Skip if too recent
-                
-                if event_type not in active_events:
-                    active_events[event_type] = {
-                        'first_detected': timestamp,
-                        'confirmed': True
-                    }
-                
-                # Update last reported time
-                self.last_event_time[person_id][event_type] = timestamp
-                
-                head_angle = detection_data.get('head_turn_angle', 0.0)
-                
-                if sustained_turns:
-                    severity = 'red'
-                    event_name = 'Sustained Head Turning'
-                    details = f'Head turning sustained for {sustained_duration:.1f}s (angle: {head_angle:.1f}°)'
-                else:
-                    severity = 'orange'
-                    event_name = 'Frequent Head Turning'
-                    details = f'Head turned {turn_count} times in window (current angle: {head_angle:.1f}°)'
-                
-                events.append({
-                    'timestamp': timestamp,
-                    'person_id': f"person_{person_id:03d}",
-                    'event_type': event_name,
-                    'severity': severity,
-                    'confidence': 0.8,
-                    'source': 'research_rules',
-                    'details': details,
-                    'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
-                    'rule_triggered': 'head_turn_frequency' if frequent_turns else 'head_turn_sustained',
-                    'turn_count': turn_count,
-                    'sustained_duration': sustained_duration,
-                    'head_angle': head_angle
-                })
+            last_reported = self.last_event_time[person_id].get(event_type, 0)
+            if timestamp - last_reported < 0.5:  # Enhanced responsiveness - 0.5 second debounce for sensitive detection
+                return events  # Skip if too recent
+            
+            if event_type not in active_events:
+                active_events[event_type] = {
+                    'first_detected': timestamp,
+                    'confirmed': True
+                }
+            
+            # Update last reported time
+            self.last_event_time[person_id][event_type] = timestamp
+            
+            # Determine turn direction correctly
+            direction = "RIGHT" if raw_head_angle > 0 else "LEFT"
+            severity = 'orange'
+            event_name = 'Head Turning'  # Clear label for detection
+            details = f'Head turned {direction} ({head_angle:.1f}° detected instantly)'
+            
+            events.append({
+                'timestamp': timestamp,
+                'person_id': f"person_{person_id:03d}",
+                'event_type': event_name,
+                'severity': severity,
+                'confidence': 0.8,
+                'source': 'research_rules',
+                'details': details,
+                'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
+                'rule_triggered': 'instant_head_turn',
+                'turn_direction': direction,
+                'head_angle': head_angle
+            })
         
         return events
     
@@ -568,53 +552,93 @@ class ResearchBasedRuleEngine:
     
     def _check_extended_hand_gestures(self, windows: Dict, confirmations: Dict, active_events: Dict,
                                     person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
-        """Check for extended hand gestures (≥15 frames ≈ 1.5s)."""
+        """Check for sustained sideward hand gestures - CLASSROOM FOCUSED."""
         events = []
-        hand_events = list(windows['hand_extended_events'])
         
-        if not hand_events:
+        # Check if current frame has sideward gesture
+        gesture_flag = detection_data.get('gesture_flag', False)
+        gesture_reason = detection_data.get('gesture_reason', 'unknown')
+        
+        if not gesture_flag:
+            # Clear any tracking if no gesture detected
+            if hasattr(self, 'gesture_tracking'):
+                self.gesture_tracking.pop(person_id, None)
             return events
         
-        # Count consecutive hand events at end of window
-        consecutive_hands = 0
-        for hand in reversed(hand_events):
-            if hand:
-                consecutive_hands += 1
-            else:
-                break
+        # Only process sideward extensions (ignore face covering)
+        is_sideward = 'sideward' in gesture_reason.lower() or 'reach' in gesture_reason.lower()
         
-        # Check if threshold met (≥10 frames ≈ 1.0s)
-        if consecutive_hands >= self.thresholds['hand_extended_frames_threshold']:
-            event_type = 'hand_extended'
-            
-            # Increment confirmation count
-            confirmations[event_type] = confirmations.get(event_type, 0) + 1
-            
-            # Generate confirmed event if threshold met (lower threshold for hand detection)
-            if confirmations[event_type] >= self.hand_confirmation_threshold:
-                if event_type not in active_events:
-                    active_events[event_type] = {
-                        'first_detected': timestamp,
-                        'confirmed': True
-                    }
+        if not is_sideward:
+            self.logger.debug(f"🤚 Ignoring non-sideward hand gesture: {gesture_reason}")
+            return events
+        
+        # Initialize gesture tracking
+        if not hasattr(self, 'gesture_tracking'):
+            self.gesture_tracking = {}
+        
+        if person_id not in self.gesture_tracking:
+            self.gesture_tracking[person_id] = {}
+        
+        # Track gesture persistence
+        gesture_key = f"{gesture_reason}"
+        current_tracking = self.gesture_tracking[person_id].get(gesture_key, {
+            'first_detected': timestamp,
+            'last_seen': timestamp,
+            'frames_count': 0,
+            'confirmed': False
+        })
+        
+        # Update tracking
+        current_tracking['last_seen'] = timestamp
+        current_tracking['frames_count'] += 1
+        
+        # Require gesture to be sustained for at least 0.5 seconds (about 8-10 frames at 15-20 FPS)
+        sustained_duration = timestamp - current_tracking['first_detected']
+        min_duration = 0.5  # seconds
+        min_frames = 8  # minimum frames
+        
+        self.gesture_tracking[person_id][gesture_key] = current_tracking
+        
+        # Only trigger if gesture is sustained AND meets minimum requirements
+        if sustained_duration >= min_duration and current_tracking['frames_count'] >= min_frames:
+            if not current_tracking['confirmed']:
+                # Mark as confirmed and check debounce
+                event_type = 'hand_extended'
                 
-                duration = consecutive_hands / self.detection_fps
-                gesture_reason = detection_data.get('gesture_reason', 'unknown_gesture')
+                # Add debounce timing to prevent spam
+                if person_id not in self.last_event_time:
+                    self.last_event_time[person_id] = {}
+                
+                last_reported = self.last_event_time[person_id].get(event_type, 0)
+                if timestamp - last_reported < 3.0:  # 3-second debounce
+                    return events  # Skip if too recent
+                
+                # Mark as confirmed and generate event
+                current_tracking['confirmed'] = True
+                self.last_event_time[person_id][event_type] = timestamp
+                
+                # Generate sustained gesture event
+                active_events[event_type] = {
+                    'first_detected': current_tracking['first_detected'],
+                    'confirmed': True
+                }
                 
                 events.append({
                     'timestamp': timestamp,
                     'person_id': f"person_{person_id:03d}",
-                    'event_type': 'Suspicious Hand Activity',
+                    'event_type': 'Hand Extension',  # Simple label for bounding box
                     'severity': 'orange',
-                    'confidence': 0.7,
+                    'confidence': 0.85,  # Higher confidence for sustained gestures
                     'source': 'research_rules',
-                    'details': f'Hand gesture detected: {gesture_reason} for {duration:.1f}s',
+                    'details': f'Sustained sideward hand extension: {gesture_reason} (sustained for {sustained_duration:.1f}s)',
                     'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
-                    'rule_triggered': 'hand_extended_duration',
-                    'consecutive_frames': consecutive_hands,
-                    'duration_seconds': duration,
-                    'gesture_type': gesture_reason
+                    'rule_triggered': 'hand_extended_sustained',
+                    'gesture_type': gesture_reason,
+                    'duration': sustained_duration,
+                    'frame_count': current_tracking['frames_count']
                 })
+                
+                self.logger.info(f"🤚 SUSTAINED SIDEWARD GESTURE DETECTED for person {person_id}: {gesture_reason} (sustained {sustained_duration:.1f}s, {current_tracking['frames_count']} frames)")
         
         return events
     
@@ -687,8 +711,8 @@ class EngineHybrid:
         self.device = self._setup_device()
         self.logger.info(f"🔧 Using device: {self.device}")
         
-        # Detection thresholds
-        self.person_conf_thresh = float(os.getenv('PERSON_CONF_THRESH', '0.4'))
+        # Detection thresholds - optimized for classroom multi-student detection
+        self.person_conf_thresh = float(os.getenv('PERSON_CONF_THRESH', '0.3'))  # Lowered from 0.4 to 0.3 for distant students
         self.phone_conf_thresh = float(os.getenv('PHONE_CONF_THRESH', '0.4'))
         
         # Initialize components
@@ -745,9 +769,9 @@ class EngineHybrid:
         self.pose_detector = PoseDetector()
         self.logger.info("✅ Pose detector ready")
         
-        # Simple Tracker with improved settings for single person tracking
-        self.tracker = SimpleTracker(max_disappeared=15, max_objects=2)  # Optimized for single-person scenarios
-        self.logger.info("✅ Object tracker ready")
+        # Simple Tracker with settings for classroom multi-student tracking
+        self.tracker = SimpleTracker(max_disappeared=30, max_objects=15)  # Support up to 15 students
+        self.logger.info("✅ Object tracker ready for multi-student tracking")
         
         # Research-based rule engine
         self.rule_engine = ResearchBasedRuleEngine()
@@ -797,14 +821,16 @@ class EngineHybrid:
     
     def _trigger_alarm(self, event_type: str):
         """Trigger alarm sound for phone detection only."""
-        if event_type == "Phone Usage Detected":
+        if event_type == "Phone Usage":  # Fixed to match actual event type
             try:
                 if self.alarm_sound:
                     self.alarm_sound.play()
+                    self.logger.info(f"🚨 ALARM TRIGGERED: {event_type}")
                 else:
                     # Fallback to system beep
                     import winsound
                     winsound.Beep(1000, 500)  # 1000 Hz for 500ms
+                    self.logger.info(f"🚨 BEEP ALARM TRIGGERED: {event_type}")
             except Exception as e:
                 self.logger.debug(f"Alarm failed: {e}")
         # No alarm for other event types (head turning, looking down, gestures)
@@ -842,20 +868,22 @@ class EngineHybrid:
                 persons = [d for d in detections if d['cls_name'] == 'person']
                 phones = [d for d in detections if d['cls_name'] == 'cell phone']
                 
-                # Filter to keep only the most confident person detection to avoid multiple IDs
+                # Filter to keep high-confidence person detections for classroom
                 if len(persons) > 1:
-                    # Sort by confidence and keep top 2 detections
-                    persons = sorted(persons, key=lambda x: x['conf'], reverse=True)[:2]
-                    self.logger.debug(f"Filtered to top {len(persons)} person detections")
+                    # Keep all confident detections for multi-student tracking
+                    persons = [p for p in persons if p['conf'] >= self.person_conf_thresh]
+                    # Sort by confidence but keep all detections (no artificial limit)
+                    persons = sorted(persons, key=lambda x: x['conf'], reverse=True)
+                    self.logger.debug(f"Keeping {len(persons)} person detections for multi-student tracking")
                 
                 # Step 2: Update tracker with new detections
                 self.last_tracks = self.tracker.update(persons)
                 
-                # Reset tracker if too many IDs accumulated (single person scenario)
-                # More aggressive reset for single-person scenarios
-                if len(self.tracker.objects) > 2:  # Reduced from 3 to 2
-                    self.logger.warning(f"🔄 Resetting tracker - too many IDs for single person: {len(self.tracker.objects)}")
-                    self.tracker = SimpleTracker(max_disappeared=15, max_objects=2)  # Limit to 2 objects max
+                # Reset tracker only if excessive IDs accumulated (classroom scenario)
+                # More conservative reset for multi-student scenarios
+                if len(self.tracker.objects) > 20:  # Increased from 2 to 20 for classroom
+                    self.logger.warning(f"🔄 Resetting tracker - too many IDs for classroom: {len(self.tracker.objects)}")
+                    self.tracker = SimpleTracker(max_disappeared=30, max_objects=15)  # Support 15 students
                     # Re-track with clean tracker
                     self.last_tracks = self.tracker.update(persons)
                 
@@ -888,10 +916,10 @@ class EngineHybrid:
                 self.logger.debug(f"🔍 Detection frame {self.frame_count}: {len(persons)} persons detected, "
                                f"{len(self.last_tracks)} tracked, {len(phones)} phones, {len(all_events)} events ({detection_time*1000:.1f}ms)")
                 
-                # Log if we have too many tracks (debugging)
-                if len(self.last_tracks) > 2:
+                # Log if we have excessive tracks (debugging for classroom)
+                if len(self.last_tracks) > 15:
                     track_ids = [t.get('track_id', 'unknown') for t in self.last_tracks]
-                    self.logger.warning(f"⚠️ Multiple tracks detected: {track_ids} - may need tracker tuning")
+                    self.logger.warning(f"⚠️ Many tracks detected: {len(track_ids)} students - performance may be affected")
                 
             else:
                 # NON-DETECTION FRAME: Use tracker interpolation
@@ -1333,8 +1361,8 @@ class EngineHybrid:
         self.active_events = {}
         self.event_timestamps = {}
         
-        # Reset tracker
-        self.tracker = SimpleTracker(max_disappeared=10, max_objects=2)  # Optimized for single-person scenarios
+        # Reset tracker for multi-student scenarios
+        self.tracker = SimpleTracker(max_disappeared=30, max_objects=15)  # Support up to 15 students
         
         # Reset rule engine
         self.rule_engine = ResearchBasedRuleEngine()
