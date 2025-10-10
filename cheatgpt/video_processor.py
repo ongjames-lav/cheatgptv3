@@ -158,6 +158,16 @@ class VideoProcessor:
                 if not ret:
                     break
                 
+                # Check for stop signal every frame for immediate responsiveness
+                if progress_callback:
+                    progress = (frame_count / total_frames) * 100
+                    adjusted_progress = 10 + (progress * 0.8)
+                    should_continue = progress_callback(adjusted_progress, f"Processing frame {frame_count}/{total_frames}")
+                    
+                    if should_continue is False:
+                        print(f"🛑 Video processing stopped at frame {frame_count}/{total_frames}")
+                        break
+                
                 # Process frame through engine
                 timestamp = frame_count / fps
                 overlay_frame, events = self.engine.process_frame(
@@ -174,17 +184,10 @@ class VideoProcessor:
                 
                 frame_count += 1
                 
-                # Progress logging and callback
-                if frame_count % 50 == 0:  # Update every 50 frames for smoother progress
+                # Progress logging for user feedback (every 50 frames)
+                if frame_count % 50 == 0:
                     progress = (frame_count / total_frames) * 100
-                    progress_message = f"Processing frame {frame_count}/{total_frames}"
-                    print(f"📊 Processing progress: {progress:.1f}% ({frame_count}/{total_frames} frames)")
-                    
-                    # Call progress callback if provided
-                    if progress_callback:
-                        # Progress ranges from 10% to 90% during video processing
-                        adjusted_progress = 10 + (progress * 0.8)  # 10% + (0-100% * 80%)
-                        progress_callback(adjusted_progress, progress_message)
+                    print(f"� Processing progress: {progress:.1f}% ({frame_count}/{total_frames} frames)")
         
         finally:
             # Cleanup

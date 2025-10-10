@@ -225,6 +225,11 @@
                             <div class="progress-fill progress-animated" id="processProgressFill"></div>
                         </div>
                         <p class="progress-text" id="process-message">Initializing...</p>
+                        <div class="processing-controls" style="margin-top: 20px; text-align: center;">
+                            <button class="stop-btn" onclick="stopProcessing()" id="stop-processing-btn">
+                                <i class="fas fa-stop"></i> Stop Processing
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="results" class="results-section" style="display: none;">
@@ -566,6 +571,41 @@
             background: #059669;
             border-color: #059669;
             transform: translateY(-2px);
+        }
+
+        /* Stop Button */
+        .stop-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #dc2626;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .stop-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+        }
+
+        .stop-btn:active {
+            transform: translateY(0);
+        }
+
+        .stop-btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Error Section */
@@ -935,6 +975,14 @@
                             setTimeout(() => {
                                 showResults();
                             }, 800);
+                        } else if (data.status && data.status.progress !== undefined && data.status.message && data.status.message.includes('stopped')) {
+                            // Handle stopped status
+                            updateState({
+                                status: 'stopped',
+                                message: 'Processing stopped by user'
+                            });
+                            stopElapsedTimer();
+                            // Processing was stopped, UI should have already been reset by stopProcessing()
                         } else {
                             const errorMsg = status.result ? status.result.error : 'Processing failed';
                             updateState({
@@ -1082,6 +1130,68 @@
                 clearInterval(elapsedTimer);
                 elapsedTimer = null;
             }
+        }
+
+        function stopProcessing() {
+            if (!currentSessionId) {
+                alert('No processing session to stop');
+                return;
+            }
+
+            // Confirm the action
+            if (!confirm('Are you sure you want to stop the video processing? This action cannot be undone.')) {
+                return;
+            }
+
+            // Disable the stop button to prevent multiple clicks
+            const stopBtn = document.getElementById('stop-processing-btn');
+            if (stopBtn) {
+                stopBtn.disabled = true;
+                stopBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Stopping...';
+            }
+
+            // Send stop request to server
+            fetch(`/api/stop/${currentSessionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update state to stopped
+                    updateState({
+                        status: 'stopped',
+                        message: 'Processing stopped by user'
+                    });
+                    
+                    // Stop the timer
+                    stopElapsedTimer();
+                    
+                    // Show success message and reset UI
+                    setTimeout(() => {
+                        alert('Processing stopped successfully. You can now upload another video.');
+                        startNewUpload();
+                    }, 1000);
+                } else {
+                    // Re-enable button on error
+                    if (stopBtn) {
+                        stopBtn.disabled = false;
+                        stopBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Processing';
+                    }
+                    alert('Failed to stop processing: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error stopping processing:', error);
+                // Re-enable button on error
+                if (stopBtn) {
+                    stopBtn.disabled = false;
+                    stopBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Processing';
+                }
+                alert('Network error while stopping processing. Please try again.');
+            });
         }
     </script>
 </body>

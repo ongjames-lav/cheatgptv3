@@ -201,8 +201,19 @@ def process_video_async(task: ProcessingTask):
         
         # Define progress callback to update task progress
         def progress_callback(progress, message):
+            # Check if processing was stopped
+            if task.status == 'stopped':
+                logger.info(f"🛑 Processing stopped for session {task.session_id}")
+                return False  # Signal to stop processing
+                
             task.progress = min(progress, 90)  # Cap at 90% until completion
             task.message = message
+            return True  # Continue processing
+        
+        # Check if stopped before starting
+        if task.status == 'stopped':
+            logger.info(f"🛑 Processing stopped before video processing for session {task.session_id}")
+            return
         
         # Process the video with progress callback
         result = video_processor.process_video(
@@ -210,6 +221,11 @@ def process_video_async(task: ProcessingTask):
             session_id=task.session_id,
             progress_callback=progress_callback
         )
+        
+        # Check if stopped after processing
+        if task.status == 'stopped':
+            logger.info(f"🛑 Processing stopped after video processing for session {task.session_id}")
+            return
         
         task.progress = 90
         task.message = "Saving to database..."
@@ -225,6 +241,11 @@ def process_video_async(task: ProcessingTask):
         if 'hotspots' in result:
             main_db.store_uploaded_video_hotspots(task.session_id, result['hotspots'])
         
+        # Final check before completion
+        if task.status == 'stopped':
+            logger.info(f"🛑 Processing stopped before completion for session {task.session_id}")
+            return
+        
         # Update final results
         task.result = result
         task.status = "completed"
@@ -236,13 +257,12 @@ def process_video_async(task: ProcessingTask):
         logger.info(f"   - Results saved to database")
         
     except Exception as e:
-        # Update session status to error
-        try:
-            # Add a method to update session status
-            pass
-        except:
-            pass
+        # Check if this is due to stopping
+        if task.status == 'stopped':
+            logger.info(f"🛑 Processing stopped with exception for session {task.session_id}: {e}")
+            return
             
+        # Update session status to error
         task.status = "error"
         task.error = str(e)
         task.message = f"Error: {str(e)}"
@@ -2943,7 +2963,7 @@ def api_processing_status(session_id):
         task = processing_status[session_id]
         
         # Determine if processing is completed
-        completed = task.status in ['completed', 'error']
+        completed = task.status in ['completed', 'error', 'stopped']
         
         # Prepare result object for completed tasks
         result = None
@@ -2970,6 +2990,44 @@ def api_processing_status(session_id):
         
     except Exception as e:
         logger.error(f"❌ Error getting processing status: {e}")
+        logger.exception("Full error details:")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/stop/<session_id>', methods=['POST'])
+def api_stop_processing(session_id):
+    """Stop video processing for a given session"""
+    try:
+        logger.info(f"🛑 Stop processing request for session: {session_id}")
+        
+        if session_id not in processing_status:
+            logger.error(f"❌ Session not found: {session_id}")
+            return jsonify({'success': False, 'error': 'Session not found'}), 404
+        
+        task = processing_status[session_id]
+        
+        # Check if already completed or stopped
+        if task.status in ['completed', 'error', 'stopped']:
+            logger.warning(f"⚠️ Session {session_id} already finished with status: {task.status}")
+            return jsonify({
+                'success': True,
+                'message': f'Session already finished with status: {task.status}'
+            })
+        
+        # Mark the task as stopped
+        task.status = 'stopped'
+        task.message = 'Processing stopped by user'
+        task.error = 'Processing cancelled by user request'
+        
+        logger.info(f"✅ Processing stopped for session: {session_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Processing stopped successfully',
+            'session_id': session_id
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error stopping processing for session {session_id}: {e}")
         logger.exception("Full error details:")
         return jsonify({'success': False, 'error': str(e)}), 500
 
