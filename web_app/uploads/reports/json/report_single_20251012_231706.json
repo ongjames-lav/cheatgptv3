@@ -1,0 +1,48 @@
+{
+  "session_info": {
+    "session_id": "single_20251012_231706",
+    "generated_at": "2025-10-12T23:17:19.868497",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "original_single_20251012_231706_processed_single_1760272101.mp4",
+    "width": 1024,
+    "height": 576,
+    "fps": 30.0,
+    "frame_count": 219,
+    "duration": 7.3
+  },
+  "analysis_results": {
+    "total_events": 1,
+    "event_summary": {
+      "Head Turning": 1
+    },
+    "events": [
+      {
+        "timestamp": 5.966666666666667,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (32.4\u00b0 detected instantly)",
+        "bbox": [
+          258.25909423828125,
+          72.8086929321289,
+          750.39306640625,
+          568.2713012695312
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 32.41004807734471
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 5.0,
+    "risk_level": "medium",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

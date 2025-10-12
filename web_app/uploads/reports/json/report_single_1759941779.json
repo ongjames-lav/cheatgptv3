@@ -1,0 +1,1267 @@
+{
+  "session_info": {
+    "session_id": "single_1759941779",
+    "generated_at": "2025-10-09T00:44:15.539788",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "179948d7-affa-4976-92b9-df39ea79a7a4.mp4",
+    "width": 1024,
+    "height": 576,
+    "fps": 30.00529388990289,
+    "frame_count": 1519,
+    "duration": 50.6244
+  },
+  "analysis_results": {
+    "total_events": 65,
+    "event_summary": {
+      "Abnormal Looking Down": 55,
+      "Frequent Head Turning": 4,
+      "Suspicious Hand Activity": 6
+    },
+    "events": [
+      {
+        "timestamp": 1.1664608294930876,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 27.4\u00b0)",
+        "bbox": [
+          772.3185424804688,
+          302.42364501953125,
+          1023.6228637695312,
+          573.1989135742188
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 27.35296638749407
+      },
+      {
+        "timestamp": 1.2664431863067809,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 30.2\u00b0)",
+        "bbox": [
+          772.7077026367188,
+          302.7743835449219,
+          1023.62060546875,
+          572.8162231445312
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 30.231674970866045
+      },
+      {
+        "timestamp": 1.3664255431204742,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.4s (angle: 32.9\u00b0)",
+        "bbox": [
+          772.9818115234375,
+          302.3713073730469,
+          1023.6119384765625,
+          572.7133178710938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "pitch_angle": 32.93074640186572
+      },
+      {
+        "timestamp": 1.4664078999341672,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.5s (angle: 33.8\u00b0)",
+        "bbox": [
+          773.2721557617188,
+          302.5494079589844,
+          1023.6036987304688,
+          572.7257080078125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "pitch_angle": 33.775951055472895
+      },
+      {
+        "timestamp": 1.5663902567478605,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.6s (angle: 34.7\u00b0)",
+        "bbox": [
+          771.6336669921875,
+          302.3905334472656,
+          1023.5836181640625,
+          572.5925903320312
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "pitch_angle": 34.74938935546537
+      },
+      {
+        "timestamp": 1.6663726135615538,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.7s (angle: 24.1\u00b0)",
+        "bbox": [
+          773.2308959960938,
+          302.69769287109375,
+          1023.5924072265625,
+          572.6388549804688
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "pitch_angle": 24.07825729123771
+      },
+      {
+        "timestamp": 1.766354970375247,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.8s (angle: 28.5\u00b0)",
+        "bbox": [
+          773.805908203125,
+          302.888427734375,
+          1023.5953369140625,
+          572.8091430664062
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8,
+        "pitch_angle": 28.489423119760104
+      },
+      {
+        "timestamp": 1.8663373271889403,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.9s (angle: 33.4\u00b0)",
+        "bbox": [
+          774.4928588867188,
+          303.4609069824219,
+          1023.5888671875,
+          572.9115600585938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 19,
+        "duration_seconds": 1.9,
+        "pitch_angle": 33.36378888570865
+      },
+      {
+        "timestamp": 1.9663196840026334,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.0s (angle: 37.0\u00b0)",
+        "bbox": [
+          776.1918334960938,
+          303.4389953613281,
+          1023.5935668945312,
+          572.65283203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 20,
+        "duration_seconds": 2.0,
+        "pitch_angle": 36.974445912229875
+      },
+      {
+        "timestamp": 2.0663020408163266,
+        "person_id": "person_000",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 35.0\u00b0)",
+        "bbox": [
+          777.2857055664062,
+          303.3316345214844,
+          1023.5771484375,
+          572.4938354492188
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 35.0
+      },
+      {
+        "timestamp": 2.0663020408163266,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.1s (angle: 37.0\u00b0)",
+        "bbox": [
+          777.2857055664062,
+          303.3316345214844,
+          1023.5771484375,
+          572.4938354492188
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 21,
+        "duration_seconds": 2.1,
+        "pitch_angle": 37.02554190484834
+      },
+      {
+        "timestamp": 2.1662843976300197,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.2s (angle: 37.1\u00b0)",
+        "bbox": [
+          778.1652221679688,
+          303.5077819824219,
+          1023.5789184570312,
+          572.5419921875
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 22,
+        "duration_seconds": 2.2,
+        "pitch_angle": 37.07459392459514
+      },
+      {
+        "timestamp": 2.266266754443713,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.3s (angle: 37.1\u00b0)",
+        "bbox": [
+          777.5079956054688,
+          304.0554504394531,
+          1023.5724487304688,
+          572.4998168945312
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 23,
+        "duration_seconds": 2.3,
+        "pitch_angle": 37.09410338913876
+      },
+      {
+        "timestamp": 2.3662491112574062,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.4s (angle: 37.1\u00b0)",
+        "bbox": [
+          777.6239624023438,
+          304.06427001953125,
+          1023.5728759765625,
+          572.46484375
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 24,
+        "duration_seconds": 2.4,
+        "pitch_angle": 37.14442648320283
+      },
+      {
+        "timestamp": 2.4662314680710997,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.5s (angle: 37.3\u00b0)",
+        "bbox": [
+          777.9459228515625,
+          304.19268798828125,
+          1023.5717163085938,
+          572.5908203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 25,
+        "duration_seconds": 2.5,
+        "pitch_angle": 37.27356302734902
+      },
+      {
+        "timestamp": 2.5662138248847928,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.6s (angle: 24.6\u00b0)",
+        "bbox": [
+          778.5650634765625,
+          304.19769287109375,
+          1023.5599975585938,
+          572.4933471679688
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 26,
+        "duration_seconds": 2.6,
+        "pitch_angle": 24.591928980831774
+      },
+      {
+        "timestamp": 2.666196181698486,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.7s (angle: 34.3\u00b0)",
+        "bbox": [
+          777.8499755859375,
+          304.2399597167969,
+          1023.5656127929688,
+          572.6680908203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 27,
+        "duration_seconds": 2.7,
+        "pitch_angle": 34.26643595914485
+      },
+      {
+        "timestamp": 2.7661785385121793,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.0s (angle: 30.2\u00b0)",
+        "bbox": [
+          0.0,
+          334.83917236328125,
+          212.33706665039062,
+          572.77783203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 10,
+        "duration_seconds": 1.0,
+        "pitch_angle": 30.15184474152283
+      },
+      {
+        "timestamp": 2.7661785385121793,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.8s (angle: 38.2\u00b0)",
+        "bbox": [
+          778.3325805664062,
+          304.3705139160156,
+          1023.5689697265625,
+          572.6995239257812
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 28,
+        "duration_seconds": 2.8,
+        "pitch_angle": 38.2058009870456
+      },
+      {
+        "timestamp": 2.8661608953258724,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.1s (angle: 20.1\u00b0)",
+        "bbox": [
+          0.0,
+          334.8803405761719,
+          212.373779296875,
+          572.7991333007812
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1,
+        "pitch_angle": 20.100991446741418
+      },
+      {
+        "timestamp": 2.8661608953258724,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.9s (angle: 38.2\u00b0)",
+        "bbox": [
+          778.9293823242188,
+          304.6683349609375,
+          1023.5671997070312,
+          572.7435913085938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 29,
+        "duration_seconds": 2.9,
+        "pitch_angle": 38.21806494271846
+      },
+      {
+        "timestamp": 2.966143252139566,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 28.0\u00b0)",
+        "bbox": [
+          0.08415527641773224,
+          335.2616271972656,
+          212.7008819580078,
+          573.0968627929688
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 27.99101237616016
+      },
+      {
+        "timestamp": 2.966143252139566,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 3.0s (angle: 24.8\u00b0)",
+        "bbox": [
+          780.0791015625,
+          304.8326416015625,
+          1023.5699462890625,
+          572.6915893554688
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 30,
+        "duration_seconds": 3.0,
+        "pitch_angle": 24.785768018175542
+      },
+      {
+        "timestamp": 3.066125608953259,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 3.1s (angle: 34.1\u00b0)",
+        "bbox": [
+          780.6920776367188,
+          305.0153503417969,
+          1023.5670166015625,
+          572.4960327148438
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 31,
+        "duration_seconds": 3.1,
+        "pitch_angle": 34.10510046933052
+      },
+      {
+        "timestamp": 3.066125608953259,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 31.5\u00b0)",
+        "bbox": [
+          0.0,
+          335.15185546875,
+          214.0071258544922,
+          573.3712768554688
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 31.507175003662528
+      },
+      {
+        "timestamp": 13.464290717577354,
+        "person_id": "person_008",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 25.6\u00b0)",
+        "bbox": [
+          811.1564331054688,
+          241.107177734375,
+          1012.0631103515625,
+          467.35040283203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 25.59507911182519
+      },
+      {
+        "timestamp": 13.564273074391048,
+        "person_id": "person_008",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 28.4\u00b0)",
+        "bbox": [
+          810.4767456054688,
+          239.252197265625,
+          1012.0347900390625,
+          468.40533447265625
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 28.421154694504953
+      },
+      {
+        "timestamp": 13.764237788018434,
+        "person_id": "person_000",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.1s (angle: 23.9\u00b0)",
+        "bbox": [
+          830.9122924804688,
+          340.621826171875,
+          1023.7006225585938,
+          570.2344360351562
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1,
+        "pitch_angle": 23.897673044624796
+      },
+      {
+        "timestamp": 33.66072679394338,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 21.3\u00b0)",
+        "bbox": [
+          183.90647888183594,
+          192.55166625976562,
+          385.2871398925781,
+          545.7987670898438
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 21.261407919460318
+      },
+      {
+        "timestamp": 33.76070915075708,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 21.8\u00b0)",
+        "bbox": [
+          184.06407165527344,
+          192.2612762451172,
+          385.6901550292969,
+          545.46533203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 21.77465761885573
+      },
+      {
+        "timestamp": 33.86069150757077,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.4s (angle: 22.9\u00b0)",
+        "bbox": [
+          184.06027221679688,
+          191.6697235107422,
+          385.14190673828125,
+          545.7074584960938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "pitch_angle": 22.879288022798022
+      },
+      {
+        "timestamp": 33.96067386438447,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.5s (angle: 23.6\u00b0)",
+        "bbox": [
+          183.882568359375,
+          190.260498046875,
+          385.54278564453125,
+          545.6343383789062
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "pitch_angle": 23.63511596437733
+      },
+      {
+        "timestamp": 33.96067386438447,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 45.0\u00b0)",
+        "bbox": [
+          376.28363037109375,
+          172.6335906982422,
+          538.1275634765625,
+          567.8555908203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 45.0
+      },
+      {
+        "timestamp": 34.06065622119816,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.6s (angle: 45.0\u00b0)",
+        "bbox": [
+          183.5331573486328,
+          190.2045440673828,
+          385.2312927246094,
+          546.4716796875
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "pitch_angle": 45.0
+      },
+      {
+        "timestamp": 34.06065622119816,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 32.2\u00b0)",
+        "bbox": [
+          374.552734375,
+          170.48428344726562,
+          537.8721923828125,
+          569.0975952148438
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 32.18691950404212
+      },
+      {
+        "timestamp": 34.16063857801185,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.7s (angle: 44.4\u00b0)",
+        "bbox": [
+          183.6117706298828,
+          190.2400360107422,
+          384.7694396972656,
+          546.2852783203125
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "pitch_angle": 44.37541716383796
+      },
+      {
+        "timestamp": 34.16063857801185,
+        "person_id": "person_007",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.2s (angle: 22.5\u00b0)",
+        "bbox": [
+          740.20263671875,
+          63.521942138671875,
+          870.31494140625,
+          205.6527099609375
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "pitch_angle": 22.52585470288282
+      },
+      {
+        "timestamp": 34.16063857801185,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.4s (angle: 22.4\u00b0)",
+        "bbox": [
+          378.78277587890625,
+          170.2941436767578,
+          538.8915405273438,
+          569.54931640625
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "pitch_angle": 22.375390229625026
+      },
+      {
+        "timestamp": 34.260620934825546,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.8s (angle: 31.6\u00b0)",
+        "bbox": [
+          183.7724151611328,
+          189.68179321289062,
+          384.9728698730469,
+          546.1681518554688
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8,
+        "pitch_angle": 31.648947406208592
+      },
+      {
+        "timestamp": 34.260620934825546,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.5s (angle: 45.0\u00b0)",
+        "bbox": [
+          378.6073303222656,
+          168.65939331054688,
+          538.9393920898438,
+          569.5043334960938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "pitch_angle": 45.0
+      },
+      {
+        "timestamp": 34.260620934825546,
+        "person_id": "person_007",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.3s (angle: 22.5\u00b0)",
+        "bbox": [
+          741.1633911132812,
+          62.890846252441406,
+          870.59326171875,
+          205.0468292236328
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "pitch_angle": 22.454817685134145
+      },
+      {
+        "timestamp": 34.36060329163924,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.9s (angle: 22.9\u00b0)",
+        "bbox": [
+          183.6201629638672,
+          189.98721313476562,
+          385.56591796875,
+          545.8905029296875
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 19,
+        "duration_seconds": 1.9,
+        "pitch_angle": 22.88550955520061
+      },
+      {
+        "timestamp": 34.36060329163924,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.6s (angle: 33.0\u00b0)",
+        "bbox": [
+          377.43621826171875,
+          168.1567840576172,
+          538.3743286132812,
+          569.2760620117188
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "pitch_angle": 32.95825279840922
+      },
+      {
+        "timestamp": 34.460585648452934,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.7s (angle: 45.0\u00b0)",
+        "bbox": [
+          376.9691467285156,
+          168.02450561523438,
+          538.3566284179688,
+          569.0126342773438
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 17,
+        "duration_seconds": 1.7,
+        "pitch_angle": 45.0
+      },
+      {
+        "timestamp": 34.460585648452934,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.0s (angle: 23.7\u00b0)",
+        "bbox": [
+          183.4025421142578,
+          189.02481079101562,
+          383.83404541015625,
+          544.9186401367188
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 20,
+        "duration_seconds": 2.0,
+        "pitch_angle": 23.698874301308027
+      },
+      {
+        "timestamp": 34.560568005266624,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.1s (angle: 23.6\u00b0)",
+        "bbox": [
+          183.4567413330078,
+          189.05381774902344,
+          383.9064025878906,
+          544.0663452148438
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 21,
+        "duration_seconds": 2.1,
+        "pitch_angle": 23.606041046284222
+      },
+      {
+        "timestamp": 34.560568005266624,
+        "person_id": "person_002",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 1.8s (angle: 45.0\u00b0)",
+        "bbox": [
+          378.2057189941406,
+          165.89707946777344,
+          538.5301513671875,
+          567.2152709960938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 18,
+        "duration_seconds": 1.8,
+        "pitch_angle": 45.0
+      },
+      {
+        "timestamp": 34.660550362080315,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.2s (angle: 23.4\u00b0)",
+        "bbox": [
+          183.74209594726562,
+          188.96533203125,
+          384.2021484375,
+          543.8277587890625
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 22,
+        "duration_seconds": 2.2,
+        "pitch_angle": 23.396706630243404
+      },
+      {
+        "timestamp": 34.76053271889401,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.3s (angle: 23.5\u00b0)",
+        "bbox": [
+          184.00839233398438,
+          189.1027374267578,
+          384.11993408203125,
+          542.9987182617188
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 23,
+        "duration_seconds": 2.3,
+        "pitch_angle": 23.494575161133245
+      },
+      {
+        "timestamp": 34.8605150757077,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.4s (angle: 23.4\u00b0)",
+        "bbox": [
+          183.8585968017578,
+          188.68101501464844,
+          384.4354553222656,
+          543.1062622070312
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 24,
+        "duration_seconds": 2.4,
+        "pitch_angle": 23.37510619277542
+      },
+      {
+        "timestamp": 34.9604974325214,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.5s (angle: 22.6\u00b0)",
+        "bbox": [
+          183.98028564453125,
+          188.47789001464844,
+          383.5313415527344,
+          542.6276245117188
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 25,
+        "duration_seconds": 2.5,
+        "pitch_angle": 22.584610606497243
+      },
+      {
+        "timestamp": 35.06047978933509,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.6s (angle: 21.8\u00b0)",
+        "bbox": [
+          183.1281280517578,
+          188.17149353027344,
+          383.585205078125,
+          542.1472778320312
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 26,
+        "duration_seconds": 2.6,
+        "pitch_angle": 21.757442075167166
+      },
+      {
+        "timestamp": 35.16046214614878,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.7s (angle: 20.4\u00b0)",
+        "bbox": [
+          182.72413635253906,
+          187.92149353027344,
+          382.7099609375,
+          542.53369140625
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 27,
+        "duration_seconds": 2.7,
+        "pitch_angle": 20.357680061451852
+      },
+      {
+        "timestamp": 35.26044450296248,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.8s (angle: 21.2\u00b0)",
+        "bbox": [
+          182.3678741455078,
+          188.19692993164062,
+          381.945068359375,
+          543.4628295898438
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 28,
+        "duration_seconds": 2.8,
+        "pitch_angle": 21.181055498379422
+      },
+      {
+        "timestamp": 35.36042685977617,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 2.9s (angle: 20.6\u00b0)",
+        "bbox": [
+          182.2371826171875,
+          188.4736328125,
+          383.2714538574219,
+          544.3455200195312
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 29,
+        "duration_seconds": 2.9,
+        "pitch_angle": 20.630507308028882
+      },
+      {
+        "timestamp": 35.460409216589866,
+        "person_id": "person_003",
+        "event_type": "Abnormal Looking Down",
+        "severity": "orange",
+        "confidence": 0.75,
+        "source": "research_rules",
+        "details": "Looking down abnormally for 3.0s (angle: 20.9\u00b0)",
+        "bbox": [
+          180.6288299560547,
+          190.0944366455078,
+          382.95263671875,
+          545.0453491210938
+        ],
+        "rule_triggered": "head_pitch_sustained",
+        "consecutive_frames": 30,
+        "duration_seconds": 3.0,
+        "pitch_angle": 20.864985411731492
+      },
+      {
+        "timestamp": 35.96032100065833,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 13.9\u00b0)",
+        "bbox": [
+          590.5479736328125,
+          188.66201782226562,
+          710.3866577148438,
+          519.8015747070312
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 13.927048191345568
+      },
+      {
+        "timestamp": 38.05995049374589,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 0.0\u00b0)",
+        "bbox": [
+          592.6500854492188,
+          183.3025360107422,
+          714.48583984375,
+          512.7982788085938
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.0,
+        "head_angle": 0.0
+      },
+      {
+        "timestamp": 41.25938591178407,
+        "person_id": "person_003",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.1s",
+        "bbox": [
+          170.57376098632812,
+          184.3658905029297,
+          380.95281982421875,
+          539.654052734375
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 11,
+        "duration_seconds": 1.1,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 41.35936826859776,
+        "person_id": "person_003",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.2s",
+        "bbox": [
+          171.7927703857422,
+          184.78628540039062,
+          380.6031188964844,
+          539.7647705078125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 12,
+        "duration_seconds": 1.2,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 41.45935062541146,
+        "person_id": "person_003",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.3s",
+        "bbox": [
+          171.2254180908203,
+          184.01670837402344,
+          380.8780517578125,
+          539.0938720703125
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 13,
+        "duration_seconds": 1.3,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 41.55933298222515,
+        "person_id": "person_003",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.4s",
+        "bbox": [
+          170.16371154785156,
+          185.89892578125,
+          380.7496643066406,
+          538.0133666992188
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 14,
+        "duration_seconds": 1.4,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 41.65931533903884,
+        "person_id": "person_003",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.5s",
+        "bbox": [
+          171.1184844970703,
+          186.89053344726562,
+          380.82684326171875,
+          538.5471801757812
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 15,
+        "duration_seconds": 1.5,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 41.75929769585254,
+        "person_id": "person_003",
+        "event_type": "Suspicious Hand Activity",
+        "severity": "orange",
+        "confidence": 0.7,
+        "source": "research_rules",
+        "details": "Hand gesture detected: left_wrist_near_head for 1.6s",
+        "bbox": [
+          170.5789337158203,
+          186.40966796875,
+          380.5920715332031,
+          537.8313598632812
+        ],
+        "rule_triggered": "hand_extended_duration",
+        "consecutive_frames": 16,
+        "duration_seconds": 1.6,
+        "gesture_type": "left_wrist_near_head"
+      },
+      {
+        "timestamp": 49.35795681369322,
+        "person_id": "person_001",
+        "event_type": "Frequent Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned 3 times in window (current angle: 35.0\u00b0)",
+        "bbox": [
+          583.4534301757812,
+          237.6042022705078,
+          715.33447265625,
+          572.6119995117188
+        ],
+        "rule_triggered": "head_turn_frequency",
+        "turn_count": "3",
+        "sustained_duration": 0.1,
+        "head_angle": 35.0
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 10.0,
+    "risk_level": "critical",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

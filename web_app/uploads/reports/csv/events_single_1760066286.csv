@@ -1,0 +1,2 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+7.89868355274121,person_000,Hand Extension,orange,0.85,research_rules,Sustained sideward hand extension: left_hand_sideward_extension (sustained for 0.7s),"[750.552734375, 284.5259704589844, 1022.6939697265625, 568.3019409179688]",hand_extended_sustained

@@ -1,0 +1,2 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+29.05698100633122,person_020,Hand Extension,orange,0.8,research_rules,Sideward hand extension detected: right_hand_sideward_extension (instant detection),"[469.70343017578125, 183.6006317138672, 594.0943603515625, 321.1214294433594]",hand_extended_instant

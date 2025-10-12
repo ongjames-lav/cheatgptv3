@@ -1,0 +1,193 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+2.166302940531051,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.1s,"[0.0, 624.5241088867188, 395.4775085449219, 1073.3367919921875]",hand_extended_duration
+2.2662861531709457,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.2s,"[0.0, 625.0100708007812, 395.990478515625, 1074.024169921875]",hand_extended_duration
+2.3662693658108407,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.3s,"[0.0, 625.2347412109375, 396.14288330078125, 1073.961669921875]",hand_extended_duration
+2.466252578450735,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.4s,"[0.0, 625.3673706054688, 395.4613037109375, 1073.962646484375]",hand_extended_duration
+2.5662357910906297,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.5s,"[0.0, 625.9212036132812, 397.0322265625, 1073.8216552734375]",hand_extended_duration
+2.6662190037305247,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.6s,"[0.0, 626.618896484375, 398.3337707519531, 1073.94091796875]",hand_extended_duration
+2.766202216370419,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.7s,"[0.0, 626.8966064453125, 398.2962646484375, 1073.8638916015625]",hand_extended_duration
+2.8661854290103137,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.8s,"[0.0, 626.858642578125, 400.0491943359375, 1073.550048828125]",hand_extended_duration
+2.9661686416502087,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 1.9s,"[0.0, 627.1978759765625, 399.73284912109375, 1073.50830078125]",hand_extended_duration
+3.066151854290103,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[449.2801208496094, 446.8885803222656, 684.8331298828125, 657.257568359375]",instant_head_turn
+3.066151854290103,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[364.1502685546875, 618.6649169921875, 772.9676513671875, 1072.6356201171875]",instant_head_turn
+3.066151854290103,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1141.3251953125, 407.294677734375, 1347.23046875, 627.1168212890625]",instant_head_turn
+3.066151854290103,person_000,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1463.800537109375, 572.5748291015625, 1919.2042236328125, 1074.26123046875]",instant_head_turn
+3.066151854290103,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.0, 627.5396728515625, 402.82904052734375, 1073.400634765625]",instant_head_turn
+3.066151854290103,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.0s,"[0.0, 627.5396728515625, 402.82904052734375, 1073.400634765625]",hand_extended_duration
+3.066151854290103,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[175.0001220703125, 511.1846008300781, 428.4632568359375, 734.08154296875]",instant_head_turn
+3.066151854290103,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1075.984619140625, 547.9769897460938, 1367.175537109375, 1066.1220703125]",instant_head_turn
+3.066151854290103,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1394.756591796875, 530.3409423828125, 1619.0020751953125, 824.356689453125]",instant_head_turn
+3.1661350669299977,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[680.744873046875, 421.48846435546875, 926.71484375, 715.99169921875]",instant_head_turn
+3.1661350669299977,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.1s,"[0.0, 628.15869140625, 403.72760009765625, 1073.156982421875]",hand_extended_duration
+3.1661350669299977,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[820.03564453125, 573.7908935546875, 1132.805419921875, 1074.389404296875]",instant_head_turn
+3.2661182795698926,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.2s,"[0.0, 628.8818359375, 404.0964660644531, 1073.387451171875]",hand_extended_duration
+3.366101492209787,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.3s,"[0.0, 629.3953247070312, 405.3863525390625, 1073.62646484375]",hand_extended_duration
+3.4660847048496817,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.4s,"[0.0, 629.6237182617188, 405.9798889160156, 1073.541015625]",hand_extended_duration
+3.5660679174895766,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.5s,"[0.0, 630.0475463867188, 405.58294677734375, 1073.55615234375]",hand_extended_duration
+3.666051130129471,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.6s,"[0.0, 630.4483642578125, 407.1966552734375, 1073.701416015625]",hand_extended_duration
+3.7660343427693657,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.7s,"[0.0, 630.8378295898438, 407.377197265625, 1074.0904541015625]",hand_extended_duration
+3.7660343427693657,person_011,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[369.2216491699219, 427.55352783203125, 531.315673828125, 563.5084838867188]",instant_head_turn
+3.8660175554092606,person_003,Hand Extension,orange,0.7,research_rules,Hand gesture detected: left_wrist_sideward_simple for 2.8s,"[0.026275634765625, 630.3260498046875, 407.2057800292969, 1073.529296875]",hand_extended_duration
+4.865849681808207,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[933.7783203125, 447.6623840332031, 1139.224853515625, 648.4144287109375]",instant_head_turn
+6.165631446126838,person_000,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1434.0400390625, 575.7908325195312, 1919.3369140625, 1073.0050048828125]",instant_head_turn
+6.165631446126838,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[179.29209899902344, 467.09088134765625, 426.5279846191406, 714.17919921875]",instant_head_turn
+6.165631446126838,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.34075927734375, 618.251953125, 395.7589416503906, 1072.2264404296875]",instant_head_turn
+6.165631446126838,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1082.825927734375, 550.9954833984375, 1349.32568359375, 1072.174072265625]",instant_head_turn
+6.165631446126838,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1132.8218994140625, 398.3022766113281, 1331.5587158203125, 615.3778076171875]",instant_head_turn
+6.165631446126838,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[445.4131164550781, 432.02691650390625, 669.292236328125, 635.8716430664062]",instant_head_turn
+6.165631446126838,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[347.98590087890625, 607.45703125, 761.3234252929688, 1070.535888671875]",instant_head_turn
+6.265614658766732,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[814.5254516601562, 575.0174560546875, 1110.292724609375, 1076.81982421875]",instant_head_turn
+6.265614658766732,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[656.4869384765625, 431.3272705078125, 918.4273681640625, 700.0929565429688]",instant_head_turn
+6.965497147245995,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1332.453857421875, 517.2819213867188, 1574.383544921875, 1016.91650390625]",instant_head_turn
+7.965329273644942,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[910.6695556640625, 364.182861328125, 1132.0345458984375, 558.82568359375]",instant_head_turn
+9.265111037963573,person_000,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1487.0849609375, 569.2421264648438, 1919.3375244140625, 1073.8955078125]",instant_head_turn
+9.265111037963573,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1222.407470703125, 334.27044677734375, 1433.144287109375, 570.597900390625]",instant_head_turn
+9.265111037963573,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1179.98046875, 537.6124267578125, 1416.107666015625, 1069.10205078125]",instant_head_turn
+9.265111037963573,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[587.6871337890625, 380.1265869140625, 776.1329956054688, 571.8116455078125]",instant_head_turn
+9.265111037963573,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[547.9857788085938, 609.6486206054688, 882.6033325195312, 1076.1624755859375]",instant_head_turn
+9.265111037963573,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[192.0084228515625, 629.900390625, 571.4379272460938, 1074.2427978515625]",instant_head_turn
+9.365094250603468,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[780.8829345703125, 371.3952941894531, 1048.17333984375, 682.458740234375]",instant_head_turn
+9.365094250603468,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[352.875, 454.9194030761719, 573.228271484375, 669.9779052734375]",instant_head_turn
+9.365094250603468,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1000.8638305664062, 551.6171264648438, 1249.368408203125, 1075.52880859375]",instant_head_turn
+9.765027101163046,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.50225830078125, 379.7846374511719, 193.3252716064453, 814.0607299804688]",instant_head_turn
+10.06497673908273,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1462.4061279296875, 462.4376220703125, 1767.99462890625, 935.0013427734375]",instant_head_turn
+11.064808865481677,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1102.6453857421875, 275.18072509765625, 1345.80029296875, 499.1031494140625]",instant_head_turn
+12.364590629800308,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[666.04638671875, 509.13238525390625, 1004.0184326171875, 1076.31591796875]",instant_head_turn
+12.364590629800308,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[338.93829345703125, 522.49462890625, 706.9619750976562, 1075.1177978515625]",instant_head_turn
+12.364590629800308,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[695.5797119140625, 291.5000915527344, 899.903076171875, 610.489013671875]",instant_head_turn
+12.464573842440203,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1120.44873046875, 463.12042236328125, 1361.7498779296875, 1070.27978515625]",instant_head_turn
+12.464573842440203,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[905.18115234375, 271.4179382324219, 1160.3408203125, 575.408935546875]",instant_head_turn
+12.464573842440203,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[490.15484619140625, 327.93505859375, 705.7051391601562, 561.8182373046875]",instant_head_turn
+12.86450669299978,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[28.02740478515625, 242.6575927734375, 293.1209716796875, 688.8173217773438]",instant_head_turn
+13.06447311827957,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1306.064697265625, 438.00311279296875, 1582.772216796875, 1054.931396484375]",instant_head_turn
+13.164456330919464,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1527.6025390625, 457.231201171875, 1897.375244140625, 884.68798828125]",instant_head_turn
+14.3642548825982,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1154.6326904296875, 245.18911743164062, 1381.6871337890625, 473.3833923339844]",instant_head_turn
+15.464070221637042,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[726.7987060546875, 246.84494018554688, 916.8515625, 578.145751953125]",instant_head_turn
+15.464070221637042,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[743.48974609375, 469.6768798828125, 1020.9226684570312, 1080.0]",instant_head_turn
+15.464070221637042,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[425.4524230957031, 477.58209228515625, 737.583740234375, 1076.8062744140625]",instant_head_turn
+15.564053434276937,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1136.8135986328125, 429.95379638671875, 1372.6358642578125, 1068.3277587890625]",instant_head_turn
+15.86400307219662,person_014,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[492.3580627441406, 0.0, 651.1298828125, 312.2027893066406]",instant_head_turn
+15.963986284836515,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[33.896759033203125, 195.0860595703125, 304.96331787109375, 646.0616455078125]",instant_head_turn
+16.163952710116305,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1326.69921875, 413.54278564453125, 1603.8916015625, 1015.7894897460938]",instant_head_turn
+16.663868773315777,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1388.94189453125, 182.95028686523438, 1611.179443359375, 461.8231201171875]",instant_head_turn
+16.76385198595567,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[485.25439453125, 289.185302734375, 714.8252563476562, 516.800048828125]",instant_head_turn
+17.16378483651525,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1553.6795654296875, 422.5844421386719, 1882.6636962890625, 893.8493041992188]",instant_head_turn
+17.663700899714726,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1158.79052734375, 230.2383270263672, 1378.693115234375, 440.84161376953125]",instant_head_turn
+18.563549813473777,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[719.195068359375, 461.4399719238281, 1003.4619140625, 1080.0]",instant_head_turn
+18.563549813473777,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[409.23101806640625, 453.92388916015625, 724.5906372070312, 1074.369140625]",instant_head_turn
+18.663533026113672,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1121.1705322265625, 406.0628356933594, 1354.3978271484375, 1048.715087890625]",instant_head_turn
+18.663533026113672,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[909.9993896484375, 186.7284393310547, 1136.7257080078125, 464.177490234375]",instant_head_turn
+18.663533026113672,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[694.9271850585938, 231.32830810546875, 895.065673828125, 559.713134765625]",instant_head_turn
+19.06346587667325,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[40.01316833496094, 207.19329833984375, 278.6873779296875, 633.101318359375]",instant_head_turn
+19.563381939872723,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1313.750244140625, 404.6884460449219, 1565.345947265625, 1000.71337890625]",instant_head_turn
+19.763348365152513,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1371.0860595703125, 184.04159545898438, 1597.00732421875, 448.545654296875]",instant_head_turn
+19.963314790432303,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[473.81707763671875, 240.68174743652344, 707.229736328125, 649.7852172851562]",instant_head_turn
+20.76318049155146,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1154.1185302734375, 224.86134338378906, 1367.95751953125, 411.80743408203125]",instant_head_turn
+21.66302940531051,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[714.6966552734375, 452.0235595703125, 1011.345458984375, 1075.754638671875]",instant_head_turn
+21.66302940531051,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[371.9327087402344, 434.6435852050781, 732.7982177734375, 1074.980224609375]",instant_head_turn
+21.763012617950405,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[703.9144897460938, 220.4918975830078, 899.0042724609375, 535.42578125]",instant_head_turn
+21.763012617950405,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1120.138427734375, 388.5167541503906, 1370.791015625, 1020.3250732421875]",instant_head_turn
+21.763012617950405,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[924.7811279296875, 191.64276123046875, 1146.74072265625, 435.309814453125]",instant_head_turn
+22.162945468509985,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1.42364501953125, 140.13848876953125, 279.3945007324219, 607.5560302734375]",instant_head_turn
+22.162945468509985,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1523.753173828125, 428.97674560546875, 1876.3436279296875, 856.404296875]",instant_head_turn
+22.662861531709456,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1303.8387451171875, 369.01776123046875, 1597.73583984375, 976.4115600585938]",instant_head_turn
+22.862827956989246,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1378.317138671875, 167.85704040527344, 1609.65283203125, 418.73150634765625]",instant_head_turn
+23.062794382269036,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[482.782470703125, 222.7877197265625, 705.0592041015625, 480.3929443359375]",instant_head_turn
+23.862660083388192,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1159.874755859375, 200.7820587158203, 1381.465087890625, 410.6335144042969]",instant_head_turn
+24.762508997147247,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[402.4003601074219, 417.06390380859375, 737.53076171875, 1069.0162353515625]",instant_head_turn
+24.762508997147247,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[715.7734375, 430.53656005859375, 1017.6472778320312, 1077.749267578125]",instant_head_turn
+24.862492209787142,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[929.971435546875, 167.72607421875, 1179.455810546875, 524.87890625]",instant_head_turn
+24.862492209787142,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[718.9725952148438, 198.5532989501953, 912.7908325195312, 411.81158447265625]",instant_head_turn
+24.862492209787142,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1141.6397705078125, 385.051025390625, 1474.499755859375, 1029.14306640625]",instant_head_turn
+25.262425060346718,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[36.79193115234375, 147.43043518066406, 290.0205993652344, 585.5021362304688]",instant_head_turn
+26.262257186745668,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[489.5452880859375, 217.79127502441406, 704.10009765625, 456.078125]",instant_head_turn
+26.462223612025454,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1311.9173583984375, 351.5426330566406, 1589.7227783203125, 968.51025390625]",instant_head_turn
+26.662190037305244,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1382.0767822265625, 169.65042114257812, 1625.1610107421875, 411.2601013183594]",instant_head_turn
+26.96213967522493,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1151.159423828125, 170.6319580078125, 1377.554931640625, 391.66162109375]",instant_head_turn
+27.562038951064295,person_016,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[235.70892333984375, 2.0112762451171875, 472.7012939453125, 436.4642333984375]",instant_head_turn
+27.86198858898398,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[700.4408569335938, 407.004638671875, 1002.6890258789062, 1057.346923828125]",instant_head_turn
+27.86198858898398,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[358.4351501464844, 396.64178466796875, 719.3867797851562, 1042.69580078125]",instant_head_turn
+27.961971801623875,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1122.3975830078125, 369.6104736328125, 1410.990478515625, 1004.8238525390625]",instant_head_turn
+27.961971801623875,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[696.3649291992188, 171.30780029296875, 898.468505859375, 395.6617126464844]",instant_head_turn
+27.961971801623875,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[908.5922241210938, 150.52825927734375, 1140.4013671875, 392.66668701171875]",instant_head_turn
+27.961971801623875,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1551.0054931640625, 375.27886962890625, 1871.1650390625, 835.8971557617188]",instant_head_turn
+28.361904652183455,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.1284942626953125, 111.81202697753906, 257.8836364746094, 569.57470703125]",instant_head_turn
+29.3617367785824,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[463.97442626953125, 191.2939910888672, 684.2535400390625, 435.322265625]",instant_head_turn
+29.56170320386219,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1309.08642578125, 371.4264221191406, 1559.3251953125, 925.09912109375]",instant_head_turn
+29.76166962914198,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1365.1058349609375, 151.95672607421875, 1610.3287353515625, 402.91143798828125]",instant_head_turn
+30.061619267061662,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1146.3790283203125, 160.66470336914062, 1368.908935546875, 382.3486633300781]",instant_head_turn
+30.961468180820717,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[688.0527954101562, 382.2768859863281, 1000.65087890625, 1046.40966796875]",instant_head_turn
+30.961468180820717,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[348.45013427734375, 380.608154296875, 715.61083984375, 1036.1693115234375]",instant_head_turn
+31.06145139346061,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1114.6278076171875, 361.83746337890625, 1367.8934326171875, 967.2515258789062]",instant_head_turn
+31.06145139346061,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[907.6375122070312, 133.58267211914062, 1155.109619140625, 494.7235107421875]",instant_head_turn
+31.461384244020188,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.0, 74.25704956054688, 248.1283721923828, 556.5916748046875]",instant_head_turn
+31.461384244020188,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[696.24853515625, 155.7799835205078, 892.5419921875, 383.0409851074219]",instant_head_turn
+32.46121637041914,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[462.2012939453125, 170.84463500976562, 688.4517822265625, 422.9457092285156]",instant_head_turn
+32.66118279569893,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1317.34912109375, 341.2310485839844, 1585.788818359375, 929.2796630859375]",instant_head_turn
+32.96113243361861,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1383.786865234375, 120.28335571289062, 1628.4921875, 383.51617431640625]",instant_head_turn
+33.26108207153829,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1160.686279296875, 138.33909606933594, 1389.7572021484375, 375.12799072265625]",instant_head_turn
+33.66101492209787,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1540.7230224609375, 368.513671875, 1888.02392578125, 816.1939697265625]",instant_head_turn
+34.06094777265745,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[709.7911376953125, 319.9266052246094, 1003.9367065429688, 1063.1253662109375]",instant_head_turn
+34.06094777265745,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[345.36712646484375, 356.4313659667969, 724.5631103515625, 1023.1329345703125]",instant_head_turn
+34.16093098529735,person_005,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[919.065673828125, 123.76327514648438, 1148.36279296875, 367.102783203125]",instant_head_turn
+34.26091419793724,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1112.016357421875, 345.36529541015625, 1370.0899658203125, 968.5193481445312]",instant_head_turn
+34.56086383585692,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[692.376708984375, 131.11911010742188, 902.5865478515625, 341.0412902832031]",instant_head_turn
+34.56086383585692,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1.168304443359375, 60.35609436035156, 255.3541717529297, 536.604248046875]",instant_head_turn
+35.66067917489576,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[455.773193359375, 172.48104858398438, 680.486083984375, 401.49774169921875]",instant_head_turn
+35.76066238753566,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1289.3118896484375, 338.5308837890625, 1556.1192626953125, 915.7992553710938]",instant_head_turn
+36.26057845073513,person_016,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[182.8416748046875, 0.148223876953125, 437.22320556640625, 473.4219970703125]",instant_head_turn
+37.16042736449418,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[320.982177734375, 354.5327453613281, 707.3378295898438, 1017.1093139648438]",instant_head_turn
+37.16042736449418,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[692.356201171875, 303.7314453125, 1002.73095703125, 938.3187255859375]",instant_head_turn
+37.16042736449418,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1149.47314453125, 77.12693786621094, 1376.0826416015625, 327.5723876953125]",instant_head_turn
+37.36039378977397,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1108.2498779296875, 334.6336669921875, 1340.425048828125, 957.0128173828125]",instant_head_turn
+37.66034342769366,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[688.65966796875, 124.40650177001953, 890.6072387695312, 312.14990234375]",instant_head_turn
+38.7601587667325,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[445.5749816894531, 164.30978393554688, 668.932373046875, 389.9848937988281]",instant_head_turn
+38.7601587667325,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.0, 60.11041259765625, 231.96331787109375, 526.3590698242188]",instant_head_turn
+38.86014197937239,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1286.9564208984375, 338.4004211425781, 1562.067626953125, 893.3688354492188]",instant_head_turn
+39.360058042571865,person_016,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[293.4346923828125, 1.886993408203125, 668.0294799804688, 372.8887023925781]",instant_head_turn
+40.25990695633092,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1159.4627685546875, 93.49150085449219, 1372.934814453125, 380.15240478515625]",instant_head_turn
+40.25990695633092,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[696.6849365234375, 312.421630859375, 1012.7807006835938, 936.981201171875]",instant_head_turn
+40.25990695633092,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[325.675048828125, 345.4363708496094, 710.0936279296875, 1010.4151611328125]",instant_head_turn
+40.459873381610706,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1106.7139892578125, 311.0968322753906, 1359.454833984375, 1011.9407958984375]",instant_head_turn
+41.459705508009655,person_002,Phone Usage,red,0.95,research_rules,Phone detected for 8 consecutive frames (0.8s),"[700.891357421875, 314.392822265625, 1015.8009033203125, 937.405517578125]",phone_consecutive_frames
+41.459705508009655,person_003,Phone Usage,red,0.95,research_rules,Phone detected for 8 consecutive frames (0.8s),"[333.36932373046875, 345.5174255371094, 713.7174072265625, 1010.14306640625]",phone_consecutive_frames
+41.55968872064955,person_002,Phone Usage,red,0.95,research_rules,Phone detected for 9 consecutive frames (0.9s),"[700.9444580078125, 315.5933532714844, 1015.4789428710938, 937.9183349609375]",phone_consecutive_frames
+41.55968872064955,person_003,Phone Usage,red,0.95,research_rules,Phone detected for 9 consecutive frames (0.9s),"[335.5552673339844, 345.3070983886719, 713.461669921875, 1010.0963745117188]",phone_consecutive_frames
+41.659671933289445,person_002,Phone Usage,red,0.95,research_rules,Phone detected for 10 consecutive frames (1.0s),"[701.168212890625, 315.78314208984375, 1015.4244384765625, 937.6448364257812]",phone_consecutive_frames
+41.659671933289445,person_003,Phone Usage,red,0.95,research_rules,Phone detected for 10 consecutive frames (1.0s),"[319.18988037109375, 347.13995361328125, 713.1489868164062, 1009.5701904296875]",phone_consecutive_frames
+41.75965514592934,person_003,Phone Usage,red,0.95,research_rules,Phone detected for 11 consecutive frames (1.1s),"[317.0235595703125, 347.2872009277344, 713.4613647460938, 1008.6000366210938]",phone_consecutive_frames
+41.75965514592934,person_002,Phone Usage,red,0.95,research_rules,Phone detected for 11 consecutive frames (1.1s),"[700.0914306640625, 315.2304382324219, 1014.4686279296875, 938.7325439453125]",phone_consecutive_frames
+41.75965514592934,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[687.6817016601562, 103.65432739257812, 895.6512451171875, 339.0555419921875]",instant_head_turn
+41.859638358569235,person_002,Phone Usage,red,0.95,research_rules,Phone detected for 12 consecutive frames (1.2s),"[699.654296875, 315.3474426269531, 1012.5866088867188, 938.47705078125]",phone_consecutive_frames
+41.859638358569235,person_003,Phone Usage,red,0.95,research_rules,Phone detected for 12 consecutive frames (1.2s),"[316.34130859375, 345.0000915527344, 713.175048828125, 1008.3971557617188]",phone_consecutive_frames
+41.859638358569235,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[441.1579284667969, 140.28900146484375, 676.927978515625, 404.27838134765625]",instant_head_turn
+41.859638358569235,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.0, 37.32389831542969, 246.7720184326172, 525.1236572265625]",instant_head_turn
+41.95962157120913,person_003,Phone Usage,red,0.95,research_rules,Phone detected for 13 consecutive frames (1.3s),"[314.47998046875, 343.1538391113281, 713.2103271484375, 1009.1599731445312]",phone_consecutive_frames
+41.95962157120913,person_002,Phone Usage,red,0.95,research_rules,Phone detected for 13 consecutive frames (1.3s),"[700.2528686523438, 312.9386901855469, 1012.1341552734375, 938.4578857421875]",phone_consecutive_frames
+42.159587996488916,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1556.555908203125, 357.3834228515625, 1877.517822265625, 809.93408203125]",instant_head_turn
+42.259571209128815,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1286.63232421875, 281.6605224609375, 1605.95654296875, 906.3707885742188]",instant_head_turn
+42.559520847048496,person_016,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[73.51460266113281, 0.2453155517578125, 402.0365295410156, 576.85302734375]",instant_head_turn
+43.359386548167656,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[307.3468933105469, 344.39794921875, 707.8796997070312, 1008.0587768554688]",instant_head_turn
+43.359386548167656,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[682.92236328125, 307.4509582519531, 1021.3251342773438, 986.5471801757812]",instant_head_turn
+43.45936976080755,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1157.078857421875, 113.15065002441406, 1380.89453125, 363.27740478515625]",instant_head_turn
+43.559352973447446,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1385.0987548828125, 64.65664672851562, 1620.174560546875, 392.69110107421875]",instant_head_turn
+43.559352973447446,person_001,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1110.789306640625, 320.9459533691406, 1348.37646484375, 1000.3947143554688]",instant_head_turn
+44.95911795040597,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[437.1353759765625, 149.84852600097656, 679.843994140625, 402.52276611328125]",instant_head_turn
+45.05910116304587,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1.1379547119140625, 64.99851989746094, 243.80227661132812, 401.3561096191406]",instant_head_turn
+45.35905080096555,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1303.44140625, 236.36874389648438, 1676.03662109375, 915.277099609375]",instant_head_turn
+45.55901722624534,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[687.2722778320312, 115.75460815429688, 896.8346557617188, 337.7449951171875]",instant_head_turn
+46.2588997147246,person_016,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.13712310791015625, 4.5709075927734375, 333.64581298828125, 670.9701538085938]",instant_head_turn
+46.45886614000439,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[396.2128601074219, 345.7176818847656, 715.23681640625, 1006.413818359375]",instant_head_turn
+46.45886614000439,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[681.7964477539062, 334.5303955078125, 1017.248291015625, 1004.8126831054688]",instant_head_turn
+46.95878220320386,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1400.820556640625, 73.48625183105469, 1639.7890625, 376.10137939453125]",instant_head_turn
+47.05876541584376,person_004,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1567.8409423828125, 365.7802734375, 1891.9398193359375, 817.98046875]",instant_head_turn
+47.35871505376344,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1174.1861572265625, 105.90640258789062, 1397.20751953125, 350.29583740234375]",instant_head_turn
+48.0585975422427,person_007,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[453.1571044921875, 152.25767517089844, 680.89794921875, 397.8878173828125]",instant_head_turn
+48.1585807548826,person_012,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[0.49225616455078125, 52.676055908203125, 242.61618041992188, 380.87945556640625]",instant_head_turn
+48.45853039280228,person_006,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1293.7086181640625, 342.9731140136719, 1568.771484375, 935.5377197265625]",instant_head_turn
+48.65849681808207,person_009,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[674.0096435546875, 183.85934448242188, 878.5504760742188, 524.8910522460938]",instant_head_turn
+49.55834573184112,person_003,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[259.3297424316406, 474.87445068359375, 628.9030151367188, 1073.698974609375]",instant_head_turn
+49.55834573184112,person_002,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[672.4854125976562, 482.5968017578125, 982.5496215820312, 1077.579833984375]",instant_head_turn
+50.0582617950406,person_010,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1350.241943359375, 310.074462890625, 1575.930419921875, 570.137939453125]",instant_head_turn
+50.15824500768049,person_000,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1583.5396728515625, 531.373779296875, 1877.621337890625, 1068.894775390625]",instant_head_turn
+50.45819464560017,person_008,Turning,orange,0.8,research_rules,Head turned LEFT (angle: 45.0°),"[1114.64892578125, 336.6262512207031, 1333.536865234375, 582.2598266601562]",instant_head_turn

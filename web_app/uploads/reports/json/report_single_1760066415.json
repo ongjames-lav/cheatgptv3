@@ -1,0 +1,66 @@
+{
+  "session_info": {
+    "session_id": "single_1760066415",
+    "generated_at": "2025-10-10T11:20:27.766006",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "processed_single_1759972884.mp4",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.005,
+    "frame_count": 1519,
+    "duration": 50.62489585069155
+  },
+  "analysis_results": {
+    "total_events": 2,
+    "event_summary": {
+      "Head Turning": 2
+    },
+    "events": [
+      {
+        "timestamp": 1.3331111481419764,
+        "person_id": "person_018",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (33.4\u00b0 detected instantly)",
+        "bbox": [
+          354.145751953125,
+          603.484619140625,
+          761.461181640625,
+          1070.2103271484375
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 33.38668052542718
+      },
+      {
+        "timestamp": 1.4330944842526245,
+        "person_id": "person_020",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (31.0\u00b0 detected instantly)",
+        "bbox": [
+          1357.3876953125,
+          517.9984130859375,
+          1603.26171875,
+          1040.7996826171875
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 30.96057152453894
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 2.370375246872943,
+    "risk_level": "low",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

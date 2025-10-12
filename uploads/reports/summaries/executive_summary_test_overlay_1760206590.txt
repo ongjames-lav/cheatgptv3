@@ -1,0 +1,31 @@
+
+CHEATGPT3 VIDEO ANALYSIS EXECUTIVE SUMMARY
+==========================================
+
+Session ID: test_overlay_1760206590
+Analysis Date: 2025-10-12 02:19:37
+
+VIDEO INFORMATION
+-----------------
+File: Teacher_Stock_Footage_-_Teachers_Free_Stock_Videos_-_Teacher_No_Copyright_Videos.mp4
+Duration: 289.4 seconds
+Resolution: 640x338
+Frame Rate: 28.0 FPS
+
+DETECTION SUMMARY
+-----------------
+Total Events Detected: 168
+
+Event Breakdown:
+  • Head Turning: 155
+  • Hand Extension: 1
+  • Phone Usage: 12
+
+RISK ASSESSMENT
+--------------
+Risk Score: 7.70/10.0
+Risk Level: HIGH
+
+RECOMMENDATIONS
+--------------
+  • No significant suspicious activity detected

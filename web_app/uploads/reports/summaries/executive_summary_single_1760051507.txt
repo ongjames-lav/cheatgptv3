@@ -1,0 +1,29 @@
+
+CHEATGPT3 VIDEO ANALYSIS EXECUTIVE SUMMARY
+==========================================
+
+Session ID: single_1760051507
+Analysis Date: 2025-10-10 07:13:06
+
+VIDEO INFORMATION
+-----------------
+File: 3957ac4a-d5b8-4f7c-bd41-66e2e906ea61.mp4
+Duration: 50.4 seconds
+Resolution: 1024x576
+Frame Rate: 30.0 FPS
+
+DETECTION SUMMARY
+-----------------
+Total Events Detected: 45
+
+Event Breakdown:
+  • Head Turning: 45
+
+RISK ASSESSMENT
+--------------
+Risk Score: 5.00/10.0
+Risk Level: MEDIUM
+
+RECOMMENDATIONS
+--------------
+  • No significant suspicious activity detected

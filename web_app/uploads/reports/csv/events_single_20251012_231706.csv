@@ -1,0 +1,2 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+5.966666666666667,person_002,Head Turning,orange,0.8,research_rules,Head turned RIGHT (32.4° detected instantly),"[258.25909423828125, 72.8086929321289, 750.39306640625, 568.2713012695312]",instant_head_turn

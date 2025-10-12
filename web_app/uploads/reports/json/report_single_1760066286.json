@@ -1,0 +1,49 @@
+{
+  "session_info": {
+    "session_id": "single_1760066286",
+    "generated_at": "2025-10-10T11:19:00.263579",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "processed_single_1760030098.mp4",
+    "width": 1024,
+    "height": 576,
+    "fps": 30.005,
+    "frame_count": 1519,
+    "duration": 50.62489585069155
+  },
+  "analysis_results": {
+    "total_events": 1,
+    "event_summary": {
+      "Hand Extension": 1
+    },
+    "events": [
+      {
+        "timestamp": 7.89868355274121,
+        "person_id": "person_000",
+        "event_type": "Hand Extension",
+        "severity": "orange",
+        "confidence": 0.85,
+        "source": "research_rules",
+        "details": "Sustained sideward hand extension: left_hand_sideward_extension (sustained for 0.7s)",
+        "bbox": [
+          750.552734375,
+          284.5259704589844,
+          1022.6939697265625,
+          568.3019409179688
+        ],
+        "rule_triggered": "hand_extended_sustained",
+        "gesture_type": "left_hand_sideward_extension",
+        "duration": 0.6998833527745374,
+        "frame_count": 8
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 1.1851876234364715,
+    "risk_level": "minimal",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

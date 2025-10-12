@@ -1096,8 +1096,19 @@
                 const videoPlayer = document.getElementById('videoPlayer');
                 const videoFileName = document.getElementById('videoFileName');
                 
-                // Set video source
-                const videoSrc = `/playback/${this.sessionData.session_id}`;
+                // Set video source - check if this is a processed/uploaded video
+                let videoSrc;
+                if (this.sessionData.session_id && this.sessionData.session_id.startsWith('single_')) {
+                    // This is an uploaded/processed video - needs special routing
+                    const filename = this.sessionData.video_path ? 
+                        this.sessionData.video_path.split(/[/\\]/).pop() : 
+                        `processed_${this.sessionData.session_id}.mp4`;
+                    videoSrc = `/playback/processed/${this.sessionData.session_id}/${filename}`;
+                } else {
+                    // This is a recorded session - use regular routing
+                    videoSrc = `/playback/${this.sessionData.session_id}`;
+                }
+                
                 videoPlayer.src = videoSrc;
                 
                 // Set thumbnail

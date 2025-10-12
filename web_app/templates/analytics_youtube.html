@@ -1362,7 +1362,17 @@
 
                     // Load video with enhanced error handling and race condition prevention
                     const videoSource = document.getElementById('videoSource');
-                    const videoUrl = `/playback/${session.session_id}`;
+                    
+                    // Check if this is a processed/uploaded video by session ID pattern
+                    let videoUrl;
+                    if (session.session_id && session.session_id.startsWith('single_')) {
+                        // This is an uploaded/processed video - needs special routing
+                        const filename = session.video_path ? session.video_path.split(/[/\\]/).pop() : `processed_${session.session_id}.mp4`;
+                        videoUrl = `/playback/processed/${session.session_id}/${filename}`;
+                    } else {
+                        // This is a recorded session - use regular routing
+                        videoUrl = `/playback/${session.session_id}`;
+                    }
                     
                     console.log(`Loading video for session: ${session.session_id}`);
                     console.log(`Video URL: ${videoUrl}`);
