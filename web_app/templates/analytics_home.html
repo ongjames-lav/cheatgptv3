@@ -1033,6 +1033,7 @@
         }
 
         /* Modal Styles */
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -1040,10 +1041,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
             justify-content: center;
+            align-items: center;
         }
 
         .modal.show {
@@ -1051,143 +1052,110 @@
         }
 
         .modal-content {
-            background: #212121;
+            background: #1a1a1a;
+            border: 1px solid #333;
             border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
             width: 90%;
-            max-width: 400px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px 16px;
-            border-bottom: 1px solid #303030;
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
         }
 
-        .modal-header h3 {
-            color: #ffffff;
-            margin: 0;
-            font-size: 18px;
-            font-weight: 500;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: #aaaaaa;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .modal-close:hover {
-            background: #404040;
-            color: #ffffff;
-        }
-
-        .modal-body {
-            padding: 20px 24px;
-            color: #ffffff;
-        }
-
-        .modal-body p {
-            margin: 0 0 16px;
+        .modal-content p {
+            color: #ccc;
+            margin-bottom: 20px;
             line-height: 1.5;
         }
 
-        .modal-body p:last-child {
-            margin-bottom: 0;
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
         }
 
-        .warning-text {
-            color: #ff8888;
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #444;
+            background: transparent;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 14px;
+            transition: all 0.2s;
         }
 
-        /* Password Security Styles - Dark Mode */
+        .btn-cancel:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        .btn-delete {
+            padding: 10px 20px;
+            border: 1px solid #e74c3c;
+            background: #e74c3c;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover:not(:disabled) {
+            background: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .btn-delete:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Password Security Section */
         .password-security-section {
-            margin-top: 20px;
-            padding: 16px;
             background: #111213;
-            border-radius: 8px;
-            border-left: 4px solid #e74c3c;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
         }
 
         .security-label {
-            display: block;
-            font-weight: 600;
-            color: #ecf0f1;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .password-input-container {
-            position: relative;
             display: flex;
             align-items: center;
+            color: #e74c3c;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
         .security-password-input {
             width: 100%;
-            padding: 10px 40px 10px 12px;
-            border: 2px solid #111213;
-            border-radius: 6px;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 4px;
+            color: #fff;
             font-size: 14px;
-            background: #111213;
-            color: #ecf0f1;
-            transition: border-color 0.3s ease;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
         }
 
         .security-password-input:focus {
-            outline: none;
-            border-color: #27ae60;
-            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
-            background: #3a546b;
+            border-color: #e74c3c;
         }
 
         .security-password-input.error {
             border-color: #e74c3c;
-            animation: shake 0.5s ease-in-out;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 10px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-            color: #bdc3c7;
-            padding: 4px 6px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-
-        .password-toggle:hover {
-            background-color: #34495e;
-            color: #ecf0f1;
-        }
-
-        .password-error-message {
-            color: #e74c3c;
-            font-size: 12px;
-            margin-top: 6px;
-            font-weight: 500;
-            background: rgba(231, 76, 60, 0.1);
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid #e74c3c;
+            animation: shake 0.3s;
         }
 
         @keyframes shake {
@@ -1196,23 +1164,16 @@
             75% { transform: translateX(5px); }
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .btn-danger:disabled {
-            background-color: #ccc;
-            color: #666;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .modal-footer {
+        .security-warning {
             display: flex;
-            gap: 12px;
-            padding: 16px 24px 20px;
-            justify-content: flex-end;
+            align-items: flex-start;
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 4px;
+            color: #e74c3c;
+            font-size: 12px;
+            line-height: 1.4;
         }
 
         /* Processed Video Specific Styles */
@@ -1314,6 +1275,10 @@
                     <i class="fas fa-upload"></i>
                     <span class="tooltip">Upload</span>
                 </a>
+                <a href="/guide" class="nav-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="tooltip">User Guide</span>
+                </a>
             </nav>
         </div>
     </header>
@@ -1398,31 +1363,40 @@
     <div class="tooltip" id="tooltip"></div>
 
     <!-- Delete Confirmation Modal -->
-    <div class="modal" id="deleteModal">
+    <div id="deleteModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Confirm Delete</h3>
-                <button class="modal-close" id="closeDeleteModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete <span id="deleteCount">0</span> selected session(s)?</p>
-                <p class="warning-text">This action cannot be undone. All session data, videos, and analytics will be permanently removed.</p>
+            <div class="modal-title">Delete Sessions</div>
+            <p id="deleteMessage">
+                Are you sure you want to delete <span id="deleteCount">0</span> selected session(s)? This action cannot be undone and will permanently remove all session data, videos, and analytics.
+            </p>
+            
+            <!-- Password Security Section -->
+            <div class="password-security-section">
+                <label for="deletePassword" class="security-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                        <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                    </svg>
+                    Enter Password to Confirm
+                </label>
+                <input 
+                    type="password" 
+                    id="deletePassword" 
+                    class="security-password-input" 
+                    placeholder="Type password to enable delete"
+                    autocomplete="off"
+                />
                 
-                <!-- Security Password Input -->
-                <div class="password-security-section">
-                    <label for="deletePassword" class="security-label">Enter password to confirm deletion:</label>
-                    <div class="password-input-container">
-                        <input type="password" id="deletePassword" placeholder="Enter password" class="security-password-input" autocomplete="off">
-                        <button type="button" id="togglePasswordVisibility" class="password-toggle">Show</button>
-                    </div>
-                    <div id="passwordError" class="password-error-message" style="display: none;">
-                        Incorrect password. Please try again.
-                    </div>
+                <div class="security-warning">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="min-width: 16px; margin-right: 8px;">
+                        <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+                    </svg>
+                    <span>This action cannot be undone. All session data and videos will be permanently deleted.</span>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="view-btn" id="cancelDeleteBtn">Cancel</button>
-                <button class="btn-danger" id="confirmDeleteBtn" disabled>Delete</button>
+            
+            <div class="modal-actions">
+                <button id="cancelDeleteBtn" class="btn-cancel">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn-delete" disabled>Delete</button>
             </div>
         </div>
     </div>
@@ -1474,14 +1448,11 @@
                 // Delete modal
                 this.deleteModal = document.getElementById('deleteModal');
                 this.deleteCount = document.getElementById('deleteCount');
-                this.closeDeleteModal = document.getElementById('closeDeleteModal');
                 this.cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
                 this.confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
                 
                 // Password security elements
                 this.deletePassword = document.getElementById('deletePassword');
-                this.togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
-                this.passwordError = document.getElementById('passwordError');
                 
                 // Security constants
                 this.DELETION_PASSWORD = 'cheatgpt2024';  // Hardcoded password for now
@@ -1517,9 +1488,15 @@
                 this.deleteSelectedBtn.addEventListener('click', () => this.showDeleteConfirmation());
 
                 // Delete modal
-                this.closeDeleteModal.addEventListener('click', () => this.hideDeleteModal());
                 this.cancelDeleteBtn.addEventListener('click', () => this.hideDeleteModal());
                 this.confirmDeleteBtn.addEventListener('click', () => this.deleteSelectedSessions());
+                
+                // Click outside modal to close
+                this.deleteModal.addEventListener('click', (e) => {
+                    if (e.target === this.deleteModal) {
+                        this.hideDeleteModal();
+                    }
+                });
 
                 // Password security event listeners
                 if (this.deletePassword) {
@@ -1530,17 +1507,6 @@
                         }
                     });
                 }
-                
-                if (this.togglePasswordVisibility) {
-                    this.togglePasswordVisibility.addEventListener('click', () => this.togglePasswordDisplay());
-                }
-
-                // Close modal on outside click
-                this.deleteModal.addEventListener('click', (e) => {
-                    if (e.target === this.deleteModal) {
-                        this.hideDeleteModal();
-                    }
-                });
             }
 
             async loadSessions() {
@@ -2034,8 +2000,8 @@
                 
                 // Clear password security state
                 this.deletePassword.value = '';
+                this.deletePassword.style.borderColor = '';
                 this.confirmDeleteBtn.disabled = true;
-                this.passwordError.style.display = 'none';
                 this.deletePassword.classList.remove('error');
             }
 
@@ -2102,35 +2068,21 @@
                 // Enable/disable delete button based on password validation
                 this.confirmDeleteBtn.disabled = !isValid;
                 
-                // Hide error message when typing
-                if (this.passwordError) {
-                    this.passwordError.style.display = 'none';
-                }
+                // Remove error styling when typing
                 this.deletePassword.classList.remove('error');
-                
-                // Show visual feedback if password has been entered but is wrong
-                if (enteredPassword.length > 0 && !isValid && enteredPassword.length >= this.DELETION_PASSWORD.length) {
-                    this.showPasswordError();
-                }
                 
                 return isValid;
             }
 
             showPasswordError() {
-                this.passwordError.style.display = 'block';
                 this.deletePassword.classList.add('error');
+                this.deletePassword.style.borderColor = '#e74c3c';
                 
                 // Clear error after a delay
                 setTimeout(() => {
-                    this.passwordError.style.display = 'none';
                     this.deletePassword.classList.remove('error');
+                    this.deletePassword.style.borderColor = '';
                 }, 3000);
-            }
-
-            togglePasswordDisplay() {
-                const isPassword = this.deletePassword.type === 'password';
-                this.deletePassword.type = isPassword ? 'text' : 'password';
-                this.togglePasswordVisibility.textContent = isPassword ? 'Hide' : 'Show';
             }
 
             async manualRefresh() {

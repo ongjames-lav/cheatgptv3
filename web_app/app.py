@@ -759,6 +759,11 @@ def video_upload():
     """Video upload page"""
     return render_template('video_upload.html')
 
+@app.route('/guide')
+def user_guide():
+    """User guide and documentation page"""
+    return render_template('user_guide.html')
+
 # API Routes
 
 def emit_status_update():

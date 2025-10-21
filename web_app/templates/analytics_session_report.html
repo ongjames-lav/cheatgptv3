@@ -694,6 +694,149 @@
                 align-items: stretch;
             }
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .modal-content p {
+            color: #ccc;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #444;
+            background: transparent;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        .btn-delete {
+            padding: 10px 20px;
+            border: 1px solid #e74c3c;
+            background: #e74c3c;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover:not(:disabled) {
+            background: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .btn-delete:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Password Security Section */
+        .password-security-section {
+            background: #111213;
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .security-label {
+            display: flex;
+            align-items: center;
+            color: #e74c3c;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .security-password-input {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .security-password-input:focus {
+            border-color: #e74c3c;
+        }
+
+        .security-password-input.error {
+            border-color: #e74c3c;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .security-warning {
+            display: flex;
+            align-items: flex-start;
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 4px;
+            color: #e74c3c;
+            font-size: 12px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -724,6 +867,10 @@
                 <a href="/upload" class="nav-item">
                     <i class="fas fa-upload"></i>
                     <span class="tooltip">Upload</span>
+                </a>
+                <a href="/guide" class="nav-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="tooltip">User Guide</span>
                 </a>
             </nav>
         </div>
@@ -935,6 +1082,45 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Delete Session</div>
+            <p id="deleteMessage">
+                Are you sure you want to delete this session? This will permanently remove all session data, videos, and analytics.
+            </p>
+            
+            <!-- Password Security Section -->
+            <div class="password-security-section">
+                <label for="deletePassword" class="security-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                        <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                    </svg>
+                    Enter Password to Confirm
+                </label>
+                <input 
+                    type="password" 
+                    id="deletePassword" 
+                    class="security-password-input" 
+                    placeholder="Type password to enable delete"
+                    autocomplete="off"
+                />
+                
+                <div class="security-warning">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="min-width: 16px; margin-right: 8px;">
+                        <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+                    </svg>
+                    <span>This action cannot be undone. All session data and videos will be permanently deleted.</span>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="deleteCancelBtn" class="btn-cancel">Cancel</button>
+                <button id="deleteConfirmBtn" class="btn-delete" disabled>Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         class SessionReport {
             constructor() {
@@ -989,8 +1175,30 @@
 
             setupEventListeners() {
                 document.getElementById('exportPDF').addEventListener('click', () => this.exportPDF());
-                document.getElementById('deleteSession').addEventListener('click', () => this.deleteSession());
+                document.getElementById('deleteSession').addEventListener('click', () => this.showDeleteConfirmation());
                 document.getElementById('viewVideoBtn').addEventListener('click', () => this.viewVideo());
+                
+                // Modal event listeners
+                const deleteModal = document.getElementById('deleteModal');
+                const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+                const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+                const deletePassword = document.getElementById('deletePassword');
+                
+                deleteCancelBtn.addEventListener('click', () => this.hideDeleteConfirmation());
+                deleteConfirmBtn.addEventListener('click', () => this.confirmDeleteSession());
+                
+                // Close modal when clicking outside
+                deleteModal.addEventListener('click', (e) => {
+                    if (e.target === deleteModal) {
+                        this.hideDeleteConfirmation();
+                    }
+                });
+                
+                // Password input event listener
+                deletePassword.addEventListener('input', (e) => {
+                    const password = e.target.value.trim();
+                    deleteConfirmBtn.disabled = password.length === 0;
+                });
                 
                 // Title editing event listeners
                 document.getElementById('saveTitleBtn').addEventListener('click', () => this.saveTitle());
@@ -1343,37 +1551,79 @@
                     });
             }
 
-            deleteSession() {
+            showDeleteConfirmation() {
                 if (!this.sessionData) {
                     alert('No session data available');
                     return;
                 }
-
-                const confirmed = confirm(`Are you sure you want to delete session "${this.sessionData.session_id}"? This action cannot be undone and will permanently remove all session data, videos, and analytics.`);
                 
-                if (!confirmed) return;
+                const deleteModal = document.getElementById('deleteModal');
+                const deleteMessage = document.getElementById('deleteMessage');
+                deleteMessage.textContent = `Are you sure you want to delete session "${this.sessionData.session_id}"? This action cannot be undone and will permanently remove all session data, videos, and analytics.`;
+                deleteModal.classList.add('show');
+            }
 
-                // Call the delete API
-                fetch(`/api/session/${this.sessionData.session_id}/delete`, {
-                    method: 'DELETE'
-                })
-                .then(response => {
+            hideDeleteConfirmation() {
+                const deleteModal = document.getElementById('deleteModal');
+                const deletePassword = document.getElementById('deletePassword');
+                const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+                
+                deleteModal.classList.remove('show');
+                
+                // Reset password field
+                if (deletePassword) {
+                    deletePassword.value = '';
+                    deletePassword.style.borderColor = '';
+                    deletePassword.classList.remove('error');
+                }
+                
+                // Re-disable the delete button
+                deleteConfirmBtn.disabled = true;
+            }
+
+            async confirmDeleteSession() {
+                if (!this.sessionData) return;
+
+                // Validate password
+                const deletePassword = document.getElementById('deletePassword');
+                const enteredPassword = deletePassword ? deletePassword.value.trim() : '';
+                const DELETION_PASSWORD = 'cheatgpt2024';
+                
+                if (enteredPassword !== DELETION_PASSWORD) {
+                    this.showToast('Incorrect password. Please try again.', 'error');
+                    deletePassword.classList.add('error');
+                    deletePassword.style.borderColor = '#e74c3c';
+                    deletePassword.focus();
+                    return;
+                }
+
+                const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+                deleteConfirmBtn.disabled = true;
+                deleteConfirmBtn.textContent = 'Deleting...';
+
+                try {
+                    const response = await fetch(`/api/session/${this.sessionData.session_id}/delete`, {
+                        method: 'DELETE'
+                    });
+
                     if (!response.ok) throw new Error('Delete failed');
-                    return response.json();
-                })
-                .then(result => {
+                    const result = await response.json();
+
                     if (result.success) {
-                        alert('Session deleted successfully');
-                        // Redirect to reports page
-                        window.location.href = '/analytics/reports';
+                        this.showToast('Session deleted successfully', 'success');
+                        // Redirect to reports page after a short delay
+                        setTimeout(() => {
+                            window.location.href = '/analytics/reports';
+                        }, 1000);
                     } else {
                         throw new Error(result.error || 'Delete failed');
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error('Delete session error:', error);
-                    alert(`Failed to delete session: ${error.message}`);
-                });
+                    this.showToast(`Failed to delete session: ${error.message}`, 'error');
+                    deleteConfirmBtn.disabled = false;
+                    deleteConfirmBtn.textContent = 'Delete';
+                }
             }
 
             viewVideo() {
