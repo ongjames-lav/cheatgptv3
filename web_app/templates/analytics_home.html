@@ -1211,12 +1211,24 @@
             letter-spacing: 0.5px;
         }
 
-        .video-card[data-type="processed"] .video-title {
+        /* Uploaded/Processed Video Specific Styles */
+        .video-card[data-type="processed"] .video-title,
+        .video-card[data-type="uploaded"] .video-title {
             color: #4CAF50;
         }
 
-        .video-card[data-type="processed"] .video-duration {
+        .video-card[data-type="processed"] .video-duration,
+        .video-card[data-type="uploaded"] .video-duration {
             background: rgba(76, 175, 80, 0.9);
+        }
+
+        .video-card[data-type="uploaded"] {
+            /* Subtle visual distinction for uploaded videos */
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .video-card[data-type="uploaded"]:hover {
+            border-color: rgba(76, 175, 80, 0.4);
         }
 
         .file-size {
@@ -1386,6 +1398,13 @@
                     autocomplete="off"
                 />
                 
+                <div id="passwordError" class="security-warning" style="display: none; background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; margin-top: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="min-width: 16px; margin-right: 8px;">
+                        <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+                    </svg>
+                    <span>Incorrect password. Please try again.</span>
+                </div>
+                
                 <div class="security-warning">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="min-width: 16px; margin-right: 8px;">
                         <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
@@ -1453,9 +1472,19 @@
                 
                 // Password security elements
                 this.deletePassword = document.getElementById('deletePassword');
+                this.passwordError = document.getElementById('passwordError');
                 
                 // Security constants
                 this.DELETION_PASSWORD = 'cheatgpt2024';  // Hardcoded password for now
+                
+                // Debug log to verify elements
+                console.log('Elements initialized:', {
+                    deleteSelectedBtn: !!this.deleteSelectedBtn,
+                    deleteModal: !!this.deleteModal,
+                    deletePassword: !!this.deletePassword,
+                    passwordError: !!this.passwordError,
+                    confirmDeleteBtn: !!this.confirmDeleteBtn
+                });
             }
 
             setupEventListeners() {
@@ -1545,27 +1574,8 @@
             }
 
             async loadProcessedVideos() {
-                try {
-                    console.log('Loading processed videos...');
-                    const response = await fetch('/api/sessions/uploaded');
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    console.log('Raw processed videos response:', data);
-                    
-                    this.processedVideos = Array.isArray(data.videos) ? data.videos : [];
-                    console.log('Processed videos loaded:', this.processedVideos);
-                    
-                    if (this.currentTab === 'processed') {
-                        this.applyFilters();
-                    }
-                } catch (error) {
-                    console.error('Error loading processed videos:', error);
-                    this.showError(`Failed to load processed videos: ${error.message}`);
-                }
+                // No longer needed - all videos (recorded and uploaded) are now loaded together via /api/sessions/list
+                console.log('Skipping separate processedVideos load - all videos now in unified list');
             }
 
             // Remove switchTab - show all videos directly
@@ -1669,37 +1679,16 @@
             }
 
             applyFilters() {
-                // Combine all videos from both sources
-                let allVideos = [];
-                
-                // Add recorded sessions
-                this.sessions.forEach(session => {
-                    allVideos.push({
-                        ...session,
-                        type: 'recorded',
-                        display_title: session.session_id,
-                        sort_date: session.start_time
-                    });
-                });
-                
-                // Add processed videos (currently empty as per API change)
-                this.processedVideos.forEach(video => {
-                    allVideos.push({
-                        ...video,
-                        type: 'processed',
-                        display_title: video.video_title || video.filename,
-                        sort_date: video.processing_time || video.start_time
-                    });
-                });
-
-                let filtered = [...allVideos];
+                // All videos (recorded and uploaded) are now unified in this.sessions
+                let filtered = [...this.sessions];
 
                 // Search filter
                 if (this.activeFilters.search) {
                     filtered = filtered.filter(item => {
-                        return item.display_title.toLowerCase().includes(this.activeFilters.search) ||
+                        const title = item.video_title || item.session_id;
+                        return title.toLowerCase().includes(this.activeFilters.search) ||
                                item.session_id.toLowerCase().includes(this.activeFilters.search) ||
-                               new Date((item.sort_date || 0) * 1000).toLocaleDateString().includes(this.activeFilters.search);
+                               new Date((item.start_time || 0) * 1000).toLocaleDateString().includes(this.activeFilters.search);
                     });
                 }
 
@@ -1707,19 +1696,19 @@
                 filtered.sort((a, b) => {
                     switch (this.currentSort) {
                         case 'date_desc':
-                            return (b.sort_date || 0) - (a.sort_date || 0);
+                            return (b.start_time || 0) - (a.start_time || 0);
                         case 'date_asc':
-                            return (a.sort_date || 0) - (b.sort_date || 0);
+                            return (a.start_time || 0) - (b.start_time || 0);
                         case 'events_desc':
-                            return (b.hotspot_count || b.event_count || 0) - (a.hotspot_count || a.event_count || 0);
+                            return (b.hotspot_count || 0) - (a.hotspot_count || 0);
                         case 'events_asc':
-                            return (a.hotspot_count || a.event_count || 0) - (b.hotspot_count || b.event_count || 0);
+                            return (a.hotspot_count || 0) - (b.hotspot_count || 0);
                         case 'duration_desc':
                             return (b.duration || 0) - (a.duration || 0);
                         case 'duration_asc':
                             return (a.duration || 0) - (b.duration || 0);
                         default:
-                            return (b.sort_date || 0) - (a.sort_date || 0);
+                            return (b.start_time || 0) - (a.start_time || 0);
                     }
                 });
 
@@ -1731,26 +1720,17 @@
                 console.log('Rendering sessions:', this.filteredSessions.length);
                 
                 if (this.filteredSessions.length === 0) {
-                    let emptyStateContent;
-                    if (this.currentTab === 'processed') {
-                        emptyStateContent = `
-                            <div class="empty-state" style="grid-column: 1 / -1;">
-                                <div class="empty-icon">🎬</div>
-                                <div class="empty-title">No processed videos found</div>
-                                <div class="empty-subtitle">Process uploaded videos to see them here with bounding boxes and analysis</div>
-                                <a href="/upload" class="empty-action">Upload & Process Videos</a>
+                    const emptyStateContent = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <div class="empty-icon">📹</div>
+                            <div class="empty-title">No videos found</div>
+                            <div class="empty-subtitle">Start a live session or upload a video to see them here</div>
+                            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+                                <a href="/" class="empty-action">Start Live Session</a>
+                                <a href="/upload" class="empty-action">Upload Video</a>
                             </div>
-                        `;
-                    } else {
-                        emptyStateContent = `
-                            <div class="empty-state" style="grid-column: 1 / -1;">
-                                <div class="empty-icon">No Videos</div>
-                                <div class="empty-title">No recorded sessions found</div>
-                                <div class="empty-subtitle">Try adjusting your filters or start a new recording session</div>
-                                <a href="/" class="empty-action">Start Live Monitoring</a>
-                            </div>
-                        `;
-                    }
+                        </div>
+                    `;
                     this.videoGrid.innerHTML = emptyStateContent;
                     return;
                 }
@@ -1782,21 +1762,10 @@
                             this.toggleSessionSelection(sessionId, card);
                         });
                     } else {
+                        // All videos now use the same analytics player
                         card.addEventListener('click', () => {
-                            const videoType = card.dataset.type;
-                            const filename = card.dataset.filename;
-                            
-                            console.log('Card clicked for session:', sessionId, 'type:', videoType);
-                            
-                            if (videoType === 'processed') {
-                                // For processed videos, just show details without playback
-                                console.log('Processed video details for session:', sessionId);
-                                // You can add a details modal or info display here if needed
-                                return;
-                            } else {
-                                // For recorded sessions, use the analytics player
-                                window.location.href = `/analytics/player?session=${sessionId}`;
-                            }
+                            console.log('Card clicked for session:', sessionId);
+                            window.location.href = `/analytics/player?session=${sessionId}`;
                         });
                     }
                 });
@@ -1804,18 +1773,8 @@
                 console.log('Session rendering complete');
             }
 
-            createSessionCard(item) {
-                console.log('Creating card for:', item);
-                
-                if (this.currentTab === 'recorded') {
-                    return this.createRecordedSessionCard(item);
-                } else {
-                    return this.createProcessedVideoCard(item);
-                }
-            }
-
-            createRecordedSessionCard(session) {
-                console.log('Creating recorded session card for:', session);
+            createSessionCard(session) {
+                console.log('Creating session card for:', session);
                 
                 // Handle different timestamp formats
                 let timestamp = session.start_time || session.timestamp || session.created_at;
@@ -1827,6 +1786,7 @@
                 const duration = this.formatTime(session.duration || 0);
                 const eventCount = session.hotspot_count || session.event_count || 0;
                 const isActive = session.status === 'active';
+                const isUploaded = session.session_type === 'uploaded' || session.status === 'uploaded';
                 const isSelected = this.selectedSessions.has(session.session_id);
                 
                 let eventCountClass = 'low';
@@ -1838,24 +1798,29 @@
                 const thumbnailSrc = session.thumbnail_path || 
                                    session.video_path?.replace('.mp4', '.jpg') ||
                                    `/api/thumbnail/${sessionId}`;
+                
+                // Determine title and badge
+                const videoTitle = session.video_title || `Session ${sessionId}`;
+                const badge = isActive ? '<div class="live-badge">LIVE</div>' : 
+                             isUploaded ? '<div class="processed-badge">UPLOADED</div>' : '';
 
-                console.log('Recorded session card data:', { sessionId, date, duration, eventCount, thumbnailSrc });
+                console.log('Session card data:', { sessionId, date, duration, eventCount, thumbnailSrc, isUploaded });
 
                 return `
-                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${sessionId}" data-type="recorded" tabindex="0">
+                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${sessionId}" data-type="${isUploaded ? 'uploaded' : 'recorded'}" tabindex="0">
                         <div class="video-thumbnail">
                             <div class="selection-checkbox ${isSelected ? 'checked' : ''}"></div>
                             <img src="${thumbnailSrc}" 
-                                 alt="Session ${sessionId}" 
-                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMyMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMzAzMDMwIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjNlbSI+Session Video</text+Cjwvc3ZnPgo=';">
+                                 alt="${videoTitle}" 
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMyMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMzAzMDMwIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjNlbSI+Video Session</text+Cjwvc3ZnPgo=';">
                             <div class="video-duration">${duration}</div>
-                            ${isActive ? '<div class="live-badge">LIVE</div>' : ''}
+                            ${badge}
                             <div class="video-overlay">
                                 <button class="overlay-btn">▶</button>
                             </div>
                         </div>
                         <div class="video-info">
-                            <div class="video-title">Session ${sessionId}</div>
+                            <div class="video-title">${videoTitle}</div>
                             <div class="video-metadata">
                                 <div class="video-date">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
                             </div>
@@ -1864,65 +1829,6 @@
                                     <span class="stat-icon">Events:</span>
                                     <span class="event-count ${eventCountClass}">${eventCount} events</span>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            createProcessedVideoCard(video) {
-                console.log('Creating processed video card for:', video);
-                
-                const date = new Date(video.processing_time * 1000);
-                const sizeInMB = (video.size / (1024 * 1024)).toFixed(1);
-                const duration = this.formatTime(video.duration || 0);
-                const eventCount = video.hotspot_count || 0;
-                const isSelected = this.selectedSessions.has(video.session_id);
-
-                let eventCountClass = 'low';
-                if (eventCount > 50) eventCountClass = 'high';
-                else if (eventCount > 25) eventCountClass = 'medium';
-
-                return `
-                    <div class="video-card ${isSelected ? 'selected' : ''}" data-session-id="${video.session_id}" data-filename="${video.filename}" data-type="processed" tabindex="0">
-                        <div class="video-thumbnail">
-                            <div class="selection-checkbox ${isSelected ? 'checked' : ''}"></div>
-                            <div class="processed-preview">
-                                <i class="fas fa-file-video" style="font-size: 48px; color: #4CAF50;"></i>
-                                <div class="bounding-box-indicator">
-                                    <i class="fas fa-vector-square" style="font-size: 16px;"></i>
-                                </div>
-                            </div>
-                            <div class="video-duration">${duration}</div>
-                            <div class="processed-badge">PROCESSED</div>
-                            <div class="video-overlay">
-                                <span class="overlay-text">View Details</span>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <div class="video-title">${video.video_title}</div>
-                            <div class="video-metadata">
-                                <div class="video-date">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
-                            </div>
-                            <div class="video-stats">
-                                <div class="stat-item">
-                                    <span class="stat-icon">Events:</span>
-                                    <span class="event-count ${eventCountClass}">${eventCount} events</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon">Size:</span>
-                                    <span class="file-size">${sizeInMB} MB</span>
-                                </div>
-                            </div>
-                            <div class="video-actions">
-                                <button class="action-btn processed-video-btn" data-session-id="${video.session_id}" data-filename="${video.filename}" onclick="event.stopPropagation(); 
-                                    const filename = '${video.video_path}'.split(/[/\\]/).pop() || '${video.filename}';
-                                    window.open('/playback/processed/${video.session_id}/' + filename, '_blank')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
-                                    </svg>
-                                    Play Processed Video
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -1977,16 +1883,26 @@
             }
 
             showDeleteConfirmation() {
-                if (this.selectedSessions.size === 0) return;
+                console.log('showDeleteConfirmation called, selected sessions:', this.selectedSessions.size);
+                
+                if (this.selectedSessions.size === 0) {
+                    console.warn('No sessions selected');
+                    return;
+                }
                 
                 this.deleteCount.textContent = this.selectedSessions.size;
                 
                 // Reset password security state
                 this.deletePassword.value = '';
                 this.confirmDeleteBtn.disabled = true;
-                this.passwordError.style.display = 'none';
                 this.deletePassword.classList.remove('error');
                 
+                // Hide password error message
+                if (this.passwordError) {
+                    this.passwordError.style.display = 'none';
+                }
+                
+                console.log('Showing delete modal...');
                 this.deleteModal.classList.add('show');
                 
                 // Focus on password input for better UX
@@ -2003,6 +1919,11 @@
                 this.deletePassword.style.borderColor = '';
                 this.confirmDeleteBtn.disabled = true;
                 this.deletePassword.classList.remove('error');
+                
+                // Hide password error message
+                if (this.passwordError) {
+                    this.passwordError.style.display = 'none';
+                }
             }
 
             async deleteSelectedSessions() {
@@ -2078,10 +1999,18 @@
                 this.deletePassword.classList.add('error');
                 this.deletePassword.style.borderColor = '#e74c3c';
                 
+                // Show password error message
+                if (this.passwordError) {
+                    this.passwordError.style.display = 'flex';
+                }
+                
                 // Clear error after a delay
                 setTimeout(() => {
                     this.deletePassword.classList.remove('error');
                     this.deletePassword.style.borderColor = '';
+                    if (this.passwordError) {
+                        this.passwordError.style.display = 'none';
+                    }
                 }, 3000);
             }
 

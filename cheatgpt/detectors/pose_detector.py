@@ -49,7 +49,7 @@ class PoseDetector:
         # OPTIMIZATION 1: Enhanced threshold configuration for classroom settings (slightly more sensitive)
         self.lean_angle_thresh = float(os.getenv('LEAN_ANGLE_THRESH', '8.0'))    # More sensitive (was 12.0)
         self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '35.0'))     # Enhanced sensitivity - 35° for more responsive detection
-        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.005'))    # Ultra-sensitive phone detection
+        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.001'))    # ULTRA-SENSITIVE phone detection - lowered from 0.003
         
         # OPTIMIZATION 2: Performance-oriented thresholds
         self.confidence_thresh = float(os.getenv('POSE_CONFIDENCE_THRESH', '0.3'))
@@ -189,6 +189,14 @@ class PoseDetector:
         if phone_detections is None:
             phone_detections = []
         
+        # DEBUG: Log phone detections received
+        if phone_detections:
+            logger.info(f"📱 POSE DETECTOR RECEIVED {len(phone_detections)} PHONE(S):")
+            for i, phone in enumerate(phone_detections):
+                logger.info(f"   📱 Phone {i+1}: bbox={phone.get('bbox', [])}, conf={phone.get('conf', 0):.3f}")
+        else:
+            logger.info(f"📱 POSE DETECTOR RECEIVED 0 PHONES (phone_detections is {'None' if phone_detections is None else 'empty list'})")
+        
         # OPTIMIZATION 1: Performance tracking
         start_time = time.time() if self.performance_tracking else None
         
@@ -260,7 +268,13 @@ class PoseDetector:
                             logger.debug(f"🔍 GESTURE RESULT: {gesture_result}")
                         
                         # PARAMETER 3: Phone detection (handled separately in engine)
+                        logger.info(f"📱 CALLING PHONE PROXIMITY CHECK: person_bbox={bbox}, {len(phone_detections)} phone detection(s) available")
+                        for idx, p in enumerate(phone_detections):
+                            logger.info(f"   📱 Phone {idx+1} passed to proximity check: bbox={p.get('bbox', [])}, conf={p.get('conf', 0):.3f}")
+                        
                         phone_flag = self._compute_phone_near(bbox, phone_detections)
+                        
+                        logger.info(f"   📊 PHONE FLAG RESULT: {phone_flag}")
                         
                         # DISABLED PARAMETERS FOR SIMPLIFIED SYSTEM:
                         # - lean_flag (looking down detection) - REMOVED
@@ -900,7 +914,12 @@ class PoseDetector:
         """Compute if phone is near person's torso using IoU."""
         try:
             if not phone_detections:
+                logger.debug(f"🔍 Phone proximity check: No phone detections provided")
                 return False
+            
+            logger.info(f"🔍 PHONE PROXIMITY CHECK: person_bbox={person_bbox}, {len(phone_detections)} phone(s) to check")
+            for i, phone in enumerate(phone_detections):
+                logger.info(f"   📱 Phone {i+1}: bbox={phone.get('bbox', [])}, conf={phone.get('conf', 0)}")
             
             # Define expanded detection region around person
             x1, y1, x2, y2 = person_bbox
@@ -909,18 +928,20 @@ class PoseDetector:
             
             # Get classroom distance compensation factor (assume 720p for calculation)
             distance_factor = self._get_classroom_distance_factor(person_bbox, 720)
+            logger.info(f"   🎯 Distance factor for person: {distance_factor:.2f} (person height: {person_height:.0f}px)")
             
             # Calculate overlap threshold based on distance compensation
-            overlap_threshold = 0.05 / distance_factor  # Lower threshold for distant subjects
+            # ULTRA-SENSITIVE: Even more lenient overlap threshold for long-distance detection
+            overlap_threshold = 0.02 / distance_factor  # Very low threshold for distant subjects
             
             # Expand detection area around person (classroom optimized)
-            # Larger margins for farther angles and classroom monitoring
-            base_margin_x = person_width * 0.5   # Base 50% margin on sides
-            base_margin_y = person_height * 0.4   # Base 40% margin on top/bottom
+            # ULTRA-SENSITIVE: Much larger margins for long-distance phone detection
+            base_margin_x = person_width * 0.9   # Increased from 70% to 90% margin on sides
+            base_margin_y = person_height * 0.8   # Increased from 60% to 80% margin on top/bottom
             
-            # Apply distance compensation
-            margin_x = base_margin_x * distance_factor
-            margin_y = base_margin_y * distance_factor
+            # Apply distance compensation with aggressive boost for far subjects
+            margin_x = base_margin_x * distance_factor * 1.5  # 50% boost for distance (was 30%)
+            margin_y = base_margin_y * distance_factor * 1.5  # 50% boost for distance (was 30%)
             
             expanded_x1 = x1 - margin_x
             expanded_y1 = y1 - margin_y
@@ -938,23 +959,47 @@ class PoseDetector:
                     # Also check simple overlap for better detection
                     overlap = self._calculate_overlap_ratio(person_bbox, phone_bbox)
                     
+                    # IMPROVED: Check if phone is within extended proximity range
+                    # Calculate centroid distance for additional far-range detection
+                    person_center = [(person_bbox[0] + person_bbox[2]) / 2, 
+                                   (person_bbox[1] + person_bbox[3]) / 2]
+                    phone_center = [(phone_bbox[0] + phone_bbox[2]) / 2,
+                                  (phone_bbox[1] + phone_bbox[3]) / 2]
+                    distance = ((person_center[0] - phone_center[0])**2 + 
+                              (person_center[1] - phone_center[1])**2)**0.5
+                    
+                    # Distance threshold based on person size
+                    person_width = person_bbox[2] - person_bbox[0]
+                    person_height = person_bbox[3] - person_bbox[1]
+                    person_diag = (person_width**2 + person_height**2)**0.5
+                    # ULTRA-SENSITIVE: Allow much farther phones with aggressive distance scaling
+                    max_distance = person_diag * 1.2 * distance_factor  # Increased from 0.8 to 1.2 for long-distance detection
+                    
                     if self.debug_mode:
                         logger.debug(f"📱 Phone detection analysis:")
                         logger.debug(f"   Distance factor: {distance_factor:.2f}")
                         logger.debug(f"   IoU: {iou:.4f} (thresh: {self.phone_iou_thresh})")
                         logger.debug(f"   Overlap: {overlap:.4f} (thresh: {overlap_threshold:.4f})")
+                        logger.debug(f"   Centroid distance: {distance:.1f} (max: {max_distance:.1f})")
                         logger.debug(f"   Margins: {margin_x:.1f}x{margin_y:.1f} (base: {base_margin_x:.1f}x{base_margin_y:.1f})")
                     
-                    # Classroom-optimized detection thresholds with distance compensation
-                    # More lenient for farther angles and varying desk heights
-                    if iou > self.phone_iou_thresh or overlap > overlap_threshold:
+                    # ULTRA-SENSITIVE: Classroom-optimized detection with multiple criteria
+                    # Very lenient for long-distance angles and varying desk heights
+                    # Check IoU OR overlap OR proximity distance
+                    logger.info(f"   📊 Detection criteria: IoU={iou:.4f} (>{self.phone_iou_thresh}), overlap={overlap:.4f} (>{overlap_threshold:.4f}), dist={distance:.1f} (<{max_distance:.1f})")
+                    
+                    if iou > self.phone_iou_thresh or overlap > overlap_threshold or distance < max_distance:
+                        logger.info(f"✅ PHONE MATCHED TO PERSON! Criteria met: IoU={iou:.3f}, overlap={overlap:.3f}, dist={distance:.1f}")
                         if self.debug_mode:
-                            logger.debug(f"Phone detected near person: IoU={iou:.3f}, overlap={overlap:.3f}")
+                            logger.debug(f"✅ Phone detected near person: IoU={iou:.3f}, overlap={overlap:.3f}, dist={distance:.1f}")
                         return True
+                    else:
+                        logger.info(f"❌ Phone did NOT match person - all criteria failed")
         
         except Exception as e:
-            logger.debug(f"Error computing phone near: {e}")
+            logger.warning(f"Error computing phone near: {e}")
         
+        logger.info(f"❌ NO PHONE MATCHED: Checked {len(phone_detections)} phone(s), none met proximity criteria")
         return False
     
     def _get_classroom_distance_factor(self, person_bbox: List[float], frame_height: int) -> float:
@@ -967,10 +1012,17 @@ class PoseDetector:
             # Smaller person = farther away = need more sensitivity
             relative_size = person_height / frame_height
             
-            # Scale factor: smaller people get higher sensitivity multiplier
-            if relative_size < 0.15:  # Very far (small person)
+            # ULTRA-SENSITIVE: Very aggressive scaling for long-distance detection
+            # Scale factor: smaller people get much higher sensitivity multiplier
+            if relative_size < 0.08:  # Ultra-far (tiny person in frame)
+                return 3.5  # 3.5x detection area for ultra-distant subjects
+            elif relative_size < 0.12:  # Extremely far (very small person)
+                return 3.0  # Triple the detection area
+            elif relative_size < 0.18:  # Very far (small person)
+                return 2.5  # 2.5x detection area
+            elif relative_size < 0.28:  # Medium-far distance
                 return 2.0  # Double the detection area
-            elif relative_size < 0.25:  # Medium distance
+            elif relative_size < 0.38:  # Close-medium range
                 return 1.5  # 50% larger detection area
             else:  # Close range
                 return 1.0  # Normal detection area

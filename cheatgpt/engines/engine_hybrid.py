@@ -868,6 +868,14 @@ class EngineHybrid:
                 persons = [d for d in detections if d['cls_name'] == 'person']
                 phones = [d for d in detections if d['cls_name'] == 'cell phone']
                 
+                # DEBUG: Log phone detections
+                if phones:
+                    self.logger.info(f"📱 YOLO DETECTED {len(phones)} PHONE(S) in frame {self.frame_count}:")
+                    for i, phone in enumerate(phones):
+                        self.logger.info(f"   📱 Phone {i+1}: conf={phone['conf']:.3f}, bbox={phone['bbox']}")
+                else:
+                    self.logger.debug(f"📱 No phones detected by YOLO in frame {self.frame_count}")
+                
                 # Filter to keep high-confidence person detections for classroom
                 if len(persons) > 1:
                     # Keep all confident detections for multi-student tracking

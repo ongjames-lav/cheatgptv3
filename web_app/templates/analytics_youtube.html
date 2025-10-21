@@ -1182,7 +1182,7 @@
         <div class="modal">
             <div class="modal-title">Delete Session</div>
             <div class="modal-message" id="deleteMessage">
-                Are you sure you want to delete this session? This will permanently remove the session data and video file.
+                Are you sure you want to delete <span id="deleteCount">1</span> selected session(s)? This action cannot be undone and will permanently remove all session data, videos, and analytics.
             </div>
             <div class="password-security-section">
                 <label for="deletePassword" class="security-label">
@@ -1198,6 +1198,13 @@
                     placeholder="Type password to enable delete"
                     autocomplete="off"
                 />
+                
+                <div id="passwordError" class="security-warning" style="display: none; background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; margin-top: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="min-width: 16px; margin-right: 8px;">
+                        <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+                    </svg>
+                    <span>Incorrect password. Please try again.</span>
+                </div>
                 
                 <div class="security-warning">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="min-width: 16px; margin-right: 8px;">
@@ -1460,16 +1467,8 @@
                     // Load video with enhanced error handling and race condition prevention
                     const videoSource = document.getElementById('videoSource');
                     
-                    // Check if this is a processed/uploaded video by session ID pattern
-                    let videoUrl;
-                    if (session.session_id && session.session_id.startsWith('single_')) {
-                        // This is an uploaded/processed video - needs special routing
-                        const filename = session.video_path ? session.video_path.split(/[/\\]/).pop() : `processed_${session.session_id}.mp4`;
-                        videoUrl = `/playback/processed/${session.session_id}/${filename}`;
-                    } else {
-                        // This is a recorded session - use regular routing
-                        videoUrl = `/playback/${session.session_id}`;
-                    }
+                    // Use unified playback route for all videos (recorded and uploaded)
+                    const videoUrl = `/playback/${session.session_id}`;
                     
                     console.log(`Loading video for session: ${session.session_id}`);
                     console.log(`Video URL: ${videoUrl}`);
@@ -1832,12 +1831,19 @@
                 this.deleteModal.classList.remove('show');
                 this.sessionToDelete = null;
                 
-                // Reset password field
+                // Reset password field and error
                 const deletePassword = document.getElementById('deletePassword');
+                const passwordError = document.getElementById('passwordError');
+                
                 if (deletePassword) {
                     deletePassword.value = '';
                     deletePassword.style.borderColor = '';
                     deletePassword.classList.remove('error');
+                }
+                
+                // Hide password error message
+                if (passwordError) {
+                    passwordError.style.display = 'none';
                 }
                 
                 // Re-disable the delete button
@@ -1849,14 +1855,28 @@
 
                 // Validate password
                 const deletePassword = document.getElementById('deletePassword');
+                const passwordError = document.getElementById('passwordError');
                 const enteredPassword = deletePassword ? deletePassword.value.trim() : '';
                 const DELETION_PASSWORD = 'cheatgpt2024';
                 
                 if (enteredPassword !== DELETION_PASSWORD) {
-                    this.showErrorMessage('Incorrect password. Please try again.');
+                    // Show password error message
+                    if (passwordError) {
+                        passwordError.style.display = 'flex';
+                    }
                     deletePassword.classList.add('error');
                     deletePassword.style.borderColor = '#e74c3c';
                     deletePassword.focus();
+                    
+                    // Hide error after 3 seconds
+                    setTimeout(() => {
+                        deletePassword.classList.remove('error');
+                        deletePassword.style.borderColor = '';
+                        if (passwordError) {
+                            passwordError.style.display = 'none';
+                        }
+                    }, 3000);
+                    
                     return;
                 }
 

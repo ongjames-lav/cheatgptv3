@@ -85,11 +85,14 @@ class YOLO11Detector:
             return []
         
         try:
-            # Run inference with improved settings
+            # Run inference with ULTRA-SENSITIVE settings for long-distance phone detection
+            # Very low confidence threshold to catch even tiny/distant phones
             results = self.model(frame, device=self.device, verbose=False, 
-                               conf=0.3, iou=0.5, max_det=50)
+                               conf=0.10, iou=0.40, max_det=80, agnostic_nms=True)
             
             detections = []
+            phone_raw_detections = 0  # Count raw phone detections before filtering
+            phone_passed_filter = 0  # Count phones that passed confidence filter
             
             # Process results
             for result in results:
@@ -104,6 +107,10 @@ class YOLO11Detector:
                         cls_id = int(boxes.cls[i])
                         cls_name = class_names[cls_id]
                         
+                        # Count raw phone detections
+                        if cls_name == 'cell phone':
+                            phone_raw_detections += 1
+                        
                         # Filter for target classes only
                         if cls_name in self.TARGET_CLASSES:
                             # Get bounding box in xyxy format
@@ -112,9 +119,9 @@ class YOLO11Detector:
                             # Get confidence score
                             conf = float(boxes.conf[i].cpu().numpy())
                             
-                            # Apply classroom-optimized confidence filtering
-                            # Lower thresholds for better detection at farther angles
-                            min_conf = 0.35 if cls_name == 'person' else 0.15  # Much lower for phone detection in classrooms
+                            # ULTRA-SENSITIVE: Apply extremely low thresholds for long-distance detection
+                            # Prioritize recall over precision for distant phone detection
+                            min_conf = 0.30 if cls_name == 'person' else 0.05  # Ultra-ultra-low for distant phone detection
                             if conf >= min_conf:
                                 detection = {
                                     'bbox': bbox,  # [x1, y1, x2, y2]
@@ -123,6 +130,15 @@ class YOLO11Detector:
                                 }
                                 
                                 detections.append(detection)
+                                
+                                # Count phones that passed filter
+                                if cls_name == 'cell phone':
+                                    phone_passed_filter += 1
+                                    logger.info(f"📱 PHONE DETECTED by YOLO: conf={conf:.3f}, bbox={bbox}")
+            
+            # Log phone detection summary
+            if phone_raw_detections > 0:
+                logger.info(f"📱 PHONE DETECTION SUMMARY: {phone_raw_detections} raw detections, {phone_passed_filter} passed filter (conf >= 0.05)")
             
             # Apply additional NMS to remove duplicates
             detections = self._apply_class_nms(detections)
