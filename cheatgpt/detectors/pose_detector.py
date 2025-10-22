@@ -46,10 +46,10 @@ class PoseDetector:
         self.weights_path = weights_path or os.getenv('POSE_MODEL_PATH', 'weights/yolo11m-pose.pt')
         self.force_cpu = os.getenv('FORCE_CPU', 'false').lower() == 'true'
         
-        # OPTIMIZATION 1: Enhanced threshold configuration for classroom settings (slightly more sensitive)
+        # OPTIMIZATION 1: Enhanced threshold configuration for classroom settings (MORE SENSITIVE)
         self.lean_angle_thresh = float(os.getenv('LEAN_ANGLE_THRESH', '8.0'))    # More sensitive (was 12.0)
-        self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '35.0'))     # Enhanced sensitivity - 35° for more responsive detection
-        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.001'))    # ULTRA-SENSITIVE phone detection - lowered from 0.003
+        self.head_turn_thresh = float(os.getenv('HEAD_TURN_THRESH', '25.0'))     # CLASSROOM MODE: More sensitive - 25° for earlier detection (was 35°)
+        self.phone_iou_thresh = float(os.getenv('PHONE_IOU_THRESH', '0.02'))    # REALISTIC phone detection - balanced for classroom monitoring
         
         # OPTIMIZATION 2: Performance-oriented thresholds
         self.confidence_thresh = float(os.getenv('POSE_CONFIDENCE_THRESH', '0.3'))
@@ -189,13 +189,11 @@ class PoseDetector:
         if phone_detections is None:
             phone_detections = []
         
-        # DEBUG: Log phone detections received
+        # Only log phone detections when actually detected (reduce noise)
         if phone_detections:
-            logger.info(f"📱 POSE DETECTOR RECEIVED {len(phone_detections)} PHONE(S):")
+            logger.debug(f"📱 POSE DETECTOR RECEIVED {len(phone_detections)} PHONE(S):")
             for i, phone in enumerate(phone_detections):
-                logger.info(f"   📱 Phone {i+1}: bbox={phone.get('bbox', [])}, conf={phone.get('conf', 0):.3f}")
-        else:
-            logger.info(f"📱 POSE DETECTOR RECEIVED 0 PHONES (phone_detections is {'None' if phone_detections is None else 'empty list'})")
+                logger.debug(f"   📱 Phone {i+1}: bbox={phone.get('bbox', [])}, conf={phone.get('conf', 0):.3f}")
         
         # OPTIMIZATION 1: Performance tracking
         start_time = time.time() if self.performance_tracking else None
@@ -220,8 +218,8 @@ class PoseDetector:
                         bbox = boxes.xyxy[i].cpu().numpy().tolist()
                         conf = float(boxes.conf[i].cpu().numpy())
                         
-                        # OPTIMIZATION 4: Early filtering for performance
-                        if conf < 0.4:  # Slightly higher threshold for better quality
+                        # OPTIMIZATION 4: Early filtering for performance - CLASSROOM MODE
+                        if conf < 0.25:  # CLASSROOM MODE: Lower threshold for better detection (was 0.4)
                             continue
                         
                         # Get keypoints for this person
@@ -268,13 +266,11 @@ class PoseDetector:
                             logger.debug(f"🔍 GESTURE RESULT: {gesture_result}")
                         
                         # PARAMETER 3: Phone detection (handled separately in engine)
-                        logger.info(f"📱 CALLING PHONE PROXIMITY CHECK: person_bbox={bbox}, {len(phone_detections)} phone detection(s) available")
-                        for idx, p in enumerate(phone_detections):
-                            logger.info(f"   📱 Phone {idx+1} passed to proximity check: bbox={p.get('bbox', [])}, conf={p.get('conf', 0):.3f}")
-                        
                         phone_flag = self._compute_phone_near(bbox, phone_detections)
                         
-                        logger.info(f"   📊 PHONE FLAG RESULT: {phone_flag}")
+                        # Debug log only (actual logging with track ID happens in engine)
+                        if phone_flag and self.debug_mode:
+                            logger.debug(f"📱 PHONE DETECTED: person_bbox={bbox}, phone_flag={phone_flag}")
                         
                         # DISABLED PARAMETERS FOR SIMPLIFIED SYSTEM:
                         # - lean_flag (looking down detection) - REMOVED
@@ -540,12 +536,12 @@ class PoseDetector:
             if abs(ear_yaw) > abs(yaw) * 1.5:
                 yaw = ear_yaw
             
-            # METHOD 4: Temporal Smoothing and Noise Reduction - BALANCED SETTINGS
-            # Apply balanced temporal smoothing
-            if abs(yaw) < 8.0:  # Ignore small normal movements (was 5.0)
+            # METHOD 4: Temporal Smoothing and Noise Reduction - CLASSROOM MODE
+            # Apply minimal smoothing for classroom monitoring
+            if abs(yaw) < 5.0:  # CLASSROOM MODE: Reduced noise filter (was 8.0)
                 yaw = 0.0
-            elif abs(yaw) < 25:  # Light dampening for small-medium turns (was 20)
-                yaw *= 0.75  # Balanced dampening for practical detection (was 0.8)
+            elif abs(yaw) < 20:  # CLASSROOM MODE: Less dampening (was 25)
+                yaw *= 0.85  # CLASSROOM MODE: Less dampening for better detection (was 0.75)
             
             # METHOD 5: Enhanced Pitch Calculation
             if nose and (left_eye or right_eye):
@@ -917,9 +913,9 @@ class PoseDetector:
                 logger.debug(f"🔍 Phone proximity check: No phone detections provided")
                 return False
             
-            logger.info(f"🔍 PHONE PROXIMITY CHECK: person_bbox={person_bbox}, {len(phone_detections)} phone(s) to check")
+            logger.debug(f"🔍 PHONE PROXIMITY CHECK: person_bbox={person_bbox}, {len(phone_detections)} phone(s) to check")
             for i, phone in enumerate(phone_detections):
-                logger.info(f"   📱 Phone {i+1}: bbox={phone.get('bbox', [])}, conf={phone.get('conf', 0)}")
+                logger.debug(f"   📱 Phone {i+1}: bbox={phone.get('bbox', [])}, conf={phone.get('conf', 0)}")
             
             # Define expanded detection region around person
             x1, y1, x2, y2 = person_bbox
@@ -928,20 +924,20 @@ class PoseDetector:
             
             # Get classroom distance compensation factor (assume 720p for calculation)
             distance_factor = self._get_classroom_distance_factor(person_bbox, 720)
-            logger.info(f"   🎯 Distance factor for person: {distance_factor:.2f} (person height: {person_height:.0f}px)")
+            logger.debug(f"   🎯 Distance factor for person: {distance_factor:.2f} (person height: {person_height:.0f}px)")
             
             # Calculate overlap threshold based on distance compensation
-            # ULTRA-SENSITIVE: Even more lenient overlap threshold for long-distance detection
-            overlap_threshold = 0.02 / distance_factor  # Very low threshold for distant subjects
+            # STRICT: Much higher overlap required to ensure phone is actually with person
+            overlap_threshold = 0.15 / distance_factor  # Increased from 0.02 to 0.15 for stricter matching
             
             # Expand detection area around person (classroom optimized)
-            # ULTRA-SENSITIVE: Much larger margins for long-distance phone detection
-            base_margin_x = person_width * 0.9   # Increased from 70% to 90% margin on sides
-            base_margin_y = person_height * 0.8   # Increased from 60% to 80% margin on top/bottom
+            # BALANCED: Reasonable margins for phone detection
+            base_margin_x = person_width * 0.4   # Reduced from 90% to 40% - phone should be close to person
+            base_margin_y = person_height * 0.3   # Reduced from 80% to 30% - phone should be close to person
             
-            # Apply distance compensation with aggressive boost for far subjects
-            margin_x = base_margin_x * distance_factor * 1.5  # 50% boost for distance (was 30%)
-            margin_y = base_margin_y * distance_factor * 1.5  # 50% boost for distance (was 30%)
+            # Apply distance compensation with moderate boost for far subjects
+            margin_x = base_margin_x * distance_factor * 1.2  # Reduced from 1.5 to 1.2
+            margin_y = base_margin_y * distance_factor * 1.2  # Reduced from 1.5 to 1.2
             
             expanded_x1 = x1 - margin_x
             expanded_y1 = y1 - margin_y
@@ -972,8 +968,8 @@ class PoseDetector:
                     person_width = person_bbox[2] - person_bbox[0]
                     person_height = person_bbox[3] - person_bbox[1]
                     person_diag = (person_width**2 + person_height**2)**0.5
-                    # ULTRA-SENSITIVE: Allow much farther phones with aggressive distance scaling
-                    max_distance = person_diag * 1.2 * distance_factor  # Increased from 0.8 to 1.2 for long-distance detection
+                    # STRICT: Phone must be much closer to person
+                    max_distance = person_diag * 0.5 * distance_factor  # Reduced from 1.2 to 0.5 for stricter proximity
                     
                     if self.debug_mode:
                         logger.debug(f"📱 Phone detection analysis:")
@@ -983,23 +979,29 @@ class PoseDetector:
                         logger.debug(f"   Centroid distance: {distance:.1f} (max: {max_distance:.1f})")
                         logger.debug(f"   Margins: {margin_x:.1f}x{margin_y:.1f} (base: {base_margin_x:.1f}x{base_margin_y:.1f})")
                     
-                    # ULTRA-SENSITIVE: Classroom-optimized detection with multiple criteria
-                    # Very lenient for long-distance angles and varying desk heights
-                    # Check IoU OR overlap OR proximity distance
-                    logger.info(f"   📊 Detection criteria: IoU={iou:.4f} (>{self.phone_iou_thresh}), overlap={overlap:.4f} (>{overlap_threshold:.4f}), dist={distance:.1f} (<{max_distance:.1f})")
+                    # STRICT: Phone must meet ALL criteria for confident matching
+                    # Changed from OR to AND logic to eliminate false positives
+                    # Phone must be BOTH overlapping AND within distance
+                    logger.debug(f"   📊 Detection criteria (ALL must pass): IoU={iou:.4f} (>{self.phone_iou_thresh}), overlap={overlap:.4f} (>{overlap_threshold:.4f}), dist={distance:.1f} (<{max_distance:.1f})")
                     
-                    if iou > self.phone_iou_thresh or overlap > overlap_threshold or distance < max_distance:
-                        logger.info(f"✅ PHONE MATCHED TO PERSON! Criteria met: IoU={iou:.3f}, overlap={overlap:.3f}, dist={distance:.1f}")
+                    # STRICT MATCHING: Require overlap AND reasonable distance
+                    if (overlap > overlap_threshold) and (distance < max_distance):
+                        logger.debug(f"✅ PHONE MATCHED TO PERSON! ALL criteria met: overlap={overlap:.3f} (>{overlap_threshold:.3f}), dist={distance:.1f} (<{max_distance:.1f})")
                         if self.debug_mode:
-                            logger.debug(f"✅ Phone detected near person: IoU={iou:.3f}, overlap={overlap:.3f}, dist={distance:.1f}")
+                            logger.debug(f"✅ Phone detected near person: overlap={overlap:.3f}, dist={distance:.1f}")
                         return True
                     else:
-                        logger.info(f"❌ Phone did NOT match person - all criteria failed")
+                        criteria_failed = []
+                        if not (overlap > overlap_threshold):
+                            criteria_failed.append(f"overlap={overlap:.3f}<={overlap_threshold:.3f}")
+                        if not (distance < max_distance):
+                            criteria_failed.append(f"dist={distance:.1f}>={max_distance:.1f}")
+                        logger.debug(f"❌ Phone did NOT match person - criteria failed: {', '.join(criteria_failed)}")
         
         except Exception as e:
             logger.warning(f"Error computing phone near: {e}")
         
-        logger.info(f"❌ NO PHONE MATCHED: Checked {len(phone_detections)} phone(s), none met proximity criteria")
+        logger.debug(f"❌ NO PHONE MATCHED: Checked {len(phone_detections)} phone(s), none met proximity criteria")
         return False
     
     def _get_classroom_distance_factor(self, person_bbox: List[float], frame_height: int) -> float:
@@ -1140,9 +1142,9 @@ class PoseDetector:
                 
                 # Check if hand is extended sideways (not up towards head)
                 is_sideward = left_wrist[1] > left_shoulder[1] - 30  # Not raised above shoulder level
-                is_extended = horizontal_distance > 100  # Increased from 75 - require more extension
+                is_extended = horizontal_distance > 70  # CLASSROOM MODE: More sensitive - 70px (was 100px)
                 is_not_covering_face = vertical_diff < 60  # Not reaching up to cover face
-                is_fully_extended = horizontal_distance > 120  # Additional check for full extension
+                is_fully_extended = horizontal_distance > 85  # CLASSROOM MODE: More sensitive - 85px (was 120px)
                 
                 logger.debug(f"🤚 LEFT ANALYSIS - H_dist: {horizontal_distance:.1f}, V_diff: {vertical_diff:.1f}")
                 logger.debug(f"🤚 LEFT CHECKS - Sideward: {is_sideward}, Extended: {is_extended}, Fully extended: {is_fully_extended}, Not covering: {is_not_covering_face}")
@@ -1160,9 +1162,9 @@ class PoseDetector:
                 
                 # Check if hand is extended sideways (not up towards head)
                 is_sideward = right_wrist[1] > right_shoulder[1] - 30  # Not raised above shoulder level
-                is_extended = horizontal_distance > 100  # Increased from 75 - require more extension
+                is_extended = horizontal_distance > 70  # CLASSROOM MODE: More sensitive - 70px (was 100px)
                 is_not_covering_face = vertical_diff < 60  # Not reaching up to cover face
-                is_fully_extended = horizontal_distance > 120  # Additional check for full extension
+                is_fully_extended = horizontal_distance > 85  # CLASSROOM MODE: More sensitive - 85px (was 120px)
                 
                 logger.debug(f"🤚 RIGHT ANALYSIS - H_dist: {horizontal_distance:.1f}, V_diff: {vertical_diff:.1f}")
                 logger.debug(f"🤚 RIGHT CHECKS - Sideward: {is_sideward}, Extended: {is_extended}, Fully extended: {is_fully_extended}, Not covering: {is_not_covering_face}")
@@ -1186,11 +1188,11 @@ class PoseDetector:
                         # Hand must be at or below shoulder level (not raised to face)
                         is_at_desk_level = wrist_pos[1] >= shoulder_pos[1] - 20
                         
-                        # Extreme sideward reach (passing notes, signaling) - increased threshold
-                        is_extreme_reach = horizontal_reach > 150  # Increased from 120 for more extreme detection
+                        # Extreme sideward reach (passing notes, signaling) - CLASSROOM MODE: More sensitive
+                        is_extreme_reach = horizontal_reach > 110  # CLASSROOM MODE: More sensitive - 110px (was 150px)
                         
                         # Additional check: ensure significant sideward movement
-                        is_significantly_sideward = horizontal_reach > 130
+                        is_significantly_sideward = horizontal_reach > 95  # CLASSROOM MODE: More sensitive - 95px (was 130px)
                         
                         if is_at_desk_level and is_extreme_reach and is_significantly_sideward:
                             gesture_detected = True

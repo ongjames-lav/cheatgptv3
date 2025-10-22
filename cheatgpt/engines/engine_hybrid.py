@@ -27,6 +27,7 @@ import numpy as np
 import torch
 from datetime import datetime
 from dotenv import load_dotenv
+import supervision as sv
 
 # Load environment variables
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
@@ -36,7 +37,13 @@ from ..detectors.pose_detector import PoseDetector
 from ..db.db_manager import DBManager
 from ..video_recorder import VideoRecorder
 
-# Simple SORT tracker implementation
+# ============================================================================
+# DEPRECATED: SimpleTracker - Now using Supervision's ByteTrack
+# Kept for reference only. ByteTrack provides superior tracking with:
+# - Better ID persistence across occlusions
+# - Robust handling of crowded scenes
+# - Optimized matching algorithms
+# ============================================================================
 class SimpleTracker:
     """Simplified object tracker for maintaining detections between frames.
     
@@ -177,10 +184,11 @@ class ResearchBasedRuleEngine:
         self.phone_confirmation_threshold = 1  # Instant phone detection - no temporal smoothing
         self.hand_confirmation_threshold = 2  # Reduced from 5 to 2 for more sensitive hand detection
         
-        # Research-based thresholds for classroom behaviors (realistic settings)
+        # Research-based thresholds for classroom behaviors (3 detections only)
         self.thresholds = {
-            # Phone Usage: Detected phone in ≥8 consecutive frames (more accurate)
-            'phone_consecutive_frames': 8,
+            # Phone Usage: Detected phone in ≥10 consecutive frames (realistic for genuine use)
+            # At 10 FPS detection, 10 frames = 1.0 second of continuous detection
+            'phone_consecutive_frames': 10,  # Require 1 second of sustained phone use - realistic for classroom
             'phone_duration_threshold': 1.5,  # seconds - longer duration requirement
             
             # Looking Away Frequently: Head yaw >40° left/right, occurring ≥2 times in 4s or held >2s  
@@ -188,15 +196,8 @@ class ResearchBasedRuleEngine:
             'head_turn_frequency_threshold': 2,  # occurrences in window - sensitive to repeated looking 
             'head_turn_sustained_threshold': 2.0,  # seconds - quick detection of sustained looking
             
-            # Looking Down Abnormally: Pitch >35° sustained ≥20 frames (~2.0s)
-            'head_pitch_threshold': 20.0,  # degrees - more sensitive threshold (was 35.0)
-            'head_pitch_frames_threshold': 10,  # frames - shorter duration (was 20)
-            
             # Hand Extended: ≥10 frames (~1.0s) - higher temporal smoothing to reduce sensitivity
             'hand_extended_frames_threshold': 10,  # frames - less sensitive for hand detection
-            
-            # Out of Frame / Hiding: ≥15 consecutive frames
-            'out_of_frame_threshold': 15,  # frames - more realistic threshold
             
             # Normal behavior tolerances (not flagged)
             'normal_head_tilt_threshold': 12.0,  # degrees - tighter tolerance (was 20.0)
@@ -239,9 +240,7 @@ class ResearchBasedRuleEngine:
             self.person_windows[person_id] = {
                 'phone_detections': deque(maxlen=self.window_size),
                 'head_turn_events': deque(maxlen=self.window_size),
-                'head_pitch_events': deque(maxlen=self.window_size),
                 'hand_extended_events': deque(maxlen=self.window_size),
-                'out_of_frame_events': deque(maxlen=self.window_size),
                 'normal_posture_events': deque(maxlen=self.window_size),
                 'timestamps': deque(maxlen=self.window_size)
             }
@@ -257,7 +256,6 @@ class ResearchBasedRuleEngine:
         # Extract behavior indicators from detection
         phone_detected = detection_data.get('phone_flag', False)
         head_turn_angle = abs(detection_data.get('head_turn_angle', 0.0))
-        head_pitch_angle = abs(detection_data.get('lean_angle', 0.0))  # Using lean_angle as pitch proxy
         # Track gesture flag for debugging - FOCUS ON SIDEWARD EXTENSIONS ONLY
         hand_extended = detection_data.get('gesture_flag', False)
         gesture_reason = detection_data.get('gesture_reason', 'unknown')
@@ -270,20 +268,18 @@ class ResearchBasedRuleEngine:
         
         if hand_extended:
             if is_sideward_gesture:
-                self.logger.info(f"🤚 SIDEWARD GESTURE DETECTED for person {person_id}: {gesture_reason}")
+                # Log gesture detection at DEBUG level to reduce noise
+                self.logger.debug(f"🤚 SIDEWARD GESTURE DETECTED for person {person_id}: {gesture_reason}")
                 self.logger.debug(f"🤚 Full sideward gesture data: {detection_data.get('gesture_details', {})}")
             else:
                 self.logger.debug(f"🤚 Ignoring non-sideward gesture for person {person_id}: {gesture_reason} (likely face covering)")
                 hand_extended = False  # Override - don't count face covering as suspicious
-        out_of_frame = detection_data.get('out_of_frame', False)
         
-        # Check for normal posture
+        # Check for normal posture (only 3 detections matter now)
         is_normal_posture = (
             not phone_detected and 
             head_turn_angle < self.thresholds['normal_head_tilt_threshold'] and
-            head_pitch_angle < self.thresholds['normal_head_tilt_threshold'] and
-            not hand_extended and
-            not out_of_frame
+            not hand_extended
         )
         
         # Update behavior windows
@@ -300,9 +296,7 @@ class ResearchBasedRuleEngine:
         # Add instant head turn detection to windows (like hand extensions)
         windows['head_turn_events'].append(current_head_turn)
         
-        windows['head_pitch_events'].append(head_pitch_angle > self.thresholds['head_pitch_threshold'])
         windows['hand_extended_events'].append(hand_extended)
-        windows['out_of_frame_events'].append(out_of_frame)
         windows['normal_posture_events'].append(is_normal_posture)
         
         # Update normal posture tracking
@@ -314,10 +308,10 @@ class ResearchBasedRuleEngine:
         if normal_duration >= self.thresholds['normal_posture_reset_duration']:
             # Reset confirmation counts
             self.confirmation_counts[person_id] = {}
-            # Clear active events that should be reset
+            # Clear active events that should be reset (only 3 detections)
             events_to_clear = []
             for event_type in self.active_cheating_events[person_id]:
-                if event_type in ['head_turn_frequent', 'head_pitch_sustained', 'hand_extended']:
+                if event_type in ['head_turn_instant', 'hand_extended', 'phone_usage']:
                     events_to_clear.append(event_type)
             for event_type in events_to_clear:
                 del self.active_cheating_events[person_id][event_type]
@@ -364,13 +358,13 @@ class ResearchBasedRuleEngine:
     
     
     def _evaluate_research_rules(self, person_id: int, detection_data: Dict[str, Any], timestamp: float) -> List[Dict[str, Any]]:
-        """Evaluate research-based rules for cheating detection - SIMPLIFIED TO 3 PARAMETERS ONLY."""
+        """Evaluate research-based rules for cheating detection - 3 DETECTIONS ONLY."""
         events = []
         windows = self.person_windows[person_id]
         confirmations = self.confirmation_counts[person_id]
         active_events = self.active_cheating_events[person_id]
         
-        # ONLY 3 DETECTION RULES:
+        # ONLY 3 DETECTION RULES (as requested by user):
         
         # Rule 1: Phone Usage Detection
         phone_events = self._check_phone_usage(windows, confirmations, active_events, person_id, detection_data, timestamp)
@@ -380,13 +374,13 @@ class ResearchBasedRuleEngine:
         head_turn_events = self._check_frequent_head_turning(windows, confirmations, active_events, person_id, detection_data, timestamp)
         events.extend(head_turn_events)
         
-        # Rule 3: Hand Extension
+        # Rule 3: Hand Extension (sideward reaching gestures)
         hand_events = self._check_extended_hand_gestures(windows, confirmations, active_events, person_id, detection_data, timestamp)
         events.extend(hand_events)
         
-        # REMOVED RULES:
-        # - Sustained Abnormal Head Pitch (Looking Down) - DISABLED
-        # - Out of Frame Detection - DISABLED
+        # DISABLED RULES (as requested):
+        # - Sustained Abnormal Head Pitch (Looking Down) - REMOVED
+        # - Out of Frame Detection - REMOVED
         
         return events
     
@@ -498,57 +492,58 @@ class ResearchBasedRuleEngine:
         
         return events
     
-    def _check_sustained_head_pitch(self, windows: Dict, confirmations: Dict, active_events: Dict,
-                                  person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
-        """Check for sustained abnormal head pitch (looking down >25° for ≥12 frames)."""
-        events = []
-        head_pitch_events = list(windows['head_pitch_events'])
-        
-        if not head_pitch_events:
-            return events
-        
-        # Count consecutive pitch events at end of window
-        consecutive_pitch = 0
-        for pitch in reversed(head_pitch_events):
-            if pitch:
-                consecutive_pitch += 1
-            else:
-                break
-        
-        # Check if threshold met (≥12 frames ≈ 1.2s)
-        if consecutive_pitch >= self.thresholds['head_pitch_frames_threshold']:
-            event_type = 'head_pitch_sustained'
-            
-            # Increment confirmation count
-            confirmations[event_type] = confirmations.get(event_type, 0) + 1
-            
-            # Generate confirmed event if threshold met
-            if confirmations[event_type] >= self.confirmation_threshold:
-                if event_type not in active_events:
-                    active_events[event_type] = {
-                        'first_detected': timestamp,
-                        'confirmed': True
-                    }
-                
-                duration = consecutive_pitch / self.detection_fps
-                pitch_angle = detection_data.get('lean_angle', 0.0)
-                
-                events.append({
-                    'timestamp': timestamp,
-                    'person_id': f"person_{person_id:03d}",
-                    'event_type': 'Abnormal Looking Down',
-                    'severity': 'orange',
-                    'confidence': 0.75,
-                    'source': 'research_rules',
-                    'details': f'Looking down abnormally for {duration:.1f}s (angle: {pitch_angle:.1f}°)',
-                    'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
-                    'rule_triggered': 'head_pitch_sustained',
-                    'consecutive_frames': consecutive_pitch,
-                    'duration_seconds': duration,
-                    'pitch_angle': pitch_angle
-                })
-        
-        return events
+    # UNUSED METHOD - Detection disabled (only Phone, Head Turn, Hand Extension active)
+    # def _check_sustained_head_pitch(self, windows: Dict, confirmations: Dict, active_events: Dict,
+    #                               person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
+    #     """Check for sustained abnormal head pitch (looking down >25° for ≥12 frames)."""
+    #     events = []
+    #     head_pitch_events = list(windows['head_pitch_events'])
+    #     
+    #     if not head_pitch_events:
+    #         return events
+    #     
+    #     # Count consecutive pitch events at end of window
+    #     consecutive_pitch = 0
+    #     for pitch in reversed(head_pitch_events):
+    #         if pitch:
+    #             consecutive_pitch += 1
+    #         else:
+    #             break
+    #     
+    #     # Check if threshold met (≥12 frames ≈ 1.2s)
+    #     if consecutive_pitch >= self.thresholds['head_pitch_frames_threshold']:
+    #         event_type = 'head_pitch_sustained'
+    #         
+    #         # Increment confirmation count
+    #         confirmations[event_type] = confirmations.get(event_type, 0) + 1
+    #         
+    #         # Generate confirmed event if threshold met
+    #         if confirmations[event_type] >= self.confirmation_threshold:
+    #             if event_type not in active_events:
+    #                 active_events[event_type] = {
+    #                     'first_detected': timestamp,
+    #                     'confirmed': True
+    #                 }
+    #             
+    #             duration = consecutive_pitch / self.detection_fps
+    #             pitch_angle = detection_data.get('lean_angle', 0.0)
+    #             
+    #             events.append({
+    #                 'timestamp': timestamp,
+    #                 'person_id': f"person_{person_id:03d}",
+    #                 'event_type': 'Abnormal Looking Down',
+    #                 'severity': 'orange',
+    #                 'confidence': 0.75,
+    #                 'source': 'research_rules',
+    #                 'details': f'Looking down abnormally for {duration:.1f}s (angle: {pitch_angle:.1f}°)',
+    #                 'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
+    #                 'rule_triggered': 'head_pitch_sustained',
+    #                 'consecutive_frames': consecutive_pitch,
+    #                 'duration_seconds': duration,
+    #                 'pitch_angle': pitch_angle
+    #             })
+    #     
+    #     return events
     
     def _check_extended_hand_gestures(self, windows: Dict, confirmations: Dict, active_events: Dict,
                                     person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
@@ -642,55 +637,56 @@ class ResearchBasedRuleEngine:
         
         return events
     
-    def _check_out_of_frame(self, windows: Dict, confirmations: Dict, active_events: Dict,
-                          person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
-        """Check for person going out of frame (≥10 consecutive frames)."""
-        events = []
-        frame_events = list(windows['out_of_frame_events'])
-        
-        if not frame_events:
-            return events
-        
-        # Count consecutive out-of-frame events at end of window
-        consecutive_out = 0
-        for out in reversed(frame_events):
-            if out:
-                consecutive_out += 1
-            else:
-                break
-        
-        # Check if threshold met (≥10 frames)
-        if consecutive_out >= self.thresholds['out_of_frame_threshold']:
-            event_type = 'out_of_frame'
-            
-            # Increment confirmation count
-            confirmations[event_type] = confirmations.get(event_type, 0) + 1
-            
-            # Generate confirmed event if threshold met
-            if confirmations[event_type] >= self.confirmation_threshold:
-                if event_type not in active_events:
-                    active_events[event_type] = {
-                        'first_detected': timestamp,
-                        'confirmed': True
-                    }
-                
-                duration = consecutive_out / self.detection_fps
-                
-                events.append({
-                    'timestamp': timestamp,
-                    'person_id': f"person_{person_id:03d}",
-                    'event_type': 'Hiding from Camera',
-                    'severity': 'red',
-                    'confidence': 0.85,
-                    'source': 'research_rules',
-                    'details': f'Out of frame for {duration:.1f}s',
-                    'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
-                    'rule_triggered': 'out_of_frame_duration',
-                    'consecutive_frames': consecutive_out,
-                    'duration_seconds': duration
-                })
-        
-        return events
+    # UNUSED METHOD - Detection disabled (only Phone, Head Turn, Hand Extension active)
+    # def _check_out_of_frame(self, windows: Dict, confirmations: Dict, active_events: Dict,
+    #                       person_id: int, detection_data: Dict, timestamp: float) -> List[Dict[str, Any]]:
+    #     """Check for person going out of frame (≥10 consecutive frames)."""
+    #     events = []
+    #     frame_events = list(windows['out_of_frame_events'])
+    #     
+    #     if not frame_events:
+    #         return events
+    #     
+    #     # Count consecutive out-of-frame events at end of window
+    #     consecutive_out = 0
+    #     for out in reversed(frame_events):
+    #         if out:
+    #             consecutive_out += 1
+    #         else:
+    #             break
+    #     
+    #     # Check if threshold met (≥10 frames)
+    #     if consecutive_out >= self.thresholds['out_of_frame_threshold']:
+    #         event_type = 'out_of_frame'
+    #         
+    #         # Increment confirmation count
+    #         confirmations[event_type] = confirmations.get(event_type, 0) + 1
+    #         
+    #         # Generate confirmed event if threshold met
+    #         if confirmations[event_type] >= self.confirmation_threshold:
+    #             if event_type not in active_events:
+    #                 active_events[event_type] = {
+    #                     'first_detected': timestamp,
+    #                     'confirmed': True
+    #                 }
+    #             
+    #             duration = consecutive_out / self.detection_fps
+    #             
+    #             events.append({
+    #                 'timestamp': timestamp,
+    #                 'person_id': f"person_{person_id:03d}",
+    #                 'event_type': 'Hiding from Camera',
+    #                 'severity': 'red',
+    #                 'confidence': 0.85,
+    #                 'source': 'research_rules',
+    #                 'details': f'Out of frame for {duration:.1f}s',
+    #                 'bbox': detection_data.get('bbox', [0, 0, 100, 100]),
+    #                 'rule_triggered': 'out_of_frame_duration',
+    #                 'consecutive_frames': consecutive_out,
+    #                 'duration_seconds': duration
+    #             })
+    #     
+    #     return events
 
 
 class EngineHybrid:
@@ -712,8 +708,8 @@ class EngineHybrid:
         self.logger.info(f"🔧 Using device: {self.device}")
         
         # Detection thresholds - optimized for classroom multi-student detection
-        self.person_conf_thresh = float(os.getenv('PERSON_CONF_THRESH', '0.3'))  # Lowered from 0.4 to 0.3 for distant students
-        self.phone_conf_thresh = float(os.getenv('PHONE_CONF_THRESH', '0.4'))
+        self.person_conf_thresh = float(os.getenv('PERSON_CONF_THRESH', '0.25'))  # CLASSROOM MODE: Lower threshold for better detection (was 0.40)
+        self.phone_conf_thresh = float(os.getenv('PHONE_CONF_THRESH', '0.30'))  # REALISTIC: Balanced threshold to avoid false positives
         
         # Initialize components
         self._initialize_components()
@@ -769,9 +765,14 @@ class EngineHybrid:
         self.pose_detector = PoseDetector()
         self.logger.info("✅ Pose detector ready")
         
-        # Simple Tracker with settings for classroom multi-student tracking
-        self.tracker = SimpleTracker(max_disappeared=30, max_objects=15)  # Support up to 15 students
-        self.logger.info("✅ Object tracker ready for multi-student tracking")
+        # Supervision ByteTrack for robust multi-person tracking
+        self.tracker = sv.ByteTrack(
+            track_activation_threshold=0.25,  # Minimum confidence to start tracking
+            lost_track_buffer=30,  # Keep track ID for 30 frames if person disappears
+            minimum_matching_threshold=0.8,  # IOU threshold for matching
+            frame_rate=30  # Match your target FPS
+        )
+        self.logger.info("✅ Supervision ByteTrack ready for multi-student tracking")
         
         # Research-based rule engine
         self.rule_engine = ResearchBasedRuleEngine()
@@ -868,32 +869,46 @@ class EngineHybrid:
                 persons = [d for d in detections if d['cls_name'] == 'person']
                 phones = [d for d in detections if d['cls_name'] == 'cell phone']
                 
-                # DEBUG: Log phone detections
-                if phones:
-                    self.logger.info(f"📱 YOLO DETECTED {len(phones)} PHONE(S) in frame {self.frame_count}:")
-                    for i, phone in enumerate(phones):
-                        self.logger.info(f"   📱 Phone {i+1}: conf={phone['conf']:.3f}, bbox={phone['bbox']}")
-                else:
-                    self.logger.debug(f"📱 No phones detected by YOLO in frame {self.frame_count}")
-                
                 # Filter to keep high-confidence person detections for classroom
-                if len(persons) > 1:
-                    # Keep all confident detections for multi-student tracking
-                    persons = [p for p in persons if p['conf'] >= self.person_conf_thresh]
-                    # Sort by confidence but keep all detections (no artificial limit)
-                    persons = sorted(persons, key=lambda x: x['conf'], reverse=True)
-                    self.logger.debug(f"Keeping {len(persons)} person detections for multi-student tracking")
+                persons = [p for p in persons if p['conf'] >= self.person_conf_thresh]
+                # Sort by confidence but keep all detections (no artificial limit)
+                persons = sorted(persons, key=lambda x: x['conf'], reverse=True)
                 
-                # Step 2: Update tracker with new detections
-                self.last_tracks = self.tracker.update(persons)
-                
-                # Reset tracker only if excessive IDs accumulated (classroom scenario)
-                # More conservative reset for multi-student scenarios
-                if len(self.tracker.objects) > 20:  # Increased from 2 to 20 for classroom
-                    self.logger.warning(f"🔄 Resetting tracker - too many IDs for classroom: {len(self.tracker.objects)}")
-                    self.tracker = SimpleTracker(max_disappeared=30, max_objects=15)  # Support 15 students
-                    # Re-track with clean tracker
-                    self.last_tracks = self.tracker.update(persons)
+                # Step 2: Update tracker with new detections using Supervision ByteTrack
+                if len(persons) > 0:
+                    detections_sv = sv.Detections(
+                        xyxy=np.array([p['bbox'] for p in persons]),
+                        confidence=np.array([p['conf'] for p in persons]),
+                        class_id=np.array([0] * len(persons))  # person class
+                    )
+                    
+                    # Update ByteTrack tracker
+                    detections_sv = self.tracker.update_with_detections(detections_sv)
+                    
+                    # Convert back to our format with persistent track IDs from ByteTrack
+                    self.last_tracks = []
+                    for i, (bbox, conf, track_id) in enumerate(zip(
+                        detections_sv.xyxy, 
+                        detections_sv.confidence, 
+                        detections_sv.tracker_id
+                    )):
+                        track_obj = persons[i].copy()
+                        track_obj['track_id'] = int(track_id)
+                        track_obj['bbox'] = bbox.tolist()
+                        self.last_tracks.append(track_obj)
+                    
+                    # Simple log showing detected person IDs (only on changes)
+                    track_ids = [t['track_id'] for t in self.last_tracks]
+                    
+                    # Only log if person count or IDs changed
+                    if not hasattr(self, '_last_logged_tracks') or self._last_logged_tracks != track_ids:
+                        self.logger.info(f"👥 Detected {len(self.last_tracks)} persons: {track_ids}")
+                        self._last_logged_tracks = track_ids
+                else:
+                    # No persons detected - update with empty detections
+                    empty_detections = sv.Detections.empty()
+                    self.tracker.update_with_detections(empty_detections)
+                    self.last_tracks = []
                 
                 # Step 3: Pose analysis for tracked persons
                 pose_results = self._analyze_poses(frame, self.last_tracks, phones)
@@ -904,6 +919,11 @@ class EngineHybrid:
                         person_id = pose['track_id']
                         rule_events = self.rule_engine.update_detection(person_id, pose, ts)
                         all_events.extend(rule_events)
+                        
+                        # Log events when generated
+                        if rule_events:
+                            for event in rule_events:
+                                self.logger.info(f"🚨 {event['event_type']}: {event['person_id']}")
                         
                         # Trigger alarms for phone detection only
                         for event in rule_events:
@@ -1022,17 +1042,21 @@ class EngineHybrid:
                         min_distance = distance
                         best_pose = pose
                 
-                # Create combined result
+                # Create combined result WITH ByteTrack track_id
                 if best_pose:
                     result = best_pose.copy()
-                    result['track_id'] = track['track_id']
+                    result['track_id'] = track['track_id']  # ← ByteTrack ID preserved here
                     result['person_id'] = f"person_{track['track_id']:03d}"
                     result['bbox'] = track['bbox']  # Use tracker bbox
                     result['detection_conf'] = track['conf']
+                    
+                    # Log phone detection with proper track ID
+                    if result.get('phone_flag', False):
+                        self.logger.info(f"📱 PHONE DETECTED: Track ID {track['track_id']} (Person {result['person_id']})")
                 else:
                     # Default pose for tracked person without pose detection
                     result = {
-                        'track_id': track['track_id'],
+                        'track_id': track['track_id'],  # ← ByteTrack ID preserved here
                         'person_id': f"person_{track['track_id']:03d}",
                         'bbox': track['bbox'],
                         'detection_conf': track['conf'],
@@ -1074,11 +1098,13 @@ class EngineHybrid:
         """Create enhanced overlay with confidence-based coloring and false positive mitigation."""
         overlay_frame = frame.copy()
         
-        # Simple label mapping for events
+        # Simple label mapping for events (3 detections only)
         event_labels = {
+            'Phone Usage': 'Phone',
             'Phone Usage Detected': 'Phone',
-            'Frequent Head Turning': 'Turning', 
-            'Abnormal Looking Down': 'Looking',
+            'Head Turning': 'Turning',
+            'Frequent Head Turning': 'Turning',
+            'Hand Extension': 'Hands',
             'Suspicious Hand Activity': 'Hands',
             'Normal': 'Normal'
         }
@@ -1112,7 +1138,75 @@ class EngineHybrid:
         person_detections = [d for d in detections if d.get('cls_name') != 'cell phone']
         phone_detections = [d for d in detections if d.get('cls_name') == 'cell phone']
         
-        # Draw person bounding boxes with enhanced confidence-based visualization
+        # FIRST: Draw unmatched phone detections (phones NOT held by anyone)
+        # These appear as standalone red boxes for phones on desk/table
+        person_ids_with_phones = set()
+        for event in events:
+            if event.get('event_type') == 'Phone Usage':
+                person_ids_with_phones.add(event.get('person_id'))
+        
+        # Draw phone bounding boxes ONLY for unmatched phones (not held by tracked persons)
+        for phone in phone_detections:
+            if 'bbox' not in phone:
+                continue
+            
+            # Check if this phone is already matched to a person with phone event
+            phone_matched = False
+            phone_bbox = phone['bbox']
+            
+            for detection in person_detections:
+                if 'bbox' not in detection:
+                    continue
+                person_id = detection.get('person_id', 'unknown')
+                
+                # Skip if this person has phone event (phone already highlighted via person box)
+                if person_id in person_ids_with_phones:
+                    person_bbox = detection['bbox']
+                    # Check if phone is near this person
+                    px1, py1, px2, py2 = person_bbox
+                    phx1, phy1, phx2, phy2 = phone_bbox
+                    
+                    # Simple overlap check
+                    if not (phx2 < px1 or phx1 > px2 or phy2 < py1 or phy1 > py2):
+                        phone_matched = True
+                        break
+            
+            # Only draw standalone phone boxes for unmatched phones
+            if not phone_matched:
+                x1, y1, x2, y2 = [int(coord) for coord in phone_bbox]
+                
+                # Unmatched phone - draw with medium visibility
+                color = (0, 0, 255)  # Red for unmatched phones (potential cheating tool)
+                thickness = 2
+                
+                # Create overlay for transparency
+                overlay = overlay_frame.copy()
+                cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
+                
+                # Apply medium transparency
+                alpha = 0.5
+                cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
+                
+                # Label for unmatched phone
+                label = "Phone"
+                font_scale = 0.4
+                font_thickness = 1
+                
+                # Add label background
+                label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
+                label_bg_height = 18
+                label_bg_width = label_size[0] + 6
+                
+                # Draw label background
+                cv2.rectangle(overlay_frame, (x1, y1-label_bg_height), (x1 + label_bg_width, y1), (0, 0, 0), -1)
+                cv2.rectangle(overlay_frame, (x1, y1-label_bg_height), (x1 + label_bg_width, y1), color, 1)
+                
+                # Draw text
+                cv2.putText(overlay_frame, label, (x1+3, y1-5), 
+                           cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness)
+        
+        # SECOND: Draw person bounding boxes with enhanced confidence-based visualization
+        # Person boxes with phone events will show as red boxes (phone usage)
         for detection in person_detections:
             if 'bbox' not in detection:
                 continue
@@ -1194,13 +1288,13 @@ class EngineHybrid:
             
             # Enhanced label with confidence visualization
             label = status
-            font_scale = 0.4
+            font_scale = 0.5  # Increased from 0.4 for better readability
             font_thickness = 1
             label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
             
             # Dynamic label background size based on confidence
-            bg_height = 18
-            bg_width = label_size[0] + 6
+            bg_height = 20  # Increased from 18 for better padding
+            bg_width = label_size[0] + 8  # Increased padding from 6 to 8
             
             # Create confidence-modulated label background
             label_overlay = overlay_frame.copy()
@@ -1217,50 +1311,13 @@ class EngineHybrid:
                 if event_confidence < 0.5:
                     text_color = (200, 200, 200)  # Dimmer for low confidence
             
-            cv2.putText(overlay_frame, label, (x1+3, y1-5), 
+            # Position text in center of label background
+            text_y = y1 - 6  # Adjusted for larger font
+            cv2.putText(overlay_frame, label, (x1+4, text_y), 
                        cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
         
-        # Draw phone bounding boxes
-        for phone in phone_detections:
-            if 'bbox' not in phone:
-                continue
-                
-            x1, y1, x2, y2 = [int(coord) for coord in phone['bbox']]
-            
-            # Phone detection - always red/critical
-            color = (0, 0, 255)  # Red for phone detection
-            thickness = 2
-            
-            # Create overlay for transparency
-            overlay = overlay_frame.copy()
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness)
-            
-            # Apply transparency to bounding box (0.8 opacity - more visible)
-            alpha = 0.8
-            cv2.addWeighted(overlay, alpha, overlay_frame, 1 - alpha, 0, overlay_frame)
-            
-            # Draw phone label
-            label = "Phone"
-            font_scale = 0.4
-            font_thickness = 1
-            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
-            
-            # Phone label background
-            bg_height = 18
-            bg_width = label_size[0] + 6
-            
-            # Create transparent label background
-            label_overlay = overlay_frame.copy()
-            cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), (0, 0, 0), -1)
-            cv2.rectangle(label_overlay, (x1, y1-bg_height), (x1 + bg_width, y1), color, 1)
-            
-            # Apply transparency to label background (0.8 opacity)
-            label_alpha = 0.8
-            cv2.addWeighted(label_overlay, label_alpha, overlay_frame, 1 - label_alpha, 0, overlay_frame)
-            
-            # White text for phone label
-            cv2.putText(overlay_frame, label, (x1+3, y1-5), 
-                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness)
+        # Phone boxes already drawn at the top (only unmatched phones)
+        # Person boxes with phone events show as RED boxes with "Phone" label
         
         return overlay_frame
     
@@ -1369,8 +1426,13 @@ class EngineHybrid:
         self.active_events = {}
         self.event_timestamps = {}
         
-        # Reset tracker for multi-student scenarios
-        self.tracker = SimpleTracker(max_disappeared=30, max_objects=15)  # Support up to 15 students
+        # Reset ByteTrack tracker for multi-student scenarios
+        self.tracker = sv.ByteTrack(
+            track_activation_threshold=0.25,
+            lost_track_buffer=30,
+            minimum_matching_threshold=0.8,
+            frame_rate=30
+        )
         
         # Reset rule engine
         self.rule_engine = ResearchBasedRuleEngine()

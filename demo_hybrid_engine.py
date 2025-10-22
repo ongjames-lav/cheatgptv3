@@ -3,6 +3,7 @@
 This demonstrates the key improvements:
 - 30 FPS smooth live stream
 - 10 FPS detection with research-based rules
+- Supervision ByteTrack for robust multi-person tracking
 - No LSTM dependencies
 - Real classroom behavior analysis
 """
@@ -12,6 +13,13 @@ import time
 import numpy as np
 import sys
 import os
+import logging
+
+# Setup logging to see ByteTrack activity
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s - %(name)s - %(message)s'
+)
 
 # Add the project root to the path
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -21,14 +29,17 @@ def run_demo():
     """Run a simple demo with webcam or synthetic data."""
     
     print("🚀 Starting CheatGPT Research-Based Engine Demo")
-    print("=" * 50)
+    print("=" * 70)
+    print("🔍 USING SUPERVISION BYTETRACK FOR MULTI-PERSON TRACKING")
+    print("=" * 70)
     
     # Import engine (same pattern as test file)
     from cheatgpt.engines.engine_hybrid import EngineHybrid
     
     # Initialize engine
-    print("Initializing engine...")
+    print("\n⚙️  Initializing engine with ByteTrack...")
     engine = EngineHybrid()
+    print("✅ Engine initialized - ByteTrack ready for tracking!\n")
     
     # Try to use webcam, fallback to synthetic data
     cap = cv2.VideoCapture(0)
@@ -55,11 +66,21 @@ def run_demo():
     
     try:
         print("\n🎬 Demo running... Press 'q' to quit")
-        print("Watch for:")
+        print("\n" + "=" * 70)
+        print("WATCH THE CONSOLE FOR BYTETRACK ACTIVITY:")
+        print("  🔄 BYTETRACK INPUT: Shows persons sent to ByteTrack")
+        print("  ✅ BYTETRACK OUTPUT: Shows tracked persons with persistent IDs")
+        print("  🎯 POSE ANALYSIS: Shows ByteTrack IDs flowing through pipeline")
+        print("=" * 70)
+        print("\nWATCH THE VIDEO FOR DETECTION:")
         print("  - Green boxes: Normal behavior")
         print("  - Yellow/Orange boxes: Suspicious behavior") 
         print("  - Red boxes: Cheating detected")
         print()
+        
+        # Track person IDs to verify ByteTrack persistence
+        seen_track_ids = set()
+        max_simultaneous_tracks = 0
         
         while True:
             if use_webcam:
@@ -76,8 +97,14 @@ def run_demo():
                 cv2.putText(frame, "Synthetic Person", (210, 180), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
-            # Process frame with hybrid engine
+            # Process frame with hybrid engine (ByteTrack runs here!)
             overlay_frame, events = engine.process_frame(frame)
+            
+            # Track ByteTrack statistics
+            if hasattr(engine, 'last_tracks') and engine.last_tracks:
+                current_track_ids = {t.get('track_id') for t in engine.last_tracks}
+                seen_track_ids.update(current_track_ids)
+                max_simultaneous_tracks = max(max_simultaneous_tracks, len(current_track_ids))
             
             # Handle events
             for event in events:
@@ -151,6 +178,17 @@ def run_demo():
         print(f"   Engine performance: {stats['performance']['avg_fps']:.1f} FPS")
         print(f"   Detection latency: {stats['performance']['avg_detection_time_ms']:.1f}ms")
         print(f"   Active persons: {stats['rule_engine']['active_persons']}")
+        
+        # ByteTrack statistics
+        print(f"\n🔍 ByteTrack Statistics:")
+        print(f"   Total unique track IDs seen: {len(seen_track_ids)}")
+        print(f"   Max simultaneous tracks: {max_simultaneous_tracks}")
+        print(f"   Track IDs used: {sorted(seen_track_ids) if seen_track_ids else 'None'}")
+        
+        if seen_track_ids:
+            print(f"\n✅ BYTETRACK WORKING: Persistent IDs were assigned!")
+        else:
+            print(f"\n⚠️  No persons detected in this session")
 
 def main():
     """Main demo function."""
