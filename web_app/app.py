@@ -42,6 +42,28 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from web_app.db_manager import DatabaseManager as WebAppDB
 from cheatgpt.db.db_manager import DBManager as MainDB
 
+# Load configuration
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
+def load_config():
+    """Load configuration from config.json"""
+    try:
+        with open(CONFIG_PATH, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # Create default config if it doesn't exist
+        default_config = {
+            "deletion_password": "cheatgpt2024",
+            "session_timeout_minutes": 60,
+            "max_upload_size_mb": 500,
+            "enable_auto_cleanup": False,
+            "cleanup_days_threshold": 30
+        }
+        with open(CONFIG_PATH, 'w') as f:
+            json.dump(default_config, f, indent=4)
+        return default_config
+
+config = load_config()
+
 # Initialize both database managers
 db = WebAppDB()  # For web app specific data (recorded sessions)
 main_db = MainDB()  # For uploaded videos and main processing
@@ -192,12 +214,9 @@ def process_video_async(task: ProcessingTask):
         task.message = "Processing video..."
         task.progress = 10
         
-        # Create database session for uploaded video
-        main_db.create_uploaded_video_session(
-            session_id=task.session_id,
-            original_filename=os.path.basename(task.file_path),
-            video_path=task.file_path
-        )
+        # Get video metadata
+        video_filename = os.path.basename(task.file_path)
+        start_ts = time.time()
         
         # Define progress callback to update task progress
         def progress_callback(progress, message):
@@ -230,16 +249,72 @@ def process_video_async(task: ProcessingTask):
         task.progress = 90
         task.message = "Saving to database..."
         
-        # Store processing results in database
-        main_db.update_processed_video_results(task.session_id, result)
+        # Calculate duration from video metadata (actual video duration, not processing time)
+        end_ts = time.time()
+        video_metadata = result.get('video_metadata', {})
+        duration = video_metadata.get('duration', end_ts - start_ts)  # Use actual video duration
         
-        # Store events in database if they exist
-        if 'events' in result:
-            main_db.store_uploaded_video_events(task.session_id, result['events'])
+        # Determine the video path - check if it's in results folder
+        # The VideoProcessor should save processed video to results/{session_id}/processed_{session_id}.mp4
+        results_video_path = f"results\\{task.session_id}\\processed_{task.session_id}.mp4"
         
-        # Store hotspots if they exist
-        if 'hotspots' in result:
-            main_db.store_uploaded_video_hotspots(task.session_id, result['hotspots'])
+        # Create database session in webapp database for uploaded video
+        # This is done after processing so we have the correct processed video path
+        # Note: We pass status='completed' since processing is done, no need to call end_session
+        db.create_uploaded_session(
+            session_id=task.session_id,
+            video_path=results_video_path,
+            video_title=f"processed_{task.session_id}.mp4",
+            start_ts=start_ts,
+            end_ts=end_ts,
+            duration=duration,  # This is the actual video duration from metadata, not processing time
+            metadata={'source': 'upload', 'original_filename': video_filename, 'video_metadata': video_metadata}
+        )
+        
+        # DON'T call end_session for uploaded videos - it would recalculate duration from timestamps
+        # which gives processing time instead of actual video duration
+        
+        # Store events in webapp database if they exist
+        if 'events' in result and result['events']:
+            for event in result['events']:
+                # Skip invalid events (unknown type with 0 confidence and 0 timestamp)
+                event_type = event.get('event_type', 'unknown')
+                confidence = event.get('confidence', 0.0)
+                timestamp = event.get('timestamp', 0.0)
+                
+                # Filter out placeholder/invalid events
+                if event_type == 'unknown' and confidence == 0.0 and timestamp == 0.0:
+                    continue
+                
+                db.add_hotspot(
+                    session_id=task.session_id,
+                    event_type=event_type,
+                    confidence=confidence,
+                    timestamp_offset=timestamp,
+                    frame_no=event.get('frame_number'),
+                    bbox_data=event.get('bbox')
+                )
+        
+        # Store hotspots in webapp database if they exist (alternative format)
+        if 'hotspots' in result and result['hotspots']:
+            for hotspot in result['hotspots']:
+                # Skip invalid hotspots
+                hotspot_type = hotspot.get('type', 'unknown')
+                confidence = hotspot.get('confidence', 0.0)
+                timestamp = hotspot.get('timestamp', 0.0)
+                
+                # Filter out placeholder/invalid hotspots
+                if hotspot_type == 'unknown' and confidence == 0.0 and timestamp == 0.0:
+                    continue
+                
+                db.add_hotspot(
+                    session_id=task.session_id,
+                    event_type=hotspot_type,
+                    confidence=confidence,
+                    timestamp_offset=timestamp,
+                    frame_no=hotspot.get('frame'),
+                    bbox_data=hotspot.get('bbox')
+                )
         
         # Final check before completion
         if task.status == 'stopped':
@@ -254,7 +329,8 @@ def process_video_async(task: ProcessingTask):
         
         logger.info(f"✅ Video processing completed for session {task.session_id}")
         logger.info(f"   - Total events: {result.get('total_events', 0)}")
-        logger.info(f"   - Results saved to database")
+        logger.info(f"   - Video saved to: {results_video_path}")
+        logger.info(f"   - Results saved to webapp database")
         
     except Exception as e:
         # Check if this is due to stopping
@@ -845,6 +921,74 @@ def api_status():
         }
     })
 
+@app.route('/api/config')
+def api_config():
+    """Get application configuration (non-sensitive parts)"""
+    try:
+        # Reload config to get latest changes
+        current_config = load_config()
+        
+        # Only return non-sensitive configuration
+        return jsonify({
+            'success': True,
+            'deletion_password': current_config.get('deletion_password', 'cheatgpt2024'),
+            'session_timeout_minutes': current_config.get('session_timeout_minutes', 60),
+            'max_upload_size_mb': current_config.get('max_upload_size_mb', 500)
+        })
+    except Exception as e:
+        logger.error(f"Error fetching config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/config/update-password', methods=['POST'])
+def api_update_password():
+    """Update the deletion password"""
+    try:
+        data = request.get_json()
+        current_password = data.get('current_password', '').strip()
+        new_password = data.get('new_password', '').strip()
+        
+        # Validate inputs
+        if not current_password or not new_password:
+            return jsonify({
+                'success': False,
+                'error': 'Both current and new password are required'
+            }), 400
+        
+        # Load current config
+        current_config = load_config()
+        
+        # Verify current password
+        if current_password != current_config.get('deletion_password'):
+            return jsonify({
+                'success': False,
+                'error': 'Current password is incorrect'
+            }), 401
+        
+        # Update password in config
+        current_config['deletion_password'] = new_password
+        
+        # Save config
+        with open(CONFIG_PATH, 'w') as f:
+            json.dump(current_config, f, indent=4)
+        
+        # Reload config globally
+        global config
+        config = load_config()
+        
+        logger.info('✅ Deletion password updated successfully')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password updated successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating password: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/sessions')
 def api_sessions():
     """Get list of recorded sessions"""
@@ -894,6 +1038,11 @@ def analytics_player():
 def analytics_reports():
     """Render analytics reports page"""
     return render_template('analytics_reports.html')
+
+@app.route('/settings')
+def settings():
+    """Render settings page"""
+    return render_template('settings.html')
 
 @app.route('/analytics/reports/<session_id>')
 def analytics_session_report(session_id):
@@ -1002,19 +1151,74 @@ def playback_video(session_id):
             logger.info(f"Checking main database for session: {session_id}")
         
         if not session:
-            logger.error(f"Session not found in any database: {session_id}")
-            return jsonify({'error': 'Session not found'}), 404
+            # Check if this is an uploaded video that exists in results folder but not in database
+            # Auto-add it if found
+            if session_id.startswith('single_'):
+                results_dir = Path(__file__).parent / 'results' / session_id
+                if results_dir.exists():
+                    video_files = list(results_dir.glob('processed_*.mp4'))
+                    if video_files:
+                        video_file = video_files[0]
+                        logger.info(f"Auto-adding uploaded video to database: {session_id}")
+                        
+                        # Get file stats for timestamp
+                        file_stats = video_file.stat()
+                        start_ts = file_stats.st_ctime
+                        
+                        # Try to get duration
+                        duration = 0
+                        try:
+                            import cv2
+                            cap = cv2.VideoCapture(str(video_file))
+                            if cap.isOpened():
+                                fps = cap.get(cv2.CAP_PROP_FPS)
+                                frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                                if fps > 0:
+                                    duration = frame_count / fps
+                                cap.release()
+                        except Exception as e:
+                            logger.warning(f"Could not get duration for {session_id}: {e}")
+                        
+                        end_ts = start_ts + duration if duration > 0 else start_ts
+                        
+                        # Add to database
+                        try:
+                            relative_path = f"results\\{session_id}\\{video_file.name}"
+                            db.create_uploaded_session(
+                                session_id=session_id,
+                                video_path=relative_path,
+                                video_title=video_file.name,
+                                start_ts=start_ts,
+                                end_ts=end_ts,
+                                duration=duration,
+                                metadata={'auto_added': True}
+                            )
+                            logger.info(f"Successfully auto-added {session_id} to database")
+                            # Retrieve the newly added session
+                            session = db.get_session(session_id)
+                        except Exception as e:
+                            logger.error(f"Error auto-adding {session_id}: {e}")
+            
+            if not session:
+                logger.error(f"Session not found in any database: {session_id}")
+                return jsonify({'error': 'Session not found'}), 404
         
         video_path = None
         
         # Check for uploaded/processed video path first
         if session.get('processed_video_path'):
             video_path = Path(session['processed_video_path'])
+            # If path is relative, make it relative to web_app directory
+            if not video_path.is_absolute():
+                video_path = Path(__file__).parent / video_path
             logger.info(f"Using processed video path from database: {video_path}")
         # Check if this is a processed video (has results directory path)
-        elif session.get('video_path') and 'results/' in session.get('video_path', ''):
+        elif session.get('video_path') and ('results/' in session.get('video_path', '') or 'results\\' in session.get('video_path', '')):
             # This is a processed video - use the path from database
             video_path = Path(session['video_path'])
+            # If path is relative, make it relative to web_app directory
+            if not video_path.is_absolute():
+                video_path = Path(__file__).parent / video_path
             logger.info(f"Using processed video path from database: {video_path}")
         else:
             # Try to find recorded video file by session_id pattern matching
@@ -1180,8 +1384,14 @@ def get_session_thumbnail(session_id):
             # Check for uploaded/processed video path first
             if session.get('processed_video_path'):
                 video_path = Path(session['processed_video_path'])
+                # If path is relative, make it relative to web_app directory
+                if not video_path.is_absolute():
+                    video_path = Path(__file__).parent / video_path
             elif session.get('video_path'):
                 video_path = Path(session['video_path'])
+                # If path is relative, make it relative to web_app directory
+                if not video_path.is_absolute():
+                    video_path = Path(__file__).parent / video_path
         
         # Fallback to file system search for recorded videos
         if not video_path or not video_path.exists():
@@ -1255,6 +1465,24 @@ def api_uploaded_videos():
         # Format sessions for frontend compatibility
         formatted_sessions = []
         for session in sessions:
+            # Try to get actual video duration from metadata, fallback to timestamp calculation
+            video_metadata_str = session.get('video_metadata', '{}')
+            try:
+                if isinstance(video_metadata_str, str):
+                    import json
+                    video_metadata = json.loads(video_metadata_str) if video_metadata_str else {}
+                else:
+                    video_metadata = video_metadata_str or {}
+                
+                # Use actual video duration from metadata
+                actual_duration = video_metadata.get('duration', 0)
+            except:
+                actual_duration = 0
+            
+            # Fallback to timestamp calculation if no metadata duration
+            if not actual_duration and session.get('end_timestamp') and session.get('start_timestamp'):
+                actual_duration = session.get('end_timestamp', 0) - session.get('start_timestamp', 0)
+            
             formatted_session = {
                 'session_id': session['session_id'],
                 'video_title': session.get('original_filename', session['session_id']),
@@ -1262,14 +1490,14 @@ def api_uploaded_videos():
                 'processing_time': session.get('created_at', session.get('start_timestamp', 0)),
                 'start_time': session.get('start_timestamp', 0),
                 'end_time': session.get('end_timestamp', 0),
-                'duration': session.get('end_timestamp', 0) - session.get('start_timestamp', 0) if session.get('end_timestamp') and session.get('start_timestamp') else 0,
+                'duration': actual_duration,  # Use actual video duration, not processing time
                 'status': session.get('status', 'unknown'),
                 'hotspot_count': session.get('total_events', 0),
                 'event_count': session.get('total_events', 0),
                 'video_path': session.get('processed_video_path', session.get('video_path', '')),
                 'session_type': 'uploaded',
                 'frame_count': session.get('frame_count', 0),
-                'video_metadata': session.get('video_metadata', '{}')
+                'video_metadata': video_metadata
             }
             formatted_sessions.append(formatted_session)
         
@@ -1285,12 +1513,14 @@ def api_uploaded_videos():
 
 @app.route('/api/sessions/list')
 def api_sessions_list():
-    """Enhanced API route for sessions list with detailed metadata"""
+    """Enhanced API route for sessions list with detailed metadata - all videos from webapp database"""
     try:
-        sessions = db.get_sessions_with_details()
+        # Get all sessions from webapp database (both recorded and uploaded)
+        all_sessions = db.get_sessions_with_details(limit=100)
         enhanced_sessions = []
         
-        for session in sessions:
+        # Process all sessions uniformly
+        for session in all_sessions:
             # Get events for this session
             events = db.get_session_events(session['session_id'])
             
@@ -1307,13 +1537,9 @@ def api_sessions_list():
             
             # Determine session type and status
             session_type = session.get('session_type', 'recorded')
-            if session_type == 'uploaded':
-                status = 'uploaded'
-                video_title = session.get('video_title', 'Uploaded Video')
-            else:
-                is_active = session.get('end_time') is None
-                status = 'active' if is_active else 'completed'
-                video_title = session.get('video_title', f"Session {session['session_id']}")
+            is_active = session.get('end_time') is None and session_type == 'recorded'
+            status = 'active' if is_active else (session.get('status', 'completed'))
+            video_title = session.get('video_title', f"Session {session['session_id']}")
             
             enhanced_session = {
                 'session_id': session['session_id'],
@@ -1331,9 +1557,9 @@ def api_sessions_list():
                 'critical_events': critical_events,
                 'warning_events': warning_events,
                 'notice_events': notice_events,
-                'total_frames': session.get('frames', 0),
+                'total_frames': session.get('frame_count', 0),
                 'thumbnail_path': f'/api/thumbnail/{session["session_id"]}',
-                'video_path': f'/playback/{session["session_id"]}'
+                'video_path': session.get('video_path') or f'/playback/{session["session_id"]}'
             }
             enhanced_sessions.append(enhanced_session)
         
@@ -2846,13 +3072,6 @@ def api_upload_video():
         if 'error' in result:
             logger.error(f"❌ Upload error: {result}")
             return jsonify(result), 400
-        
-        # Create database session for uploaded video
-        main_db.create_uploaded_video_session(
-            session_id=session_id,
-            original_filename=file.filename,
-            video_path=result['file_path']
-        )
         
         # Start video processing automatically
         logger.info("🎬 Starting automatic video processing...")

@@ -1,0 +1,7 @@
+{
+    "deletion_password": "Buraga2025",
+    "session_timeout_minutes": 60,
+    "max_upload_size_mb": 500,
+    "enable_auto_cleanup": false,
+    "cleanup_days_threshold": 30
+}

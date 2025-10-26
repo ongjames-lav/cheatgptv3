@@ -1287,6 +1287,10 @@
                     <i class="fas fa-upload"></i>
                     <span class="tooltip">Upload</span>
                 </a>
+                <a href="/settings" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="tooltip">Settings</span>
+                </a>
                 <a href="/guide" class="nav-item">
                     <i class="fas fa-info-circle"></i>
                     <span class="tooltip">User Guide</span>
@@ -1474,8 +1478,9 @@
                 this.deletePassword = document.getElementById('deletePassword');
                 this.passwordError = document.getElementById('passwordError');
                 
-                // Security constants
-                this.DELETION_PASSWORD = 'cheatgpt2024';  // Hardcoded password for now
+                // Security constants - will be loaded from server
+                this.DELETION_PASSWORD = 'cheatgpt2024';  // Default fallback
+                this.loadConfig();  // Load config including deletion password
                 
                 // Debug log to verify elements
                 console.log('Elements initialized:', {
@@ -1485,6 +1490,24 @@
                     passwordError: !!this.passwordError,
                     confirmDeleteBtn: !!this.confirmDeleteBtn
                 });
+            }
+
+            async loadConfig() {
+                /**
+                 * Load configuration from server including deletion password
+                 */
+                try {
+                    const response = await fetch('/api/config');
+                    if (response.ok) {
+                        const config = await response.json();
+                        if (config.success && config.deletion_password) {
+                            this.DELETION_PASSWORD = config.deletion_password;
+                            console.log('✅ Loaded deletion password from config');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to load config, using default password:', error);
+                }
             }
 
             setupEventListeners() {

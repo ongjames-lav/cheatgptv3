@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheatGPT - Settings</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="alternate icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #ffffff;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Header - Matching analytics_home.html exactly */
+        .header {
+            background: #212121;
+            padding: 12px 0;
+            border-bottom: 1px solid #303030;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 500;
+            color: #ff0000;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-item {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-item:hover {
+            background: #303030;
+        }
+
+        .nav-item.active {
+            background: #ff0000;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        /* Tooltip styles */
+        .nav-item .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1001;
+            top: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid #303030;
+        }
+
+        .nav-item .tooltip::before {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-bottom-color: #1a1a1a;
+        }
+
+        .nav-item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 77px);
+        }
+
+        .content {
+            flex: 1;
+            padding: 32px;
+            max-width: 1900px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #aaaaaa;
+            font-size: 14px;
+        }
+
+        /* Settings Card */
+        .settings-card {
+            background: #212121;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            max-width: 800px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title i {
+            color: #ff0000;
+        }
+
+        .card-description {
+            color: #aaaaaa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f0f0f;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #065fd4;
+            box-shadow: 0 0 0 2px rgba(6, 95, 212, 0.2);
+        }
+
+        .form-input.error {
+            border-color: #ff4444;
+        }
+
+        .form-input.success {
+            border-color: #00ff00;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #888888;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .success-message {
+            color: #00ff00;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .success-message.show {
+            display: flex;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #065fd4;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0551b8;
+        }
+
+        .btn-primary:disabled {
+            background: #303030;
+            color: #666666;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #303030;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #404040;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            max-width: 800px;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .alert-error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+        }
+
+        /* Password Strength Indicator */
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #303030;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            transition: all 0.3s;
+            width: 0%;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #ff4444;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #ffa500;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: #00ff00;
+        }
+
+        .password-strength-text {
+            font-size: 12px;
+            color: #888888;
+            margin-top: 4px;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(6, 95, 212, 0.1);
+            border: 1px solid rgba(6, 95, 212, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+
+        .info-box-title {
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4da3ff;
+        }
+
+        .info-box-content {
+            font-size: 14px;
+            color: #aaaaaa;
+            line-height: 1.6;
+        }
+
+        .info-box-content ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-box-content li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/analytics/home" class="logo">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="CheatGPT Logo">
+            </a>
+            
+            <nav class="user-menu">
+                <a href="/analytics/home" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span class="tooltip">Home</span>
+                </a>
+                <a href="/" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span class="tooltip">Live</span>
+                </a>
+                <a href="/analytics/player" class="nav-item">
+                    <i class="fas fa-play"></i>
+                    <span class="tooltip">Player</span>
+                </a>
+                <a href="/analytics/reports" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="tooltip">Reports</span>
+                </a>
+                <a href="/upload" class="nav-item">
+                    <i class="fas fa-upload"></i>
+                    <span class="tooltip">Upload</span>
+                </a>
+                <a href="/settings" class="nav-item active">
+                    <i class="fas fa-cog"></i>
+                    <span class="tooltip">Settings</span>
+                </a>
+                <a href="/guide" class="nav-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="tooltip">User Guide</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <main class="content">
+            <div class="page-header">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Change your passoword for deleting the videos</p>
+            </div>
+
+            <!-- Alert Messages -->
+            <div id="alertSuccess" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span id="successMessage">Password updated successfully!</span>
+            </div>
+
+            <div id="alertError" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorMessage">Error updating password</span>
+            </div>
+
+            <!-- Password Settings Card -->
+            <div class="settings-card">
+                <div class="card-title">
+                    <i class="fas fa-lock"></i>
+                    Change Password
+                </div>
+            
+
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label class="form-label" for="currentPassword">
+                            Current Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="currentPassword" 
+                            class="form-input" 
+                            placeholder="Enter current password"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <div class="error-message" id="currentPasswordError">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Incorrect current password</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newPassword">
+                            New Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="newPassword" 
+                            class="form-input" 
+                            placeholder="Enter new password"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="strengthBar"></div>
+                        </div>
+                        <div class="password-strength-text" id="strengthText"></div>
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Use at least 8 characters for better security
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">
+                            Confirm New Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            class="form-input" 
+                            placeholder="Re-enter new password"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <div class="error-message" id="confirmPasswordError">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Passwords do not match</span>
+                        </div>
+                        <div class="success-message" id="confirmPasswordSuccess">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Passwords match</span>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="saveBtn" disabled>
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        class SettingsManager {
+            constructor() {
+                this.currentPasswordInput = document.getElementById('currentPassword');
+                this.newPasswordInput = document.getElementById('newPassword');
+                this.confirmPasswordInput = document.getElementById('confirmPassword');
+                this.saveBtn = document.getElementById('saveBtn');
+                this.cancelBtn = document.getElementById('cancelBtn');
+                this.passwordForm = document.getElementById('passwordForm');
+                
+                this.currentDeletionPassword = null;
+                
+                this.init();
+            }
+
+            async init() {
+                await this.loadCurrentPassword();
+                this.setupEventListeners();
+            }
+
+            async loadCurrentPassword() {
+                try {
+                    const response = await fetch('/api/config');
+                    if (response.ok) {
+                        const config = await response.json();
+                        this.currentDeletionPassword = config.deletion_password;
+                        console.log('✅ Loaded current deletion password');
+                    }
+                } catch (error) {
+                    console.error('Failed to load config:', error);
+                    this.showAlert('error', 'Failed to load current settings');
+                }
+            }
+
+            setupEventListeners() {
+                // Password strength checker
+                this.newPasswordInput.addEventListener('input', () => {
+                    this.checkPasswordStrength();
+                    this.validateForm();
+                });
+
+                // Confirm password validation
+                this.confirmPasswordInput.addEventListener('input', () => {
+                    this.validateConfirmPassword();
+                    this.validateForm();
+                });
+
+                // Current password validation
+                this.currentPasswordInput.addEventListener('input', () => {
+                    this.validateForm();
+                });
+
+                // Form submission
+                this.passwordForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
+
+                // Cancel button
+                this.cancelBtn.addEventListener('click', () => {
+                    this.resetForm();
+                });
+            }
+
+            checkPasswordStrength() {
+                const password = this.newPasswordInput.value;
+                const strengthBar = document.getElementById('strengthBar');
+                const strengthText = document.getElementById('strengthText');
+
+                if (password.length === 0) {
+                    strengthBar.className = 'password-strength-bar';
+                    strengthText.textContent = '';
+                    return;
+                }
+
+                let strength = 0;
+                
+                // Length check
+                if (password.length >= 8) strength++;
+                if (password.length >= 12) strength++;
+                
+                // Character variety
+                if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+                if (/[0-9]/.test(password)) strength++;
+                if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+                strengthBar.className = 'password-strength-bar';
+                
+                if (strength <= 2) {
+                    strengthBar.classList.add('weak');
+                    strengthText.textContent = 'Weak password';
+                    strengthText.style.color = '#ff4444';
+                } else if (strength <= 4) {
+                    strengthBar.classList.add('medium');
+                    strengthText.textContent = 'Medium strength';
+                    strengthText.style.color = '#ffa500';
+                } else {
+                    strengthBar.classList.add('strong');
+                    strengthText.textContent = 'Strong password';
+                    strengthText.style.color = '#00ff00';
+                }
+            }
+
+            validateConfirmPassword() {
+                const newPassword = this.newPasswordInput.value;
+                const confirmPassword = this.confirmPasswordInput.value;
+                const errorMsg = document.getElementById('confirmPasswordError');
+                const successMsg = document.getElementById('confirmPasswordSuccess');
+
+                if (confirmPassword.length === 0) {
+                    errorMsg.classList.remove('show');
+                    successMsg.classList.remove('show');
+                    this.confirmPasswordInput.classList.remove('error', 'success');
+                    return false;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    errorMsg.classList.add('show');
+                    successMsg.classList.remove('show');
+                    this.confirmPasswordInput.classList.add('error');
+                    this.confirmPasswordInput.classList.remove('success');
+                    return false;
+                } else {
+                    errorMsg.classList.remove('show');
+                    successMsg.classList.add('show');
+                    this.confirmPasswordInput.classList.remove('error');
+                    this.confirmPasswordInput.classList.add('success');
+                    return true;
+                }
+            }
+
+            validateForm() {
+                const currentPassword = this.currentPasswordInput.value.trim();
+                const newPassword = this.newPasswordInput.value.trim();
+                const confirmPassword = this.confirmPasswordInput.value.trim();
+
+                const isValid = 
+                    currentPassword.length > 0 &&
+                    newPassword.length >= 1 &&
+                    confirmPassword.length > 0 &&
+                    newPassword === confirmPassword;
+
+                this.saveBtn.disabled = !isValid;
+            }
+
+            async handleSubmit() {
+                const currentPassword = this.currentPasswordInput.value.trim();
+                const newPassword = this.newPasswordInput.value.trim();
+
+                // Validate current password
+                if (currentPassword !== this.currentDeletionPassword) {
+                    document.getElementById('currentPasswordError').classList.add('show');
+                    this.currentPasswordInput.classList.add('error');
+                    this.showAlert('error', 'Current password is incorrect');
+                    return;
+                }
+
+                // Clear error
+                document.getElementById('currentPasswordError').classList.remove('show');
+                this.currentPasswordInput.classList.remove('error');
+
+                // Update password
+                try {
+                    this.saveBtn.disabled = true;
+                    this.saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                    const response = await fetch('/api/config/update-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            current_password: currentPassword,
+                            new_password: newPassword
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        this.showAlert('success', 'Password updated successfully! All pages will use the new password.');
+                        this.currentDeletionPassword = newPassword;
+                        this.resetForm();
+                    } else {
+                        this.showAlert('error', result.error || 'Failed to update password');
+                    }
+                } catch (error) {
+                    console.error('Error updating password:', error);
+                    this.showAlert('error', 'Failed to update password. Please try again.');
+                } finally {
+                    this.saveBtn.disabled = false;
+                    this.saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+                }
+            }
+
+            resetForm() {
+                this.passwordForm.reset();
+                this.currentPasswordInput.classList.remove('error', 'success');
+                this.newPasswordInput.classList.remove('error', 'success');
+                this.confirmPasswordInput.classList.remove('error', 'success');
+                
+                document.getElementById('currentPasswordError').classList.remove('show');
+                document.getElementById('confirmPasswordError').classList.remove('show');
+                document.getElementById('confirmPasswordSuccess').classList.remove('show');
+                
+                document.getElementById('strengthBar').className = 'password-strength-bar';
+                document.getElementById('strengthText').textContent = '';
+                
+                this.saveBtn.disabled = true;
+            }
+
+            showAlert(type, message) {
+                // Hide all alerts first
+                document.getElementById('alertSuccess').classList.remove('show');
+                document.getElementById('alertError').classList.remove('show');
+
+                if (type === 'success') {
+                    document.getElementById('successMessage').textContent = message;
+                    document.getElementById('alertSuccess').classList.add('show');
+                    
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('alertSuccess').classList.remove('show');
+                    }, 5000);
+                } else if (type === 'error') {
+                    document.getElementById('errorMessage').textContent = message;
+                    document.getElementById('alertError').classList.add('show');
+                    
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('alertError').classList.remove('show');
+                    }, 5000);
+                }
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SettingsManager();
+        });
+    </script>
+</body>
+</html>

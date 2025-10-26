@@ -1148,6 +1148,10 @@
 
             async init() {
                 try {
+                    // Load deletion password from config
+                    this.DELETION_PASSWORD = 'cheatgpt2024';  // Default fallback
+                    await this.loadConfig();
+                    
                     await this.loadSessionData();
                     this.setupEventListeners();
                     this.updateUI();
@@ -1155,6 +1159,24 @@
                 } catch (error) {
                     console.error('Error initializing session report:', error);
                     this.showError('Failed to load session data');
+                }
+            }
+
+            async loadConfig() {
+                /**
+                 * Load configuration from server including deletion password
+                 */
+                try {
+                    const response = await fetch('/api/config');
+                    if (response.ok) {
+                        const config = await response.json();
+                        if (config.success && config.deletion_password) {
+                            this.DELETION_PASSWORD = config.deletion_password;
+                            console.log('✅ Loaded deletion password from config');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to load config, using default password:', error);
                 }
             }
 
@@ -1591,9 +1613,8 @@
                 const deletePassword = document.getElementById('deletePassword');
                 const passwordError = document.getElementById('passwordError');
                 const enteredPassword = deletePassword ? deletePassword.value.trim() : '';
-                const DELETION_PASSWORD = 'cheatgpt2024';
                 
-                if (enteredPassword !== DELETION_PASSWORD) {
+                if (enteredPassword !== this.DELETION_PASSWORD) {
                     // Show password error message
                     if (passwordError) {
                         passwordError.style.display = 'flex';
