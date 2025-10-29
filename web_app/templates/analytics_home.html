@@ -1287,13 +1287,13 @@
                     <i class="fas fa-upload"></i>
                     <span class="tooltip">Upload</span>
                 </a>
-                <a href="/settings" class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span class="tooltip">Settings</span>
-                </a>
                 <a href="/guide" class="nav-item">
                     <i class="fas fa-info-circle"></i>
                     <span class="tooltip">User Guide</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="tooltip">Settings</span>
                 </a>
             </nav>
         </div>
@@ -1321,6 +1321,7 @@
                     <div class="view-controls">
                         <div class="selection-controls" id="selectionControls" style="display: none;">
                             <span class="selected-count" id="selectedCount">0 selected</span>
+                            <button class="view-btn" id="selectAllBtn">Select All</button>
                             <button class="btn-danger delete-btn" id="deleteSelectedBtn">Delete Selected</button>
                             <button class="view-btn" id="cancelSelectionBtn">Cancel</button>
                         </div>
@@ -1465,6 +1466,7 @@
                 this.normalControls = document.getElementById('normalControls');
                 this.selectionControls = document.getElementById('selectionControls');
                 this.selectedCount = document.getElementById('selectedCount');
+                this.selectAllBtn = document.getElementById('selectAllBtn');
                 this.deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
                 this.cancelSelectionBtn = document.getElementById('cancelSelectionBtn');
                 
@@ -1536,6 +1538,7 @@
 
                 // Selection controls
                 this.selectModeBtn.addEventListener('click', () => this.enterSelectionMode());
+                this.selectAllBtn.addEventListener('click', () => this.selectAllSessions());
                 this.cancelSelectionBtn.addEventListener('click', () => this.exitSelectionMode());
                 this.deleteSelectedBtn.addEventListener('click', () => this.showDeleteConfirmation());
 
@@ -1884,6 +1887,27 @@
                 this.normalControls.style.display = 'flex';
                 this.selectionControls.style.display = 'none';
                 this.renderSessions();
+            }
+
+            selectAllSessions() {
+                // Select all currently filtered sessions
+                this.filteredSessions.forEach(session => {
+                    this.selectedSessions.add(session.session_id);
+                });
+                
+                // Update UI for all cards
+                this.videoGrid.querySelectorAll('.video-card').forEach(card => {
+                    const sessionId = card.dataset.sessionId;
+                    if (sessionId) {
+                        card.classList.add('selected');
+                        const checkbox = card.querySelector('.selection-checkbox');
+                        if (checkbox) {
+                            checkbox.classList.add('checked');
+                        }
+                    }
+                });
+                
+                this.updateSelectedCount();
             }
 
             toggleSessionSelection(sessionId, cardElement) {

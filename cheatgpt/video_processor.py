@@ -8,11 +8,26 @@ import cv2
 import json
 import time
 import numpy as np
+import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional
+from contextlib import contextmanager
 
 from .engines.engine_hybrid import EngineHybrid
 from .report_generator import ReportGenerator
+
+
+@contextmanager
+def suppress_cv2_output():
+    """Suppress OpenCV VideoWriter codec testing output"""
+    # Redirect stderr to devnull to suppress codec testing messages
+    old_stderr = sys.stderr
+    try:
+        sys.stderr = open(os.devnull, 'w')
+        yield
+    finally:
+        sys.stderr.close()
+        sys.stderr = old_stderr
 
 
 class VideoProcessor:
@@ -142,9 +157,34 @@ class VideoProcessor:
         
         print(f"📹 Video properties: {width}x{height} @ {fps:.1f} FPS, {total_frames} frames")
         
-        # Setup video writer
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+        # Setup video writer with H.264 codec for browser compatibility
+        # Try multiple codec options in order of preference
+        writer = None
+        codec_options = [
+            ('avc1', 'H.264 AVC1 (best browser compatibility)'),
+            ('H264', 'H.264'),
+            ('X264', 'X264'),
+            ('mp4v', 'MP4V (fallback)')
+        ]
+        
+        # Suppress OpenCV codec testing output (prevents "00:00 unknown 0%" spam)
+        with suppress_cv2_output():
+            for codec_name, codec_desc in codec_options:
+                try:
+                    fourcc = cv2.VideoWriter_fourcc(*codec_name)
+                    test_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+                    if test_writer.isOpened():
+                        writer = test_writer
+                        print(f"✅ Using {codec_desc} codec")
+                        break
+                    else:
+                        test_writer.release()
+                except Exception as e:
+                    print(f"⚠️  {codec_desc} codec not available: {e}")
+                    continue
+        
+        if writer is None or not writer.isOpened():
+            raise RuntimeError("Failed to initialize video writer with any codec")
         
         # Start engine session
         self.engine.start_session(session_id)
@@ -169,7 +209,8 @@ class VideoProcessor:
                         break
                 
                 # Process frame through engine
-                timestamp = frame_count / fps
+                # Use CAP_PROP_POS_MSEC to get actual video timestamp (not elapsed time)
+                timestamp = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0  # Convert milliseconds to seconds
                 overlay_frame, events = self.engine.process_frame(
                     frame, 
                     cam_id="video_processing", 

@@ -85,10 +85,10 @@ class YOLO11Detector:
             return []
         
         try:
-            # Run inference with ULTRA-SENSITIVE settings for long-distance phone detection
-            # Very low confidence threshold to catch even tiny/distant phones
+            # Run inference with BALANCED settings for realistic classroom phone detection
+            # Reasonable confidence threshold to avoid false positives while catching real phone usage
             results = self.model(frame, device=self.device, verbose=False, 
-                               conf=0.10, iou=0.40, max_det=80, agnostic_nms=True)
+                               conf=0.25, iou=0.45, max_det=50, agnostic_nms=True)
             
             detections = []
             phone_raw_detections = 0  # Count raw phone detections before filtering
@@ -119,9 +119,9 @@ class YOLO11Detector:
                             # Get confidence score
                             conf = float(boxes.conf[i].cpu().numpy())
                             
-                            # ULTRA-SENSITIVE: Apply extremely low thresholds for long-distance detection
-                            # Prioritize recall over precision for distant phone detection
-                            min_conf = 0.30 if cls_name == 'person' else 0.05  # Ultra-ultra-low for distant phone detection
+                            # REALISTIC: Apply balanced thresholds for classroom monitoring
+                            # Avoid false positives while catching genuine phone usage
+                            min_conf = 0.40 if cls_name == 'person' else 0.30  # Balanced for realistic phone detection
                             if conf >= min_conf:
                                 detection = {
                                     'bbox': bbox,  # [x1, y1, x2, y2]
@@ -134,11 +134,11 @@ class YOLO11Detector:
                                 # Count phones that passed filter
                                 if cls_name == 'cell phone':
                                     phone_passed_filter += 1
-                                    logger.info(f"📱 PHONE DETECTED by YOLO: conf={conf:.3f}, bbox={bbox}")
+                                    logger.debug(f"📱 PHONE DETECTED by YOLO: conf={conf:.3f}, bbox={bbox}")
             
-            # Log phone detection summary
+            # Log phone detection summary at DEBUG level
             if phone_raw_detections > 0:
-                logger.info(f"📱 PHONE DETECTION SUMMARY: {phone_raw_detections} raw detections, {phone_passed_filter} passed filter (conf >= 0.05)")
+                logger.debug(f"📱 PHONE DETECTION SUMMARY: {phone_raw_detections} raw detections, {phone_passed_filter} passed filter (conf >= 0.05)")
             
             # Apply additional NMS to remove duplicates
             detections = self._apply_class_nms(detections)

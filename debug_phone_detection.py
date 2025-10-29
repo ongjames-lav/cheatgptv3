@@ -41,10 +41,11 @@ def debug_video_phone_detection(video_path: str, num_frames: int = 300):
     frame_count = 0
     phone_detection_frames = []
     phone_event_frames = []
+    all_events = []
     
     print("🔍 Starting frame-by-frame analysis...\n")
-    print(f"{'Frame':<8} {'YOLO Phones':<15} {'Events':<40}")
-    print(f"{'-'*8} {'-'*15} {'-'*40}")
+    print(f"{'Frame':<8} {'Phone Events':<60}")
+    print(f"{'-'*8} {'-'*60}")
     
     while frame_count < num_frames:
         ret, frame = cap.read()
@@ -56,15 +57,16 @@ def debug_video_phone_detection(video_path: str, num_frames: int = 300):
         # Process frame
         _, events = engine.process_frame(frame, ts=frame_count / fps)
         
-        # Track phone detection frames
-        # Note: We'll rely on debug logs to see YOLO detections
+        # Track ALL events
+        all_events.extend(events)
         
         # Track phone events
         phone_events = [e for e in events if 'phone' in e.get('event_type', '').lower()]
         if phone_events:
             phone_event_frames.append(frame_count)
-            event_str = ', '.join([e['event_type'] for e in phone_events])
-            print(f"{frame_count:<8} {'CHECK LOGS':<15} {event_str:<40}")
+            for event in phone_events:
+                event_str = f"{event.get('event_type', 'Unknown')} - {event.get('person_id', 'Unknown')}"
+                print(f"{frame_count:<8} {event_str:<60}")
     
     cap.release()
     
@@ -73,17 +75,28 @@ def debug_video_phone_detection(video_path: str, num_frames: int = 300):
     print(f"ANALYSIS COMPLETE")
     print(f"{'='*80}\n")
     print(f"📊 Frames analyzed: {frame_count}/{total_frames}")
-    print(f"📱 Phone events detected: {len(phone_event_frames)} frames")
+    print(f"� Total events detected: {len(all_events)}")
+    print(f"�📱 Phone events detected: {len(phone_event_frames)} frames")
+    
+    # Count events by type
+    event_types = {}
+    for event in all_events:
+        event_type = event.get('event_type', 'Unknown')
+        event_types[event_type] = event_types.get(event_type, 0) + 1
+    
+    if event_types:
+        print(f"\n📊 Event breakdown:")
+        for event_type, count in sorted(event_types.items(), key=lambda x: x[1], reverse=True):
+            print(f"   {event_type}: {count}")
     
     if phone_event_frames:
-        print(f"\n✅ Phone events at frames: {phone_event_frames[:10]}{'...' if len(phone_event_frames) > 10 else ''}")
+        print(f"\n✅ Phone events at frames: {phone_event_frames[:20]}{'...' if len(phone_event_frames) > 20 else ''}")
     else:
-        print(f"\n❌ NO PHONE EVENTS DETECTED")
-        print(f"\n⚠️  Check the logs above for:")
-        print(f"   1. '📱 YOLO DETECTED' - Are phones detected by YOLO?")
-        print(f"   2. '📱 CALLING PHONE PROXIMITY CHECK' - Are phones passed to pose detector?")
-        print(f"   3. '🔍 PHONE PROXIMITY CHECK' - Is proximity calculation working?")
-        print(f"   4. '✅ PHONE MATCHED TO PERSON' - Are phones matching persons?")
+        print(f"\n⚠️ NO PHONE USAGE EVENTS DETECTED")
+        print(f"\nPossible reasons:")
+        print(f"   1. Phones detected but not meeting temporal requirements (need 8 consecutive frames)")
+        print(f"   2. Phones matched to persons but failing phone_flag criteria")
+        print(f"   3. Check logs for '✅ PHONE MATCHED TO PERSON' messages")
     
     print(f"\n{'='*80}\n")
 

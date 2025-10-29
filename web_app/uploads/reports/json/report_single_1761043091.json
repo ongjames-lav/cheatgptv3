@@ -1,0 +1,68 @@
+{
+  "session_info": {
+    "session_id": "single_1761043091",
+    "generated_at": "2025-10-21T18:39:20.487309",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "3957ac4a-d5b8-4f7c-bd41-66e2e906ea61.mp4",
+    "width": 1024,
+    "height": 576,
+    "fps": 30.009996725020905,
+    "frame_count": 1514,
+    "duration": 50.44985555555556
+  },
+  "analysis_results": {
+    "total_events": 2,
+    "event_summary": {
+      "Hand Extension": 2
+    },
+    "events": [
+      {
+        "timestamp": 14.228592022603847,
+        "person_id": "person_008",
+        "event_type": "Hand Extension",
+        "severity": "orange",
+        "confidence": 0.85,
+        "source": "research_rules",
+        "details": "Sustained sideward hand extension: right_wrist_extended_arm_absolute (sustained for 0.4s)",
+        "bbox": [
+          759.2409057617188,
+          299.830078125,
+          975.5505981445312,
+          572.8780517578125
+        ],
+        "rule_triggered": "hand_extended_sustained",
+        "gesture_type": "right_wrist_extended_arm_absolute",
+        "duration": 0.3998667547335977,
+        "frame_count": 5
+      },
+      {
+        "timestamp": 36.22126353295171,
+        "person_id": "person_008",
+        "event_type": "Hand Extension",
+        "severity": "orange",
+        "confidence": 0.85,
+        "source": "research_rules",
+        "details": "Sustained sideward hand extension: right_wrist_extended_arm_absolute (sustained for 0.4s)",
+        "bbox": [
+          721.1085815429688,
+          314.15899658203125,
+          934.4763793945312,
+          570.0572509765625
+        ],
+        "rule_triggered": "hand_extended_sustained",
+        "gesture_type": "right_wrist_extended_arm_absolute",
+        "duration": 0.3998667547335941,
+        "frame_count": 5
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 2.3785994762235854,
+    "risk_level": "low",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

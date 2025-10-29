@@ -1,0 +1,19 @@
+
+CHEATGPT3 DETAILED STATISTICS REPORT
+===================================
+
+Session: single_1761111145
+Generated: 2025-10-22T13:32:57.649193
+
+VIDEO STATISTICS
+---------------
+Duration: 15.98 seconds
+Total Frames: 479
+Processing Rate: 30.0 FPS
+
+EVENT STATISTICS
+---------------
+Total Events: 0
+Events per Minute: 0.00
+
+Event Type Distribution:

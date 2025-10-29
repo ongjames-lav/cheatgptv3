@@ -767,12 +767,12 @@ class EngineHybrid:
         
         # Supervision ByteTrack for robust multi-person tracking
         self.tracker = sv.ByteTrack(
-            track_activation_threshold=0.25,  # Minimum confidence to start tracking
-            lost_track_buffer=30,  # Keep track ID for 30 frames if person disappears
-            minimum_matching_threshold=0.8,  # IOU threshold for matching
+            track_activation_threshold=0.35,  # Higher threshold to reduce false positives (was 0.25)
+            lost_track_buffer=60,  # Longer buffer to maintain IDs (2 seconds at 30 FPS)
+            minimum_matching_threshold=0.6,  # Lower IOU threshold for better matching (was 0.8)
             frame_rate=30  # Match your target FPS
         )
-        self.logger.info("✅ Supervision ByteTrack ready for multi-student tracking")
+        self.logger.info("✅ Supervision ByteTrack ready (optimized for ID persistence & NMS)")
         
         # Research-based rule engine
         self.rule_engine = ResearchBasedRuleEngine()
@@ -873,6 +873,22 @@ class EngineHybrid:
                 persons = [p for p in persons if p['conf'] >= self.person_conf_thresh]
                 # Sort by confidence but keep all detections (no artificial limit)
                 persons = sorted(persons, key=lambda x: x['conf'], reverse=True)
+                
+                # Step 1.5: Apply NMS (Non-Maximum Suppression) to remove overlapping detections
+                if len(persons) > 1:
+                    # Convert to numpy arrays for NMS
+                    boxes = np.array([p['bbox'] for p in persons])
+                    scores = np.array([p['conf'] for p in persons])
+                    
+                    # Simple NMS implementation
+                    keep_indices = self._nms(boxes, scores, iou_threshold=0.5)
+                    
+                    # Keep only non-overlapping detections
+                    persons_before = len(persons)
+                    persons = [persons[i] for i in keep_indices]
+                    
+                    if len(persons) < persons_before:
+                        self.logger.debug(f"🔧 NMS: Removed {persons_before - len(persons)} overlapping detections")
                 
                 # Step 2: Update tracker with new detections using Supervision ByteTrack
                 if len(persons) > 0:
@@ -1450,6 +1466,63 @@ class EngineHybrid:
     def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
         """Calculate Euclidean distance between two points."""
         return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+    
+    def _nms(self, boxes: np.ndarray, scores: np.ndarray, iou_threshold: float = 0.5) -> List[int]:
+        """
+        Apply Non-Maximum Suppression to remove overlapping bounding boxes.
+        
+        Args:
+            boxes: Array of bounding boxes [x1, y1, x2, y2]
+            scores: Array of confidence scores
+            iou_threshold: IoU threshold for suppression (0.5 = 50% overlap)
+        
+        Returns:
+            List of indices to keep
+        """
+        if len(boxes) == 0:
+            return []
+        
+        # Convert to float
+        boxes = boxes.astype(np.float32)
+        
+        # Get coordinates
+        x1 = boxes[:, 0]
+        y1 = boxes[:, 1]
+        x2 = boxes[:, 2]
+        y2 = boxes[:, 3]
+        
+        # Calculate areas
+        areas = (x2 - x1) * (y2 - y1)
+        
+        # Sort by confidence score (descending)
+        order = scores.argsort()[::-1]
+        
+        keep = []
+        while len(order) > 0:
+            # Keep the box with highest score
+            i = order[0]
+            keep.append(i)
+            
+            # Calculate IoU with remaining boxes
+            xx1 = np.maximum(x1[i], x1[order[1:]])
+            yy1 = np.maximum(y1[i], y1[order[1:]])
+            xx2 = np.minimum(x2[i], x2[order[1:]])
+            yy2 = np.minimum(y2[i], y2[order[1:]])
+            
+            # Calculate intersection area
+            w = np.maximum(0.0, xx2 - xx1)
+            h = np.maximum(0.0, yy2 - yy1)
+            intersection = w * h
+            
+            # Calculate IoU
+            union = areas[i] + areas[order[1:]] - intersection
+            iou = intersection / (union + 1e-6)
+            
+            # Keep boxes with IoU less than threshold
+            indices = np.where(iou <= iou_threshold)[0]
+            order = order[indices + 1]
+        
+        return keep
     
     def _draw_dashed_rectangle(self, frame: np.ndarray, pt1: Tuple[int, int], 
                               pt2: Tuple[int, int], color: Tuple[int, int, int], 

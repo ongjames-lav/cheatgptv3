@@ -282,7 +282,7 @@ class DetectionRecorderIntegration:
                         'confidence': person_data.get('looking_confidence', 0.5),
                         'additional_data': {
                             'head_yaw': person_data.get('head_yaw', 0),
-                            'head_pitch': person_data.get('head_pitch', 0)
+                            # 'head_pitch': person_data.get('head_pitch', 0)  # Disabled - not used
                         }
                     })
                 

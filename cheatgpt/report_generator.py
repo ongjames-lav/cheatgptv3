@@ -457,14 +457,15 @@ Std Deviation: {np.std(confidences):.3f}
         if duration <= 0:
             return 0.0
         
-        # Event severity weights
+        # Event severity weights (only 3 active detections)
         event_weights = {
             'Phone Usage Detected': 8.0,
             'head_turn_frequent': 4.0,
             'head_turn_sustained': 3.0,
-            'head_pitch_sustained': 2.0,
             'hand_extended_duration': 3.0,
-            'out_of_frame_duration': 2.0
+            # Disabled detections (keeping for backward compatibility with old data)
+            # 'head_pitch_sustained': 2.0,
+            # 'out_of_frame_duration': 2.0
         }
         
         total_weighted_score = 0.0

@@ -1,0 +1,27 @@
+{
+  "session_info": {
+    "session_id": "single_1760863937",
+    "generated_at": "2025-10-19T16:52:38.836038",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "5a21622e-9a10-4ad9-8a91-b6aaea078cb3.mp4",
+    "width": 576,
+    "height": 1024,
+    "fps": 29.97,
+    "frame_count": 479,
+    "duration": 15.98264931598265
+  },
+  "analysis_results": {
+    "total_events": 0,
+    "event_summary": {},
+    "events": []
+  },
+  "risk_assessment": {
+    "risk_score": 0.0,
+    "risk_level": "minimal",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

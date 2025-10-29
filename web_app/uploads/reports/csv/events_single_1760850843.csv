@@ -1,0 +1,22 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+18.885533333333335,person_000,Head Turning,orange,0.8,research_rules,Head turned RIGHT (33.9° detected instantly),"[233.95950317382812, 92.79244995117188, 276.7345886230469, 295.72125244140625]",instant_head_turn
+78.84543333333333,person_035,Head Turning,orange,0.8,research_rules,Head turned RIGHT (32.4° detected instantly),"[201.3491668701172, 154.10400390625, 375.73358154296875, 356.16192626953125]",instant_head_turn
+79.14573333333334,person_033,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.3° detected instantly),"[567.06298828125, 180.59243774414062, 639.738525390625, 357.1064758300781]",instant_head_turn
+80.34693333333334,person_035,Head Turning,orange,0.8,research_rules,Head turned RIGHT (31.0° detected instantly),"[70.5876235961914, 135.29327392578125, 223.59982299804688, 357.7335205078125]",instant_head_turn
+80.54713333333333,person_033,Head Turning,orange,0.8,research_rules,Head turned RIGHT (30.7° detected instantly),"[345.33331298828125, 165.8163299560547, 525.7474365234375, 356.07244873046875]",instant_head_turn
+80.64723333333333,person_031,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.7° detected instantly),"[0.426483154296875, 89.439208984375, 140.76576232910156, 359.5829162597656]",instant_head_turn
+92.95953333333334,person_032,Head Turning,orange,0.8,research_rules,Head turned RIGHT (31.3° detected instantly),"[102.98712158203125, 96.733154296875, 182.55087280273438, 305.7372131347656]",instant_head_turn
+93.05963333333334,person_033,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.2° detected instantly),"[297.98577880859375, 41.850921630859375, 589.2601928710938, 354.456787109375]",instant_head_turn
+93.66023333333334,person_033,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.4° detected instantly),"[208.53387451171875, 42.49609375, 499.6669921875, 354.92340087890625]",instant_head_turn
+93.96053333333333,person_036,Head Turning,orange,0.8,research_rules,Head turned RIGHT (30.4° detected instantly),"[477.55218505859375, 111.57581329345703, 639.6394653320312, 354.97998046875]",instant_head_turn
+96.56313333333334,person_035,Head Turning,orange,0.8,research_rules,Head turned RIGHT (30.0° detected instantly),"[0.3166351318359375, 3.37310791015625, 141.88760375976562, 355.3406982421875]",instant_head_turn
+96.66323333333334,person_036,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.6° detected instantly),"[302.52703857421875, 87.76290893554688, 491.45086669921875, 356.18878173828125]",instant_head_turn
+96.96353333333333,person_033,Head Turning,orange,0.8,research_rules,Head turned RIGHT (31.6° detected instantly),"[120.70153045654297, 81.81552124023438, 329.30316162109375, 355.40704345703125]",instant_head_turn
+98.86543333333333,person_033,Head Turning,orange,0.8,research_rules,Head turned RIGHT (33.1° detected instantly),"[0.23686981201171875, 96.8111572265625, 120.46665954589844, 355.5112609863281]",instant_head_turn
+100.16673333333334,person_036,Head Turning,orange,0.8,research_rules,Head turned RIGHT (33.6° detected instantly),"[0.31612396240234375, 88.88995361328125, 113.25863647460938, 355.6947021484375]",instant_head_turn
+100.36693333333334,person_037,Head Turning,orange,0.8,research_rules,Head turned RIGHT (35.0° detected instantly),"[94.39653778076172, 91.52911376953125, 320.613037109375, 356.0985107421875]",instant_head_turn
+100.56713333333333,person_038,Head Turning,orange,0.8,research_rules,Head turned RIGHT (33.0° detected instantly),"[311.96990966796875, 118.25738525390625, 509.33563232421875, 354.9515686035156]",instant_head_turn
+102.96953333333333,person_039,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.5° detected instantly),"[521.697265625, 54.6141357421875, 639.554443359375, 354.3033752441406]",instant_head_turn
+103.26983333333334,person_037,Head Turning,orange,0.8,research_rules,Head turned RIGHT (33.1° detected instantly),"[0.238983154296875, 48.95013427734375, 103.08819580078125, 354.4429931640625]",instant_head_turn
+103.47003333333333,person_038,Head Turning,orange,0.8,research_rules,Head turned RIGHT (32.7° detected instantly),"[90.39215087890625, 73.18386840820312, 291.743408203125, 357.4103698730469]",instant_head_turn
+107.47403333333334,person_039,Hand Extension,orange,0.85,research_rules,Sustained sideward hand extension: left_hand_sideward_extension (sustained for 0.7s),"[437.59234619140625, 22.781829833984375, 639.8515014648438, 357.3197326660156]",hand_extended_sustained

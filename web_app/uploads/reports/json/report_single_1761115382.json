@@ -1,0 +1,393 @@
+{
+  "session_info": {
+    "session_id": "single_1761115382",
+    "generated_at": "2025-10-22T14:44:14.073467",
+    "generator_version": "3.0.0"
+  },
+  "video_metadata": {
+    "filename": "179948d7-affa-4976-92b9-df39ea79a7a4.mp4",
+    "width": 1024,
+    "height": 576,
+    "fps": 30.00529388990289,
+    "frame_count": 1519,
+    "duration": 50.6244
+  },
+  "analysis_results": {
+    "total_events": 20,
+    "event_summary": {
+      "Head Turning": 18,
+      "Hand Extension": 2
+    },
+    "events": [
+      {
+        "timestamp": 0.6666666666666667,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (35.0\u00b0 detected instantly)",
+        "bbox": [
+          767.3990478515625,
+          301.4339904785156,
+          1023.6254272460938,
+          572.5347900390625
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 34.989800396364146
+      },
+      {
+        "timestamp": 1.266411111111111,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (34.6\u00b0 detected instantly)",
+        "bbox": [
+          772.7077026367188,
+          302.7743835449219,
+          1023.62060546875,
+          572.8162231445312
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 34.57313528643645
+      },
+      {
+        "timestamp": 1.966288888888889,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (33.6\u00b0 detected instantly)",
+        "bbox": [
+          776.1919555664062,
+          303.4389953613281,
+          1023.5935668945312,
+          572.65283203125
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 33.62238721685517
+      },
+      {
+        "timestamp": 2.7661333333333333,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (34.2\u00b0 detected instantly)",
+        "bbox": [
+          778.3325805664062,
+          304.3705139160156,
+          1023.5689697265625,
+          572.6995239257812
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 34.16475677297912
+      },
+      {
+        "timestamp": 3.4660111111111114,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (33.9\u00b0 detected instantly)",
+        "bbox": [
+          780.8847045898438,
+          305.85394287109375,
+          1023.5785522460938,
+          572.6988525390625
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 33.85533942730297
+      },
+      {
+        "timestamp": 4.065922222222222,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (33.7\u00b0 detected instantly)",
+        "bbox": [
+          783.659912109375,
+          305.2554626464844,
+          1023.5689697265625,
+          572.6837158203125
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 33.684061643853106
+      },
+      {
+        "timestamp": 4.165888888888889,
+        "person_id": "person_001",
+        "event_type": "Hand Extension",
+        "severity": "orange",
+        "confidence": 0.85,
+        "source": "research_rules",
+        "details": "Sustained sideward hand extension: left_hand_sideward_extension (sustained for 0.7s)",
+        "bbox": [
+          784.2352294921875,
+          304.3839416503906,
+          1023.5640869140625,
+          572.8280639648438
+        ],
+        "rule_triggered": "hand_extended_sustained",
+        "gesture_type": "left_hand_sideward_extension",
+        "duration": 0.699877777777778,
+        "frame_count": 8
+      },
+      {
+        "timestamp": 4.6658333333333335,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (34.5\u00b0 detected instantly)",
+        "bbox": [
+          781.3312377929688,
+          293.9522399902344,
+          1023.5578002929688,
+          572.5625
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 34.46036995719583
+      },
+      {
+        "timestamp": 5.265744444444445,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (32.3\u00b0 detected instantly)",
+        "bbox": [
+          768.5138549804688,
+          298.6769714355469,
+          1023.7578125,
+          570.5694580078125
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 32.31139809282002
+      },
+      {
+        "timestamp": 5.865655555555556,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (32.1\u00b0 detected instantly)",
+        "bbox": [
+          764.7264404296875,
+          305.95880126953125,
+          1023.6166381835938,
+          572.34228515625
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 32.10714914060484
+      },
+      {
+        "timestamp": 6.465566666666667,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (31.3\u00b0 detected instantly)",
+        "bbox": [
+          760.8999633789062,
+          306.3996276855469,
+          1023.6007690429688,
+          572.3121948242188
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 31.26717210156976
+      },
+      {
+        "timestamp": 7.065477777777778,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (33.0\u00b0 detected instantly)",
+        "bbox": [
+          754.4791259765625,
+          294.3945007324219,
+          1023.7117309570312,
+          572.9675903320312
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 33.03278557244217
+      },
+      {
+        "timestamp": 7.265411111111112,
+        "person_id": "person_001",
+        "event_type": "Hand Extension",
+        "severity": "orange",
+        "confidence": 0.85,
+        "source": "research_rules",
+        "details": "Sustained sideward hand extension: left_hand_sideward_extension (sustained for 2.3s)",
+        "bbox": [
+          751.4208374023438,
+          288.30389404296875,
+          1023.6810913085938,
+          572.7644653320312
+        ],
+        "rule_triggered": "hand_extended_sustained",
+        "gesture_type": "left_hand_sideward_extension",
+        "duration": 2.299677777777778,
+        "frame_count": 24
+      },
+      {
+        "timestamp": 7.66538888888889,
+        "person_id": "person_001",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (34.1\u00b0 detected instantly)",
+        "bbox": [
+          748.9092407226562,
+          280.18206787109375,
+          1023.7498168945312,
+          572.8408203125
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 34.0901318117807
+      },
+      {
+        "timestamp": 38.759911111111116,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (35.2\u00b0 detected instantly)",
+        "bbox": [
+          592.4962768554688,
+          167.05393981933594,
+          715.5388793945312,
+          512.203857421875
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 35.23807719848841
+      },
+      {
+        "timestamp": 47.35823333333334,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (35.2\u00b0 detected instantly)",
+        "bbox": [
+          599.9747924804688,
+          170.26890563964844,
+          717.792236328125,
+          536.5211791992188
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 35.24059747891181
+      },
+      {
+        "timestamp": 47.85827777777778,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (35.1\u00b0 detected instantly)",
+        "bbox": [
+          598.9371948242188,
+          170.56802368164062,
+          717.2938842773438,
+          532.8366088867188
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 35.12930904008822
+      },
+      {
+        "timestamp": 49.35797777777778,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (35.0\u00b0 detected instantly)",
+        "bbox": [
+          583.4534301757812,
+          237.60423278808594,
+          715.33447265625,
+          572.6119995117188
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 35.03340729208466
+      },
+      {
+        "timestamp": 49.95777777777778,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (33.8\u00b0 detected instantly)",
+        "bbox": [
+          576.4011840820312,
+          257.85992431640625,
+          715.3956298828125,
+          574.657470703125
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 33.84054847512778
+      },
+      {
+        "timestamp": 50.45778888888889,
+        "person_id": "person_002",
+        "event_type": "Head Turning",
+        "severity": "orange",
+        "confidence": 0.8,
+        "source": "research_rules",
+        "details": "Head turned RIGHT (34.5\u00b0 detected instantly)",
+        "bbox": [
+          572.3760986328125,
+          265.6105651855469,
+          715.6387939453125,
+          572.0172119140625
+        ],
+        "rule_triggered": "instant_head_turn",
+        "turn_direction": "RIGHT",
+        "head_angle": 34.459218191465375
+      }
+    ]
+  },
+  "risk_assessment": {
+    "risk_score": 7.370398463981795,
+    "risk_level": "high",
+    "recommendations": [
+      "No significant suspicious activity detected"
+    ]
+  }
+}

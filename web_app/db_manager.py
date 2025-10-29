@@ -42,6 +42,13 @@ class DatabaseManager:
                 # Column already exists, ignore
                 pass
             
+            # Add session_type column to distinguish recorded vs uploaded videos
+            try:
+                conn.execute("ALTER TABLE sessions ADD COLUMN session_type TEXT DEFAULT 'recorded'")
+            except sqlite3.OperationalError:
+                # Column already exists, ignore
+                pass
+            
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS hotspots (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,6 +131,35 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error ending session {session_id}: {e}")
             return False
+    
+    def create_uploaded_session(self, session_id: str, video_path: str, video_title: str, 
+                               start_ts: float, end_ts: float = None, duration: float = None,
+                               metadata: Dict = None) -> int:
+        """Create a session entry for an uploaded video"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                # Calculate duration if not provided
+                if duration is None and end_ts is not None:
+                    duration = end_ts - start_ts
+                
+                cursor = conn.execute("""
+                    INSERT INTO sessions 
+                    (session_id, video_path, video_title, start_ts, end_ts, duration, status, session_type, metadata)
+                    VALUES (?, ?, ?, ?, ?, ?, 'uploaded', 'uploaded', ?)
+                """, (session_id, video_path, video_title, start_ts, end_ts, duration, 
+                     json.dumps(metadata or {})))
+                
+                session_pk = cursor.lastrowid
+                conn.commit()
+                logger.info(f"Created uploaded session {session_id} with ID {session_pk}")
+                return session_pk
+                
+        except sqlite3.IntegrityError:
+            logger.warning(f"Uploaded session {session_id} already exists")
+            return self.get_session_pk(session_id)
+        except Exception as e:
+            logger.error(f"Error creating uploaded session {session_id}: {e}")
+            raise
     
     def add_hotspot(self, session_id: str, event_type: str, confidence: float, 
                    timestamp_offset: float, frame_no: int = None, bbox_data: Dict = None) -> int:
@@ -342,10 +378,12 @@ class DatabaseManager:
                     SELECT 
                         session_id, 
                         video_path,
+                        video_title,
                         start_ts,
                         end_ts,
                         duration,
                         status,
+                        session_type,
                         metadata,
                         created_at,
                         (SELECT COUNT(*) FROM hotspots WHERE hotspots.session_id = sessions.session_id) as hotspot_count
@@ -356,17 +394,20 @@ class DatabaseManager:
                 
                 sessions = []
                 for row in cursor.fetchall():
-                    metadata = json.loads(row[6]) if row[6] else {}
+                    metadata = json.loads(row[8]) if row[8] else {}
                     session = {
                         'session_id': row[0],
                         'video_file': row[1],
-                        'start_time': row[2],
-                        'end_time': row[3],
-                        'duration': row[4] if row[4] else 0,
-                        'status': row[5],
+                        'video_path': row[1],
+                        'video_title': row[2] or f"Session {row[0]}",
+                        'start_time': row[3],
+                        'end_time': row[4],
+                        'duration': row[5] if row[5] else 0,
+                        'status': row[6],
+                        'session_type': row[7] or 'recorded',
                         'metadata': metadata,
-                        'created_at': row[7],
-                        'hotspot_count': row[8],
+                        'created_at': row[9],
+                        'hotspot_count': row[10],
                         'frame_count': metadata.get('frame_count', 0)
                     }
                     sessions.append(session)

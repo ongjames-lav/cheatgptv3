@@ -13,274 +13,356 @@
 
 # CheatGPT3 - AI-Powered Exam Monitoring System
 
-CheatGPT3 is an advanced AI-powered exam monitoring system that uses computer vision and machine learning to detect suspicious behaviors during online examinations. The system provides real-time monitoring, session recording, and comprehensive analytics with a YouTube-style interface.
+CheatGPT3 is an advanced AI-powered exam monitoring system that uses computer vision, deep learning (YOLO11), and behavioral analysis to detect cheating gestures during examinations. The system provides real-time monitoring, session recording, and comprehensive analytics with a modern web interface.
 
 ## 🎯 Features
 
-- **Real-time Behavior Detection**: Detects suspicious behaviors like looking around, leaning, hand gestures, and unauthorized device usage
-- **Live Video Monitoring**: Real-time webcam feed with overlay detection markers
+- **Real-time Cheating Detection**: Detects phone usage, sustained head turning, and suspicious hand activity
+- **Multi-Modal Detection**: Combines YOLO11 object detection, MediaPipe pose estimation, and motion analysis
+- **LSTM Temporal Analysis**: Context-aware classification to reduce false positives (83.87% accuracy)
+- **Live Video Monitoring**: Real-time webcam feed with detection overlays and bounding boxes
 - **Session Recording**: Automatic video recording with synchronized event timelines
-- **Analytics Dashboard**: YouTube-style analytics interface with video playback and event analysis
-- **Event Deduplication**: Intelligent grouping of sustained behaviors to reduce redundancy
-- **Multi-format Reports**: Generate PDF and JSON reports of detected events
-- **Web Interface**: Modern Flask-based web application with real-time updates
+- **Analytics Dashboard**: YouTube-style interface with video playback, heatmaps, and event analysis
+- **Event Deduplication**: Intelligent 3-second window to prevent event spam
+- **Comprehensive Reports**: Generate PDF reports with behavior scores and recommendations
+- **GPU Acceleration**: CUDA support for real-time processing (60+ FPS on GPU)
 
 ## 📋 System Requirements
 
 ### Hardware Requirements
-- **CPU**: Multi-core processor (Intel i5/AMD Ryzen 5 or better recommended)
-- **RAM**: Minimum 8GB (16GB recommended for optimal performance)
-- **GPU**: NVIDIA GPU with CUDA support (optional but recommended for better performance)
-- **Storage**: At least 5GB free space
-- **Camera**: Webcam or external camera for monitoring
+- **CPU**: Multi-core processor (Intel i5/AMD Ryzen 5 or better)
+- **RAM**: Minimum 8GB (16GB recommended for smooth operation)
+- **GPU**: NVIDIA GPU with 4GB+ VRAM (GTX 1650 Ti or better for real-time processing)
+  - Optional: System works on CPU but at reduced speed (15-20 FPS)
+- **Storage**: At least 10GB free space (for videos and models)
+- **Camera**: Webcam or external USB camera (720p minimum, 1080p recommended)
 
 ### Software Requirements
-- **Operating System**: Windows 10/11, macOS 10.15+, or Linux (Ubuntu 18.04+)
-- **Python**: Version 3.8 to 3.11 (3.10 recommended)
-- **Git**: For cloning the repository
+- **Operating System**: Windows 10/11 (64-bit)
+- **Python**: Version 3.11.x (3.11.13 tested and recommended)
+- **Conda/Miniconda**: For environment management
+- **Git**: For version control and updates
+- **CUDA Toolkit**: 11.8 or 12.x (if using GPU acceleration)
 
-## 🚀 Installation Guide
+## 🚀 Quick Start (Desktop Launcher)
 
-### Step 1: Clone the Repository
+### ⚡ Easiest Method - One-Click Desktop Launcher
 
-```bash
-git clone <repository-url>
+1. **Convert favicon to icon** (one-time setup):
+   ```powershell
+   conda activate cheatgpt
+   cd "D:\CHEATGPT CAPSTONE\Cheatgpt4\cheatgptv3"
+   python convert_favicon.py
+   ```
+
+2. **Create desktop shortcut**:
+   - Double-click `Create_Desktop_Shortcut.vbs`
+   - Choose **YES** for PowerShell launcher (recommended)
+   - A "CheatGPT System" shortcut will appear on your desktop
+
+3. **Launch the system**:
+   - Double-click the **"CheatGPT System"** icon on your desktop
+   - Wait 25 seconds for GPU models to load
+   - Browser opens automatically to `http://localhost:5000`
+
+**That's it!** The system handles everything automatically:
+- ✅ Activates conda environment
+- ✅ Loads YOLO11 models on GPU
+- ✅ Starts Flask web server
+- ✅ Opens browser when ready
+
+## 📦 Full Installation Guide
+
+### Step 1: Install Prerequisites
+
+#### 1.1 Install Miniconda
+```powershell
+# Download Miniconda from: https://docs.conda.io/en/latest/miniconda.html
+# Install to default location (D:\Miniconda3 or C:\Users\<Username>\Miniconda3)
+# Check "Add to PATH" during installation
+```
+
+#### 1.2 Install Git (if not installed)
+```powershell
+# Download from: https://git-scm.com/download/win
+# Use default settings during installation
+```
+
+#### 1.3 Install CUDA Toolkit (for GPU acceleration)
+```powershell
+# Download CUDA 11.8 from: https://developer.nvidia.com/cuda-11-8-0-download-archive
+# Or CUDA 12.x from: https://developer.nvidia.com/cuda-downloads
+# Verify installation:
+nvidia-smi
+```
+
+### Step 2: Clone Repository
+
+```powershell
+# Open PowerShell or Command Prompt
+cd "D:\CHEATGPT CAPSTONE\Cheatgpt4"
+git clone <repository-url> cheatgptv3
 cd cheatgptv3
 ```
 
-### Step 2: Create Python Virtual Environment
+### Step 3: Create Conda Environment
 
-#### Using Conda (Recommended)
-```bash
-# Install Miniconda if you haven't already
-# Download from: https://docs.conda.io/en/latest/miniconda.html
+```powershell
+# Create environment with Python 3.11
+conda create -n cheatgpt python=3.11 -y
 
-# Create environment
-conda create -n cheatgpt python=3.10
+# Activate environment
 conda activate cheatgpt
 ```
 
-#### Using venv (Alternative)
-```bash
-# Create virtual environment
-python -m venv cheatgpt_env
+### Step 4: Install Dependencies
 
-# Activate environment
-# On Windows:
-cheatgpt_env\Scripts\activate
-# On macOS/Linux:
-source cheatgpt_env/bin/activate
+#### 4.1 Install PyTorch with CUDA
+```powershell
+# For CUDA 11.8 (recommended)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+
+# For CUDA 12.x
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# For CPU only (not recommended)
+pip install torch torchvision
 ```
 
-### Step 3: Install Dependencies
-
-#### Core Dependencies
-```bash
-# Install core Python packages
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118  # For CUDA support
-# OR for CPU only:
-# pip install torch torchvision
-
-# Install other dependencies
-pip install ultralytics
-pip install opencv-python
-pip install numpy
-pip install Pillow
-pip install flask
-pip install flask-socketio
-pip install eventlet
-pip install python-dotenv
-pip install reportlab
-pip install sqlite3  # Usually included with Python
+Verify PyTorch installation:
+```powershell
+python -c "import torch; print('PyTorch:', torch.__version__); print('CUDA Available:', torch.cuda.is_available())"
 ```
 
-#### Alternative: Install from requirements file
-```bash
-# Install from the provided requirements
+#### 4.2 Install Core Dependencies
+```powershell
+# Install from requirements file
 pip install -r cheatgpt/requirements.txt
 
-# Additional web app dependencies
-pip install flask-socketio eventlet reportlab
+# Key packages installed:
+# - ultralytics (YOLO11)
+# - opencv-python (video processing)
+# - mediapipe (pose detection)
+# - flask, flask-socketio (web server)
+# - numpy, pillow (image processing)
+# - supervision (tracking)
+# - reportlab (PDF generation)
 ```
 
-### Step 4: Download Model Weights
-
-The system requires YOLO models for object and pose detection:
-
-```bash
-# Navigate to weights directory
-cd weights
-
-# Download YOLO models (these will be downloaded automatically on first run)
-# You can also manually download:
-# - yolo11m.pt (object detection)
-# - yolo11m-pose.pt (pose detection)
+#### 4.3 Install Additional Dependencies
+```powershell
+pip install eventlet python-dotenv pygame
 ```
 
-### Step 5: Environment Configuration
+### Step 5: Download Model Weights
 
-Copy the example environment file and configure it:
+Model weights are downloaded automatically on first run, but you can verify:
 
-```bash
-# Copy environment template
-cp .env.example .env
+```powershell
+# Check weights directory
+dir cheatgpt\cheatgpt\weights
 
-# Edit .env file with your preferred settings
-# Use any text editor like notepad, vim, or nano
+# Should contain:
+# - yolo11m.pt (~40MB) - Object detection
+# - yolo11m-pose.pt (~50MB) - Pose estimation
 ```
 
-#### Key Environment Variables
-```bash
-# Performance settings
-FORCE_CPU=false  # Set to true if you don't have CUDA GPU
-DEBUG_ENGINE=true  # Enable debug logging
+If missing, they'll download automatically when you start the system.
 
-# Detection sensitivity (lower values = more sensitive)
-LEAN_ANGLE_THRESH=12.0
-HEAD_TURN_THRESH=15.0
-POSE_CONFIDENCE_THRESH=0.25
+### Step 6: Verify Installation
 
-# Behavior analysis
-BEHAVIOR_REPEAT_WINDOW=5.0
-ALERT_PERSIST_FRAMES=2
+```powershell
+# Test Python environment
+python --version
+# Should show: Python 3.11.x
+
+# Test GPU detection
+python -c "import torch; print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU only')"
+
+# Test imports
+python -c "import ultralytics; import cv2; import mediapipe; print('All imports successful!')"
 ```
 
-### Step 6: Initialize Database
+### Step 7: Initialize Database (Automatic)
 
-The system uses SQLite for data storage. The database will be created automatically on first run, but you can initialize it manually:
+The database is created automatically on first run. Verify after first launch:
 
-```bash
-# Navigate to web_app directory
-cd web_app
+```powershell
+# Check database files
+dir web_app\*.db
+# Should show: cheatgpt.db, cheatgpt_sessions.db
+```
 
-# Run the application once to create database
+## 🏃‍♂️ Running the System
+
+### Method 1: Desktop Launcher (Recommended)
+
+Double-click the **"CheatGPT System"** desktop shortcut.
+
+### Method 2: PowerShell Script
+
+```powershell
+cd "D:\CHEATGPT CAPSTONE\Cheatgpt4\cheatgptv3"
+powershell -ExecutionPolicy Bypass -File Start_CheatGPT.ps1
+```
+
+### Method 3: Batch File
+
+```cmd
+cd "D:\CHEATGPT CAPSTONE\Cheatgpt4\cheatgptv3"
+Start_CheatGPT.bat
+```
+
+### Method 4: Manual (Terminal)
+
+```powershell
+# Open PowerShell
+conda activate cheatgpt
+cd "D:\CHEATGPT CAPSTONE\Cheatgpt4\cheatgptv3\web_app"
 python app.py
-# Stop with Ctrl+C after seeing "Running on http://127.0.0.1:5000"
 ```
 
-### Step 7: Test Installation
+Then open browser to `http://localhost:5000`
 
-#### Test Core Engine
-```bash
-# Test the detection engine
-python test_engine_complete.py
+## 🖥️ Using the Web Interface
 
-# Test webcam integration
-python test_enhanced_webcam.py
-
-# Test pose detection
-python test_enhanced_pose.py
-```
-
-#### Test Web Application
-```bash
-# Navigate to web app
-cd web_app
-
-# Start the web application
-python app.py
-```
-
-Open your browser and go to `http://localhost:5000` to access the web interface.
-
-## 🏃‍♂️ Quick Start
-
-### Running the Web Application
-
-1. **Activate Environment**:
-   ```bash
-   conda activate cheatgpt  # or source cheatgpt_env/bin/activate
-   ```
-
-2. **Navigate to Web App**:
-   ```bash
-   cd web_app
-   ```
-
-3. **Start the Server**:
-   ```bash
-   python app.py
-   ```
-
-4. **Access Web Interface**:
-   Open `http://localhost:5000` in your browser
-
-### Running Standalone Detection
-
-1. **Activate Environment**:
-   ```bash
-   conda activate cheatgpt
-   ```
-
-2. **Run Detection Script**:
-   ```bash
-   python run_enhanced_detection.py
-   ```
-
-3. **Controls**:
-   - `ESC` or `q`: Quit
-   - `s`: Start/stop recording
-   - `SPACE`: Pause/resume
-
-## 📱 Using the Web Interface
+### Dashboard (Home)
+1. Navigate to `http://localhost:5000/analytics/home`
+2. View all recorded sessions in grid layout
+3. Search and filter sessions
+4. Select multiple sessions for batch deletion
+5. Click any session to view details
 
 ### Live Monitoring
-1. Navigate to the main dashboard (`http://localhost:5000`)
-2. Click **"Start Camera"** to begin live monitoring
+1. Click "Live" from navigation menu
+2. Click **"Start Camera"** to begin monitoring
 3. Grant camera permissions when prompted
-4. Monitor real-time detection results
-5. Click **"Stop Camera"** to end session
+4. Real-time detection overlay shows:
+   - Bounding boxes around phones
+   - Head turning angles
+   - Motion detection zones
+5. Click **"Stop Camera"** to end and save session
 
-### Analytics Dashboard
-1. Navigate to **"Analytics"** from the main menu
-2. Browse recorded sessions in YouTube-style grid
-3. Click on any session to view detailed analytics
-4. Use the video player to review events with timestamps
-5. Generate reports using the **"Generate Report"** button
+### Video Player
+1. Navigate to "Player" from menu
+2. Select a recorded session
+3. Features:
+   - Video playback with controls
+   - Event timeline with markers
+   - Heatmap overlay showing activity
+   - Jump to specific events
+   - Frame-by-frame navigation
 
-### Session Management
-1. All sessions are automatically saved with timestamps
-2. Videos are stored in `web_app/videos/` directory
-3. Event data is stored in SQLite database
-4. Reports can be exported as PDF or JSON
+### Analytics & Reports
+1. Navigate to "Reports" from menu
+2. Select session for analysis
+3. View:
+   - Behavior score (0-100)
+   - Event distribution charts
+   - Time-based heatmaps
+   - Detailed event log
+4. Click **"Export PDF"** to generate report
 
-## 🛠️ Configuration
+### Upload Videos
+1. Navigate to "Upload" from menu
+2. Drag and drop video files or click to browse
+3. Supported formats: MP4, AVI, MOV
+4. System processes video offline
+5. View results in Analytics after processing
 
-### Performance Optimization
+## ⚙️ Configuration
 
-#### GPU Configuration
+### Detection Settings
+
+Edit `.env` file (create from template if missing):
+
 ```bash
-# Check if CUDA is available
-python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
+# Performance
+FORCE_CPU=false              # Set true to force CPU (slower)
+DEBUG_ENGINE=true            # Enable detailed logging
 
-# For NVIDIA GPUs, ensure CUDA drivers are installed
-# Download from: https://developer.nvidia.com/cuda-downloads
+# Detection Thresholds
+PHONE_CONFIDENCE=0.50        # Phone detection minimum confidence (50%)
+HEAD_TURN_ANGLE=40.0         # Head turning angle threshold (degrees)
+HEAD_TURN_DURATION=3.0       # Sustained head turn duration (seconds)
+MOTION_THRESHOLD=0.5         # Hand motion detection sensitivity
+MOTION_DURATION=5.0          # Hand activity duration (seconds)
+
+# LSTM Classification
+LSTM_CONFIDENCE=0.65         # Temporal analysis threshold (65%)
+
+# Event Management
+DEDUPLICATION_WINDOW=3.0     # Prevent duplicate events (3 seconds)
 ```
 
-#### CPU-Only Mode
+### System Settings
+
+```bash
+# Frame Processing
+LIVE_FPS=30.0               # Live stream frame rate
+DETECTION_FPS=10.0          # Detection processing rate
+
+# Video Recording
+VIDEO_CODEC=mp4v            # Codec for recordings
+VIDEO_QUALITY=90            # Quality (0-100)
+
+# Database
+DB_PATH=web_app/cheatgpt_sessions.db
+ENABLE_AUTO_CLEANUP=false   # Auto-delete old sessions
+
+# Web Server
+HOST=0.0.0.0               # Accept connections from any IP
+PORT=5000                  # Default port
+DEBUG=false                # Flask debug mode (disable in production)
+```
+
+### Security Settings
+
+```bash
+# Deletion Password (web_app/config.py)
+DELETION_PASSWORD=cheatgpt2024   # Required to delete sessions
+
+# Change password:
+# Edit web_app/config.py
+# Update DELETION_PASSWORD value
+```
+
+## 📊 Performance Optimization
+
+### GPU Acceleration (Recommended)
+
+```powershell
+# Verify CUDA setup
+nvidia-smi
+
+# Check PyTorch CUDA
+python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}, Device: {torch.cuda.get_device_name(0)}')"
+
+# Expected performance:
+# - GPU (GTX 1650 Ti): 60+ FPS detection
+# - CPU (i5/Ryzen 5): 15-20 FPS detection
+```
+
+### CPU-Only Mode
+
 ```bash
 # In .env file:
 FORCE_CPU=true
 
-# Or set environment variable:
-export FORCE_CPU=true  # Linux/macOS
-set FORCE_CPU=true     # Windows
+# Adjust settings for better CPU performance:
+DETECTION_FPS=5.0          # Reduce to 5 FPS
+LIVE_FPS=15.0              # Reduce live stream
 ```
 
-### Detection Sensitivity
-
-Adjust detection thresholds in `.env`:
+### Reduce Memory Usage
 
 ```bash
-# More sensitive detection (lower values)
-LEAN_ANGLE_THRESH=8.0      # Default: 12.0
-HEAD_TURN_THRESH=10.0      # Default: 15.0
-POSE_CONFIDENCE_THRESH=0.2 # Default: 0.25
+# Use smaller YOLO models (edit detection code)
+# yolo11m.pt (default, ~40MB) → yolo11s.pt (~20MB)
+# yolo11m-pose.pt → yolo11s-pose.pt
 
-# Less sensitive detection (higher values)
-LEAN_ANGLE_THRESH=20.0
-HEAD_TURN_THRESH=25.0
-POSE_CONFIDENCE_THRESH=0.4
+# Clear old sessions regularly
+# Disable auto-recording if not needed
 ```
 
 ## 📁 Project Structure

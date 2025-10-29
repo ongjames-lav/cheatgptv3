@@ -1,0 +1,6 @@
+timestamp,person_id,event_type,severity,confidence,source,details,bbox,rule_triggered
+0.7340674007340674,person_011,Head Turning,orange,0.8,research_rules,Head turned RIGHT (30.9° detected instantly),"[1.5909423828125, 120.08349609375, 289.6559753417969, 828.71875]",instant_head_turn
+2.135468802135469,person_006,Head Turning,orange,0.8,research_rules,Head turned RIGHT (32.5° detected instantly),"[2.4200074672698975, 111.31733703613281, 404.4013671875, 447.2850646972656]",instant_head_turn
+19.352686019352685,person_006,Head Turning,orange,0.8,research_rules,Head turned RIGHT (34.4° detected instantly),"[12.720458984375, 222.04776000976562, 356.9900817871094, 570.94873046875]",instant_head_turn
+28.261594928261594,person_006,Head Turning,orange,0.8,research_rules,Head turned RIGHT (31.9° detected instantly),"[151.3394012451172, 350.09161376953125, 385.98199462890625, 543.1727905273438]",instant_head_turn
+29.662996329663,person_006,Head Turning,orange,0.8,research_rules,Head turned RIGHT (31.9° detected instantly),"[3.0909423828125, 165.5993194580078, 370.3236999511719, 533.8598022460938]",instant_head_turn

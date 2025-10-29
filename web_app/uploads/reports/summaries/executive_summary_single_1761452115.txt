@@ -1,0 +1,28 @@
+
+CHEATGPT3 VIDEO ANALYSIS EXECUTIVE SUMMARY
+==========================================
+
+Session ID: single_1761452115
+Analysis Date: 2025-10-26 12:15:31
+
+VIDEO INFORMATION
+-----------------
+File: Teacher_Teaching_the_Students_Inside_a_Classroom_-_Free_Stock_Videos.mp4
+Duration: 14.0 seconds
+Resolution: 640x360
+Frame Rate: 25.0 FPS
+
+DETECTION SUMMARY
+-----------------
+Total Events Detected: 0
+
+Event Breakdown:
+
+RISK ASSESSMENT
+--------------
+Risk Score: 0.00/10.0
+Risk Level: MINIMAL
+
+RECOMMENDATIONS
+--------------
+  • No significant suspicious activity detected

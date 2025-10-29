@@ -1,0 +1,37 @@
+[
+  {
+    "session_id": "single_1234567890",
+    "timestamp": 5.2,
+    "has_event": true,
+    "event_type": "phone_detection",
+    "notes": "Student clearly holding phone at 5 seconds"
+  },
+  {
+    "session_id": "single_1234567890",
+    "timestamp": 15.8,
+    "has_event": true,
+    "event_type": "head_turning",
+    "notes": "Student turning head to look at neighbor's paper"
+  },
+  {
+    "session_id": "single_1234567890",
+    "timestamp": 25.0,
+    "has_event": false,
+    "event_type": null,
+    "notes": "Normal behavior, student looking at exam"
+  },
+  {
+    "session_id": "single_9876543210",
+    "timestamp": 10.5,
+    "has_event": true,
+    "event_type": "suspicious_gesture",
+    "notes": "Hand gesture to neighboring student"
+  },
+  {
+    "session_id": "single_9876543210",
+    "timestamp": 30.0,
+    "has_event": false,
+    "event_type": null,
+    "notes": "Normal sitting posture, focused on work"
+  }
+]
