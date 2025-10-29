@@ -95,6 +95,7 @@ weights/*.onnx
 *.pt
 *.pth
 *.onnx
+*.torchscript
 
 # Temporary files
 tmp/
